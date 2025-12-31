@@ -1,0 +1,113 @@
+<p>The <strong>Fun Hypothesis Tester</strong> (now called the
+<strong>Framing Hypothesis Tester</strong>) tests whether LLMs perform
+better when prompts are framed in different styles.</p>
+<h2 id="the-hypothesis">The Hypothesis</h2>
+<blockquote>
+<p>Does asking Claude “Let’s have fun figuring this out together!”
+produce better answers than a dry, neutral prompt?</p>
+</blockquote>
+<p>Or more generally: <strong>Does prompt framing affect response
+quality?</strong></p>
+<h2 id="how-it-works">How It Works</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│  Session A: Send raw prompt → Get Response A                │
+│  Session B: Transform prompt with framing → Get framed prompt│
+│  Session C: Send framed prompt → Get Response B             │
+│  Session D: Blind judge rates Response A                    │
+│  Session E: Blind judge rates Response B                    │
+│  Compare scores statistically                               │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+<p>Each session is independent (no context leakage).</p>
+<h2 id="built-in-framings">Built-in Framings</h2>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 22%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr>
+<th>Key</th>
+<th>Style</th>
+<th>Example Transform</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fun</code></td>
+<td>Playful, collaborative</td>
+<td>“Let’s figure this out together!”</td>
+</tr>
+<tr>
+<td><code>pirate</code></td>
+<td>Pirate speak</td>
+<td>“Ahoy! Help me find the treasure of knowledge!”</td>
+</tr>
+<tr>
+<td><code>expert</code></td>
+<td>Senior technical expert</td>
+<td>“As a senior engineer, analyze…”</td>
+</tr>
+<tr>
+<td><code>eli5</code></td>
+<td>Explain Like I’m 5</td>
+<td>“Explain this so a 5-year-old understands”</td>
+</tr>
+<tr>
+<td><code>formal</code></td>
+<td>Academic/professional</td>
+<td>“Please provide a formal analysis…”</td>
+</tr>
+<tr>
+<td><code>socratic</code></td>
+<td>Guided questions</td>
+<td>“Help me discover the answer through questions”</td>
+</tr>
+<tr>
+<td><code>enthusiastic</code></td>
+<td>SUPER EXCITED!!!</td>
+<td>“OMG I’m SO CURIOUS about this!!!”</td>
+</tr>
+<tr>
+<td><code>skeptical</code></td>
+<td>Question assumptions</td>
+<td>“I’m not sure this is right, but…”</td>
+</tr>
+<tr>
+<td><code>storyteller</code></td>
+<td>Narrative framing</td>
+<td>“Tell me the story of how…”</td>
+</tr>
+<tr>
+<td><code>confused</code></td>
+<td>Genuinely uncertain</td>
+<td>“I’m really confused about this…”</td>
+</tr>
+</tbody>
+</table>
+<h2 id="usage">Usage</h2>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test single framing</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> fun_hypothesis.py <span class="at">--framing</span> pirate <span class="at">--trials</span> 5</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare multiple framings</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> fun_hypothesis.py <span class="at">--framings</span> <span class="st">&quot;fun,expert,formal&quot;</span> <span class="at">--trials</span> 10</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Custom framing</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> fun_hypothesis.py <span class="at">--framing</span> custom <span class="dt">\</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--custom-instruction</span> <span class="st">&quot;Reframe as a medieval scholar&quot;</span> <span class="at">--trials</span> 5</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Load framings from CSV</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> fun_hypothesis.py <span class="at">--framings-csv</span> my_styles.csv <span class="at">--trials</span> 5</span></code></pre></div>
+<h2 id="output">Output</h2>
+<ul>
+<li>Statistical comparison (p-values)</li>
+<li>Per-framing scores</li>
+<li>Markdown report with rankings</li>
+</ul>
+<h2 id="why-this-matters">Why This Matters</h2>
+<p>If “fun” framing consistently scores 10% higher, you’d want to bake
+that into your system prompts. If “expert” framing helps with technical
+questions but hurts creative ones, you’d want conditional framing.</p>
+<p>It’s empirical prompt engineering instead of vibes-based prompt
+engineering.</p>
