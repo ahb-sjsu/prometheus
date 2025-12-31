@@ -1,0 +1,200 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_psf_black__ap_f6v9\\psf_black",
+  "timestamp": "2025-12-30T19:06:05.732674",
+  "quadrant": "BUNKER",
+  "fitness_verdict": "🏰 BUNKER: Low complexity, high resilience. The ideal state.\n\nRecommended Action: Maintain current practices. Consider if any resilience measures are redundant.",
+  "scores": {
+    "complexity_risk": "MEDIUM",
+    "complexity_score": 60,
+    "resilience_score": 64.84595431413561,
+    "shield_rating": "STEEL"
+  },
+  "priorities": [],
+  "complexity_analysis": {
+    "risk_level": "MEDIUM",
+    "verdict": "Complexity is within acceptable bounds but trending toward excess. Monitor during future development and address hotspots proactively.",
+    "recommendations": [
+      "WARNING: 922 lines per function point suggests over-engineering. Industry standard is ~50.",
+      "NOTE: High compression ratio indicates redundant code. Look for copy-paste patterns to abstract."
+    ],
+    "hotspots": [
+      {
+        "file": "action\\main.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "tests\\test_black.py",
+        "issues": [
+          "Deep nesting: 8 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\brackets.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\comments.py",
+        "issues": [
+          "Deep nesting: 9 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\concurrency.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\files.py",
+        "issues": [
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\handle_ipynb_magics.py",
+        "issues": [
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\linegen.py",
+        "issues": [
+          "Deep nesting: 11 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\lines.py",
+        "issues": [
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\black\\nodes.py",
+        "issues": [
+          "Deep nesting: 18 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 121438,
+      "avg_cyclomatic": 0.0,
+      "maintainability": 0.0,
+      "entropy": 5.11903784049106
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "STEEL",
+    "overall_score": 64.84595431413561,
+    "category_scores": {
+      "error_handling": 45.761840176101295,
+      "timeouts": 0,
+      "retries": 0.0,
+      "circuit_breakers": 30.0,
+      "observability": 28.200971143694144
+    },
+    "vulnerabilities": [
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\diff_shades_gha_helper.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 35,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "tests\\data\\cases\\allow_empty_first_line.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 120,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "tests\\data\\cases\\allow_empty_first_line.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 19,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "tests\\data\\cases\\pep_654.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 19,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "tests\\data\\cases\\pep_654_style.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 77,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "tests\\data\\cases\\pep_654_style.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 6,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "tests\\data\\cases\\remove_except_types_parens_pre_py314.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 119,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "tests\\data\\cases\\remove_except_types_parens_pre_py314.py"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Observability",
+        "message": "Insufficient logging/metrics makes debugging production issues nearly impossible.",
+        "libraries": [
+          "structlog (Python)",
+          "pino (JS)",
+          "OpenTelemetry (all languages)"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_tartley_colorama_o49k5t0_\\tartley_colorama",
+  "timestamp": "2025-12-30T17:30:08.894471",
+  "quadrant": "GLASS HOUSE",
+  "fitness_verdict": "🏠 GLASS HOUSE: Low complexity, low resilience. Simple but fragile.\n\nRecommended Action: Add defensive patterns: error handling, timeouts, retries. Complexity will increase but reliability will improve.",
+  "scores": {
+    "complexity_risk": "LOW",
+    "complexity_score": 80,
+    "resilience_score": 26.17391304347826,
+    "shield_rating": "WOOD"
+  },
+  "priorities": [
+    {
+      "priority": 1,
+      "category": "Timeouts",
+      "action": "Missing timeouts are the #1 cause of cascading failures",
+      "first_steps": [
+        "Audit all HTTP client instantiations",
+        "Add connect_timeout and read_timeout to each",
+        "Default: 5s connect, 30s read (adjust per use case)"
+      ]
+    }
+  ],
+  "complexity_analysis": {
+    "risk_level": "LOW",
+    "verdict": "Complexity appears well-matched to task requirements. The codebase follows the principle that simplicity enables reliability.",
+    "recommendations": [
+      "WARNING: 173 lines per function point suggests over-engineering. Industry standard is ~50."
+    ],
+    "hotspots": [
+      {
+        "file": "colorama\\ansitowin32.py",
+        "issues": [
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "colorama\\winterm.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "colorama\\tests\\initialise_test.py",
+        "issues": [
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 1560,
+      "avg_cyclomatic": 0.0,
+      "maintainability": 0.0,
+      "entropy": 5.643039775490434
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "WOOD",
+    "overall_score": 26.17391304347826,
+    "category_scores": {
+      "error_handling": 53.80434782608695,
+      "timeouts": 0,
+      "retries": 0.0,
+      "circuit_breakers": 0.0,
+      "observability": 51.5625
+    },
+    "vulnerabilities": [],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "MEDIUM",
+        "category": "Circuit Breakers",
+        "message": "Protect against cascading failures by adding circuit breakers to external dependencies.",
+        "libraries": [
+          "pybreaker (Python)",
+          "opossum (JS)",
+          "resilience4j (Java)",
+          "sony/gobreaker (Go)"
+        ]
+      },
+      {
+        "priority": "MEDIUM",
+        "category": "Health Checks",
+        "message": "Add /health endpoints with liveness and readiness probes for orchestration.",
+        "libraries": [
+          "FastAPI health (Python)",
+          "Terminus (JS)",
+          "Spring Actuator (Java)"
+        ]
+      },
+      {
+        "priority": "LOW",
+        "category": "Bulkheads",
+        "message": "Consider thread pool isolation and connection pool limits to prevent resource exhaustion.",
+        "libraries": [
+          "concurrent.futures (Python)",
+          "generic-pool (JS)",
+          "HikariCP (Java)"
+        ]
+      }
+    ]
+  }
+}

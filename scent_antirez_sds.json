@@ -1,0 +1,60 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_antirez_sds_23wodut2\\antirez_sds",
+  "timestamp": "2025-12-30T19:05:53.724055",
+  "total_files": 4,
+  "total_loc": 1558,
+  "nih_score": 0.0,
+  "smell_score": 100,
+  "outdated_score": 3.75,
+  "naming_score": 86.25,
+  "overall_smell_score": 53.6875,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "sds.c",
+      "score": 27.301075268817204,
+      "issues": []
+    },
+    {
+      "path": "sds.h",
+      "score": 10,
+      "issues": []
+    },
+    {
+      "path": "testhelp.h",
+      "score": 6,
+      "issues": []
+    },
+    {
+      "path": "sdsalloc.h",
+      "score": 5,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 137
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 2
+    },
+    {
+      "issue": "Deprecated APIs",
+      "count": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    },
+    {
+      "category": "Naming",
+      "priority": "LOW",
+      "recommendation": "Use descriptive variable names, establish consistent conventions"
+    }
+  ]
+}

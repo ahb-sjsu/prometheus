@@ -1,0 +1,188 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_psf_requests_vrli36fz\\psf_requests",
+  "timestamp": "2025-12-30T17:34:17.099603",
+  "quadrant": "GLASS HOUSE",
+  "fitness_verdict": "🏠 GLASS HOUSE: Low complexity, low resilience. Simple but fragile.\n\nRecommended Action: Add defensive patterns: error handling, timeouts, retries. Complexity will increase but reliability will improve.",
+  "scores": {
+    "complexity_risk": "LOW",
+    "complexity_score": 80,
+    "resilience_score": 29.212787212787212,
+    "shield_rating": "WOOD"
+  },
+  "priorities": [
+    {
+      "priority": 1,
+      "category": "Timeouts",
+      "action": "Missing timeouts are the #1 cause of cascading failures",
+      "first_steps": [
+        "Audit all HTTP client instantiations",
+        "Add connect_timeout and read_timeout to each",
+        "Default: 5s connect, 30s read (adjust per use case)"
+      ]
+    },
+    {
+      "priority": 3,
+      "category": "Observability",
+      "action": "You cannot fix what you cannot see",
+      "first_steps": [
+        "Add structured logging (structlog, pino)",
+        "Log at function entry/exit for critical paths",
+        "Include correlation IDs for request tracing"
+      ]
+    }
+  ],
+  "complexity_analysis": {
+    "risk_level": "LOW",
+    "verdict": "Complexity appears well-matched to task requirements. The codebase follows the principle that simplicity enables reliability.",
+    "recommendations": [],
+    "hotspots": [
+      {
+        "file": "tests\\test_requests.py",
+        "issues": [
+          "Deep nesting: 7 levels",
+          "High estimated bug count: 3.74"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "tests\\test_utils.py",
+        "issues": [
+          "Poor maintainability index: 19.0",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\requests\\cookies.py",
+        "issues": [
+          "Poor maintainability index: 39.8",
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\requests\\models.py",
+        "issues": [
+          "Poor maintainability index: 21.7",
+          "Deep nesting: 8 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\requests\\sessions.py",
+        "issues": [
+          "Poor maintainability index: 38.1",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\requests\\utils.py",
+        "issues": [
+          "Poor maintainability index: 25.2",
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\requests\\adapters.py",
+        "issues": [
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\requests\\auth.py",
+        "issues": [
+          "Deep nesting: 8 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\requests\\help.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 9195,
+      "avg_cyclomatic": 2.789114226346947,
+      "maintainability": 70.6173755492557,
+      "entropy": 6.401129406483724
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "WOOD",
+    "overall_score": 29.212787212787212,
+    "category_scores": {
+      "error_handling": 56.193806193806196,
+      "timeouts": 0,
+      "retries": 2.8571428571428568,
+      "circuit_breakers": 20.0,
+      "observability": 5.9093657840110065
+    },
+    "vulnerabilities": [
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "2 network calls may lack timeout configuration",
+        "file": "src\\requests\\__init__.py"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Observability",
+        "message": "Insufficient logging/metrics makes debugging production issues nearly impossible.",
+        "libraries": [
+          "structlog (Python)",
+          "pino (JS)",
+          "OpenTelemetry (all languages)"
+        ]
+      },
+      {
+        "priority": "MEDIUM",
+        "category": "Health Checks",
+        "message": "Add /health endpoints with liveness and readiness probes for orchestration.",
+        "libraries": [
+          "FastAPI health (Python)",
+          "Terminus (JS)",
+          "Spring Actuator (Java)"
+        ]
+      },
+      {
+        "priority": "LOW",
+        "category": "Bulkheads",
+        "message": "Consider thread pool isolation and connection pool limits to prevent resource exhaustion.",
+        "libraries": [
+          "concurrent.futures (Python)",
+          "generic-pool (JS)",
+          "HikariCP (Java)"
+        ]
+      }
+    ]
+  }
+}

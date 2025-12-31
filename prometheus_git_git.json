@@ -1,0 +1,155 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_git_git_deobv8pv\\git_git",
+  "timestamp": "2025-12-30T18:31:38.223594",
+  "quadrant": "FORTRESS",
+  "fitness_verdict": "🏯 FORTRESS: High complexity, high resilience. Defended but over-engineered.\n\nRecommended Action: Simplify where possible. The resilience may be compensating for accidental complexity.",
+  "scores": {
+    "complexity_risk": "HIGH",
+    "complexity_score": 40,
+    "resilience_score": 74.20352138101019,
+    "shield_rating": "STEEL"
+  },
+  "priorities": [
+    {
+      "priority": 5,
+      "category": "Over-Engineering",
+      "action": "162862 LOC per feature is excessive",
+      "first_steps": [
+        "Look for abstraction layers that add no value",
+        "Remove speculative generality (YAGNI)",
+        "Inline trivial wrapper functions"
+      ]
+    }
+  ],
+  "complexity_analysis": {
+    "risk_level": "HIGH",
+    "verdict": "Complexity is higher than warranted for the task at hand. Error rates will be elevated. Targeted refactoring of hotspots recommended.",
+    "recommendations": [
+      "CRITICAL: Low maintainability index indicates the code will be difficult and error-prone to modify.",
+      "WARNING: 162862 lines per function point suggests over-engineering. Industry standard is ~50."
+    ],
+    "hotspots": [
+      {
+        "file": "git-p4.py",
+        "issues": [
+          "Deep nesting: 10 levels",
+          "High estimated bug count: 9.12"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "t\\unit-tests\\clar\\generate.py",
+        "issues": [
+          "Poor maintainability index: 35.8",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 374583,
+      "avg_cyclomatic": 4.115595075239398,
+      "maintainability": 35.82413163772236,
+      "entropy": 6.470514714199978
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "STEEL",
+    "overall_score": 74.20352138101019,
+    "category_scores": {
+      "error_handling": 31.781035962211288,
+      "timeouts": 0.017977528089887642,
+      "retries": 0.0,
+      "circuit_breakers": 40.0,
+      "observability": 7.507747188510303
+    },
+    "vulnerabilities": [
+      {
+        "type": "bare_except",
+        "line": 64,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 4596,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 311,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 1918,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 3118,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Error Handling",
+        "message": "Add try/catch blocks around I/O operations, network calls, and parsing logic.",
+        "libraries": [
+          "Custom exceptions for domain errors"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Observability",
+        "message": "Insufficient logging/metrics makes debugging production issues nearly impossible.",
+        "libraries": [
+          "structlog (Python)",
+          "pino (JS)",
+          "OpenTelemetry (all languages)"
+        ]
+      },
+      {
+        "priority": "LOW",
+        "category": "Bulkheads",
+        "message": "Consider thread pool isolation and connection pool limits to prevent resource exhaustion.",
+        "libraries": [
+          "concurrent.futures (Python)",
+          "generic-pool (JS)",
+          "HikariCP (Java)"
+        ]
+      }
+    ]
+  }
+}

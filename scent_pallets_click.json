@@ -1,0 +1,89 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_pallets_click_utsvlh1s\\pallets_click",
+  "timestamp": "2025-12-30T19:06:28.253064",
+  "total_files": 62,
+  "total_loc": 17560,
+  "nih_score": 0.967741935483871,
+  "smell_score": 100,
+  "outdated_score": 14.758064516129032,
+  "naming_score": 3.467741935483871,
+  "overall_smell_score": 43.71370967741936,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "src\\click\\termui.py",
+      "score": 58,
+      "issues": []
+    },
+    {
+      "path": "src\\click\\shell_completion.py",
+      "score": 56.56818181818181,
+      "issues": []
+    },
+    {
+      "path": "src\\click\\_termui_impl.py",
+      "score": 40.09423347398031,
+      "issues": []
+    },
+    {
+      "path": "src\\click\\decorators.py",
+      "score": 39.0,
+      "issues": []
+    },
+    {
+      "path": "src\\click\\core.py",
+      "score": 37.74733096085409,
+      "issues": []
+    },
+    {
+      "path": "tests\\test_termui.py",
+      "score": 34.62328767123287,
+      "issues": []
+    },
+    {
+      "path": "tests\\test_options.py",
+      "score": 31.84715284715285,
+      "issues": []
+    },
+    {
+      "path": "src\\click\\utils.py",
+      "score": 31.60120240480962,
+      "issues": []
+    },
+    {
+      "path": "src\\click\\_compat.py",
+      "score": 27.606060606060606,
+      "issues": []
+    },
+    {
+      "path": "src\\click\\types.py",
+      "score": 27.104058272632674,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 1202
+    },
+    {
+      "issue": "Deprecated APIs",
+      "count": 61
+    },
+    {
+      "issue": "Very long functions",
+      "count": 15
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 13
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    }
+  ]
+}

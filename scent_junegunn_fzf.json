@@ -1,0 +1,85 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_junegunn_fzf_cee0o2ck\\junegunn_fzf",
+  "timestamp": "2025-12-30T19:06:51.317989",
+  "total_files": 75,
+  "total_loc": 24817,
+  "nih_score": 0.0,
+  "smell_score": 100,
+  "outdated_score": 0.0,
+  "naming_score": 8.266666666666666,
+  "overall_smell_score": 41.24,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "src\\algo\\algo.go",
+      "score": 41.283422459893046,
+      "issues": []
+    },
+    {
+      "path": "src\\options.go",
+      "score": 35.99557522123894,
+      "issues": []
+    },
+    {
+      "path": "src\\tui\\light.go",
+      "score": 35.94244604316547,
+      "issues": []
+    },
+    {
+      "path": "src\\terminal.go",
+      "score": 35.23198492098014,
+      "issues": []
+    },
+    {
+      "path": "src\\terminal_test.go",
+      "score": 34.68509212730318,
+      "issues": []
+    },
+    {
+      "path": "src\\ansi.go",
+      "score": 33,
+      "issues": []
+    },
+    {
+      "path": "src\\ansi_test.go",
+      "score": 32,
+      "issues": []
+    },
+    {
+      "path": "src\\tui\\tcell.go",
+      "score": 30.308959835221422,
+      "issues": []
+    },
+    {
+      "path": "src\\tui\\light_windows.go",
+      "score": 24.77777777777778,
+      "issues": []
+    },
+    {
+      "path": "src\\tui\\tui.go",
+      "score": 23.070539419087137,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 4129
+    },
+    {
+      "issue": "Very long functions",
+      "count": 44
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 21
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    }
+  ]
+}

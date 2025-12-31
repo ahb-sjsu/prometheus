@@ -1,0 +1,79 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_chalk_chalk_5lvvvbse\\chalk_chalk",
+  "timestamp": "2025-12-30T19:06:03.097319",
+  "total_files": 13,
+  "total_loc": 939,
+  "nih_score": 1.5384615384615385,
+  "smell_score": 4.615384615384616,
+  "outdated_score": 0.0,
+  "naming_score": 12.307692307692308,
+  "overall_smell_score": 4.0769230769230775,
+  "freshness_rating": "FRESH",
+  "worst_files": [
+    {
+      "path": "test\\chalk.js",
+      "score": 15,
+      "issues": []
+    },
+    {
+      "path": "source\\index.js",
+      "score": 14.546448087431694,
+      "issues": []
+    },
+    {
+      "path": "test\\instance.js",
+      "score": 9,
+      "issues": []
+    },
+    {
+      "path": "test\\level.js",
+      "score": 8.0,
+      "issues": []
+    },
+    {
+      "path": "test\\visible.js",
+      "score": 6.0,
+      "issues": []
+    },
+    {
+      "path": "examples\\rainbow.js",
+      "score": 5,
+      "issues": []
+    },
+    {
+      "path": "source\\index.d.ts",
+      "score": 5,
+      "issues": []
+    },
+    {
+      "path": "source\\utilities.js",
+      "score": 3.4482758620689653,
+      "issues": []
+    },
+    {
+      "path": "test\\no-color-support.js",
+      "score": 2.0,
+      "issues": []
+    },
+    {
+      "path": "benchmark.js",
+      "score": 0.0,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 4
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 3
+    },
+    {
+      "issue": "Very long functions",
+      "count": 1
+    }
+  ],
+  "recommendations": []
+}

@@ -1,0 +1,85 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_BurntSushi_ripgrep_rc5f4ojm\\BurntSushi_ripgrep",
+  "timestamp": "2025-12-30T19:06:33.045631",
+  "total_files": 99,
+  "total_loc": 47198,
+  "nih_score": 0.0,
+  "smell_score": 100,
+  "outdated_score": 0.0,
+  "naming_score": 4.94949494949495,
+  "overall_smell_score": 40.74242424242424,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "crates\\core\\flags\\defs.rs",
+      "score": 40.75724479394204,
+      "issues": []
+    },
+    {
+      "path": "crates\\ignore\\src\\walk.rs",
+      "score": 37.39318479685452,
+      "issues": []
+    },
+    {
+      "path": "crates\\printer\\src\\util.rs",
+      "score": 35.60142348754448,
+      "issues": []
+    },
+    {
+      "path": "crates\\globset\\src\\glob.rs",
+      "score": 35.0,
+      "issues": []
+    },
+    {
+      "path": "crates\\printer\\src\\standard.rs",
+      "score": 34.89804772234273,
+      "issues": []
+    },
+    {
+      "path": "tests\\json.rs",
+      "score": 31.392764857881136,
+      "issues": []
+    },
+    {
+      "path": "tests\\regression.rs",
+      "score": 29,
+      "issues": []
+    },
+    {
+      "path": "crates\\core\\flags\\hiargs.rs",
+      "score": 28.496102055279945,
+      "issues": []
+    },
+    {
+      "path": "crates\\regex\\src\\config.rs",
+      "score": 27.662721893491124,
+      "issues": []
+    },
+    {
+      "path": "crates\\printer\\src\\hyperlink\\mod.rs",
+      "score": 26.650557620817843,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 3328
+    },
+    {
+      "issue": "Very long functions",
+      "count": 55
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 24
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    }
+  ]
+}

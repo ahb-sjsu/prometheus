@@ -1,0 +1,65 @@
+================================================================================
+PROMETHEUS RAW DATA DUMP
+================================================================================
+
+CODEBASE_PATH=C:\Users\abptl\AppData\Local\Temp\prometheus_tartley_colorama_o49k5t0_\tartley_colorama
+TIMESTAMP=2025-12-30T17:30:08.894471
+QUADRANT=GLASS HOUSE
+COMPLEXITY_RISK=LOW
+COMPLEXITY_SCORE=80
+SHIELD_RATING=WOOD
+RESILIENCE_SCORE=26.17391304347826
+AVG_CYCLOMATIC=0.0
+LOC_PER_FP=173.33333333333334
+ENTROPY=5.643039775490434
+
+--------------------------------------------------------------------------------
+COMPLEXITY_METRICS
+--------------------------------------------------------------------------------
+COMPLEXITY.TOTAL_LOC=1560
+COMPLEXITY.AVG_CYCLOMATIC=0.0
+COMPLEXITY.MAINTAINABILITY=0.0
+COMPLEXITY.ENTROPY=5.643039775490434
+
+--------------------------------------------------------------------------------
+RESILIENCE_CATEGORY_SCORES
+--------------------------------------------------------------------------------
+RESILIENCE.ERROR_HANDLING=53.80434782608695
+RESILIENCE.TIMEOUTS=0
+RESILIENCE.RETRIES=0.0
+RESILIENCE.CIRCUIT_BREAKERS=0.0
+RESILIENCE.OBSERVABILITY=51.5625
+
+--------------------------------------------------------------------------------
+HOTSPOTS
+--------------------------------------------------------------------------------
+HOTSPOT|colorama\ansitowin32.py|Deep nesting: 7 levels
+HOTSPOT|colorama\winterm.py|Deep nesting: 5 levels
+HOTSPOT|colorama\tests\initialise_test.py|Deep nesting: 6 levels
+
+--------------------------------------------------------------------------------
+VULNERABILITIES
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+REC|CRITICAL|Timeouts|Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.|httpx (Python),axios with timeout (JS),OkHttp timeouts (Java)
+REC|HIGH|Retry Logic|Transient failures are common. Implement retry with exponential backoff for external service calls.|tenacity (Python),async-retry (JS),resilience4j (Java),cenkalti/backoff (Go)
+REC|MEDIUM|Circuit Breakers|Protect against cascading failures by adding circuit breakers to external dependencies.|pybreaker (Python),opossum (JS),resilience4j (Java),sony/gobreaker (Go)
+REC|MEDIUM|Health Checks|Add /health endpoints with liveness and readiness probes for orchestration.|FastAPI health (Python),Terminus (JS),Spring Actuator (Java)
+REC|LOW|Bulkheads|Consider thread pool isolation and connection pool limits to prevent resource exhaustion.|concurrent.futures (Python),generic-pool (JS),HikariCP (Java)
+
+--------------------------------------------------------------------------------
+PRIORITIES
+--------------------------------------------------------------------------------
+PRIORITY|1|Timeouts|Missing timeouts are the #1 cause of cascading failures|Audit all HTTP client instantiations; Add connect_timeout and read_timeout to each; Default: 5s connect, 30s read (adjust per use case)
+
+--------------------------------------------------------------------------------
+FILE_METRICS_TSV
+--------------------------------------------------------------------------------
+FILE	LOC	CYCLOMATIC	MAINTAINABILITY	TRY_BLOCKS	BARE_EXCEPTS	TIMEOUTS	LOG_DENSITY	RESILIENCE_SCORE
+
+================================================================================
+END DUMP
+================================================================================

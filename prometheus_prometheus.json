@@ -1,0 +1,71 @@
+{
+  "codebase_path": "C:\\source\\prometheus",
+  "timestamp": "2025-12-30T17:21:27.680350",
+  "quadrant": "BUNKER",
+  "fitness_verdict": "\ud83c\udff0 BUNKER: Low complexity, high resilience. The ideal state.\n\nRecommended Action: Maintain current practices. Consider if any resilience measures are redundant.",
+  "scores": {
+    "complexity_risk": "MEDIUM",
+    "complexity_score": 60,
+    "resilience_score": 60.66576715497302,
+    "shield_rating": "STEEL"
+  },
+  "priorities": [],
+  "complexity_analysis": {
+    "risk_level": "MEDIUM",
+    "verdict": "Complexity is within acceptable bounds but trending toward excess. Monitor during future development and address hotspots proactively.",
+    "recommendations": [
+      "WARNING: 1179 lines per function point suggests over-engineering. Industry standard is ~50.",
+      "NOTE: High token entropy may indicate inconsistent naming or overly complex logic.",
+      "NOTE: High compression ratio indicates redundant code. Look for copy-paste patterns to abstract."
+    ],
+    "hotspots": [
+      {
+        "file": "entropy_analyzer.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "prometheus.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "shield_analyzer.py",
+        "issues": [
+          "Deep nesting: 9 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 2594,
+      "avg_cyclomatic": 0.0,
+      "maintainability": 0.0,
+      "entropy": 8.407612447203311
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "STEEL",
+    "overall_score": 60.66576715497302,
+    "category_scores": {
+      "error_handling": 51.927525057825754,
+      "timeouts": 81.66666666666666,
+      "retries": 40.0,
+      "circuit_breakers": 50.0,
+      "observability": 47.64598052573509
+    },
+    "vulnerabilities": [
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "shield_analyzer.py"
+      }
+    ],
+    "recommendations": []
+  }
+}

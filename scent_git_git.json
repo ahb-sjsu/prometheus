@@ -1,0 +1,93 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_git_git_deobv8pv\\git_git",
+  "timestamp": "2025-12-30T18:32:08.308559",
+  "total_files": 965,
+  "total_loc": 374583,
+  "nih_score": 2.756476683937824,
+  "smell_score": 100,
+  "outdated_score": 2.8756476683937824,
+  "naming_score": 17.357512953367873,
+  "overall_smell_score": 43.86787564766839,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "git-p4.py",
+      "score": 79.6847511193047,
+      "issues": []
+    },
+    {
+      "path": "gitweb\\static\\js\\blame_incremental.js",
+      "score": 63.78547854785479,
+      "issues": []
+    },
+    {
+      "path": "builtin\\fetch.c",
+      "score": 48.25167785234899,
+      "issues": []
+    },
+    {
+      "path": "builtin\\difftool.c",
+      "score": 45.685871056241425,
+      "issues": []
+    },
+    {
+      "path": "builtin\\fast-export.c",
+      "score": 45.23828435266084,
+      "issues": []
+    },
+    {
+      "path": "revision.c",
+      "score": 40.24869435463815,
+      "issues": []
+    },
+    {
+      "path": "hashmap.h",
+      "score": 39.57034220532319,
+      "issues": []
+    },
+    {
+      "path": "gitweb\\static\\js\\lib\\common-lib.js",
+      "score": 39.015075376884425,
+      "issues": []
+    },
+    {
+      "path": "hashmap.c",
+      "score": 38.315789473684205,
+      "issues": []
+    },
+    {
+      "path": "diffcore-rename.c",
+      "score": 35.72083879423329,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 12980
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 203
+    },
+    {
+      "issue": "Deprecated APIs",
+      "count": 185
+    },
+    {
+      "issue": "Print-based logging",
+      "count": 10
+    },
+    {
+      "issue": "Very long functions",
+      "count": 4
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    }
+  ]
+}

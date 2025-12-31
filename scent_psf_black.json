@@ -1,0 +1,93 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_psf_black__ap_f6v9\\psf_black",
+  "timestamp": "2025-12-30T19:06:20.953068",
+  "total_files": 312,
+  "total_loc": 121438,
+  "nih_score": 0.38461538461538464,
+  "smell_score": 100,
+  "outdated_score": 1.7307692307692308,
+  "naming_score": 8.429487179487179,
+  "overall_smell_score": 41.706730769230774,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "tests\\test_black.py",
+      "score": 58.64992826398852,
+      "issues": []
+    },
+    {
+      "path": "tests\\data\\cases\\preview_long_strings__regression.py",
+      "score": 54.642525533890435,
+      "issues": []
+    },
+    {
+      "path": "src\\black\\__init__.py",
+      "score": 48.474898236092265,
+      "issues": []
+    },
+    {
+      "path": "src\\black\\nodes.py",
+      "score": 37.695249130938585,
+      "issues": []
+    },
+    {
+      "path": "tests\\data\\cases\\preview_multiline_strings.py",
+      "score": 35.81135902636917,
+      "issues": []
+    },
+    {
+      "path": "src\\black\\linegen.py",
+      "score": 35.45146726862302,
+      "issues": []
+    },
+    {
+      "path": "tests\\data\\cases\\preview_hug_parens_with_braces_and_square_brackets.py",
+      "score": 35,
+      "issues": []
+    },
+    {
+      "path": "src\\blib2to3\\pytree.py",
+      "score": 34.600985221674875,
+      "issues": []
+    },
+    {
+      "path": "src\\black\\trans.py",
+      "score": 34.28639618138425,
+      "issues": []
+    },
+    {
+      "path": "tests\\data\\cases\\fmtonoff.py",
+      "score": 33.72108843537415,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 3161
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 45
+    },
+    {
+      "issue": "Deprecated APIs",
+      "count": 36
+    },
+    {
+      "issue": "Very long functions",
+      "count": 33
+    },
+    {
+      "issue": "Print-based logging",
+      "count": 13
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    }
+  ]
+}

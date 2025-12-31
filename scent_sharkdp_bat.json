@@ -1,0 +1,103 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_sharkdp_bat_7yhyfgva\\sharkdp_bat",
+  "timestamp": "2025-12-30T19:06:45.858004",
+  "total_files": 84,
+  "total_loc": 30579,
+  "nih_score": 0.9523809523809523,
+  "smell_score": 100,
+  "outdated_score": 34.46428571428571,
+  "naming_score": 51.726190476190474,
+  "overall_smell_score": 54.88988095238095,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "tests\\benchmarks\\highlighting-speed-src\\numpy_test_multiarray.py",
+      "score": 72,
+      "issues": []
+    },
+    {
+      "path": "tests\\benchmarks\\highlighting-speed-src\\jquery.js",
+      "score": 68.05443308771096,
+      "issues": []
+    },
+    {
+      "path": "tests\\scripts\\find-slow-to-highlight-files.py",
+      "score": 31,
+      "issues": []
+    },
+    {
+      "path": "tests\\integration_tests.rs",
+      "score": 30,
+      "issues": []
+    },
+    {
+      "path": "src\\printer.rs",
+      "score": 28.490683229813666,
+      "issues": []
+    },
+    {
+      "path": "src\\bin\\bat\\app.rs",
+      "score": 28.173310225303293,
+      "issues": []
+    },
+    {
+      "path": "src\\vscreen.rs",
+      "score": 25.157894736842106,
+      "issues": []
+    },
+    {
+      "path": "tests\\syntax-tests\\source\\JavaScript\\test.js",
+      "score": 25,
+      "issues": []
+    },
+    {
+      "path": "src\\line_range.rs",
+      "score": 25,
+      "issues": []
+    },
+    {
+      "path": "tests\\syntax-tests\\source\\Rust\\output.rs",
+      "score": 21.857142857142858,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 5205
+    },
+    {
+      "issue": "Deprecated APIs",
+      "count": 193
+    },
+    {
+      "issue": "Very long functions",
+      "count": 42
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 22
+    },
+    {
+      "issue": "Print-based logging",
+      "count": 6
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    },
+    {
+      "category": "Technical Debt",
+      "priority": "MEDIUM",
+      "recommendation": "Update deprecated APIs and legacy patterns"
+    },
+    {
+      "category": "Naming",
+      "priority": "LOW",
+      "recommendation": "Use descriptive variable names, establish consistent conventions"
+    }
+  ]
+}

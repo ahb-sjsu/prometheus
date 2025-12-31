@@ -1,0 +1,79 @@
+================================================================================
+PROMETHEUS RAW DATA DUMP
+================================================================================
+
+CODEBASE_PATH=C:\Users\abptl\AppData\Local\Temp\prometheus_psf_requests_vrli36fz\psf_requests
+TIMESTAMP=2025-12-30T17:34:17.099603
+QUADRANT=GLASS HOUSE
+COMPLEXITY_RISK=LOW
+COMPLEXITY_SCORE=80
+SHIELD_RATING=WOOD
+RESILIENCE_SCORE=29.212787212787212
+AVG_CYCLOMATIC=2.789114226346947
+LOC_PER_FP=52.2740193291643
+ENTROPY=6.401129406483724
+
+--------------------------------------------------------------------------------
+COMPLEXITY_METRICS
+--------------------------------------------------------------------------------
+COMPLEXITY.TOTAL_LOC=9195
+COMPLEXITY.AVG_CYCLOMATIC=2.789114226346947
+COMPLEXITY.MAINTAINABILITY=70.6173755492557
+COMPLEXITY.ENTROPY=6.401129406483724
+
+--------------------------------------------------------------------------------
+RESILIENCE_CATEGORY_SCORES
+--------------------------------------------------------------------------------
+RESILIENCE.ERROR_HANDLING=56.193806193806196
+RESILIENCE.TIMEOUTS=0
+RESILIENCE.RETRIES=2.8571428571428568
+RESILIENCE.CIRCUIT_BREAKERS=20.0
+RESILIENCE.OBSERVABILITY=5.9093657840110065
+
+--------------------------------------------------------------------------------
+HOTSPOTS
+--------------------------------------------------------------------------------
+HOTSPOT|tests\test_requests.py|Deep nesting: 7 levels
+HOTSPOT|tests\test_requests.py|High estimated bug count: 3.74
+HOTSPOT|tests\test_utils.py|Poor maintainability index: 19.0
+HOTSPOT|tests\test_utils.py|Deep nesting: 5 levels
+HOTSPOT|src\requests\cookies.py|Poor maintainability index: 39.8
+HOTSPOT|src\requests\cookies.py|Deep nesting: 7 levels
+HOTSPOT|src\requests\models.py|Poor maintainability index: 21.7
+HOTSPOT|src\requests\models.py|Deep nesting: 8 levels
+HOTSPOT|src\requests\sessions.py|Poor maintainability index: 38.1
+HOTSPOT|src\requests\sessions.py|Deep nesting: 5 levels
+HOTSPOT|src\requests\utils.py|Poor maintainability index: 25.2
+HOTSPOT|src\requests\utils.py|Deep nesting: 6 levels
+HOTSPOT|src\requests\adapters.py|Deep nesting: 6 levels
+HOTSPOT|src\requests\auth.py|Deep nesting: 8 levels
+HOTSPOT|src\requests\help.py|Deep nesting: 5 levels
+
+--------------------------------------------------------------------------------
+VULNERABILITIES
+--------------------------------------------------------------------------------
+VULN|HIGH|src\requests\__init__.py|2 network calls may lack timeout configuration
+
+--------------------------------------------------------------------------------
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+REC|CRITICAL|Timeouts|Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.|httpx (Python),axios with timeout (JS),OkHttp timeouts (Java)
+REC|HIGH|Retry Logic|Transient failures are common. Implement retry with exponential backoff for external service calls.|tenacity (Python),async-retry (JS),resilience4j (Java),cenkalti/backoff (Go)
+REC|HIGH|Observability|Insufficient logging/metrics makes debugging production issues nearly impossible.|structlog (Python),pino (JS),OpenTelemetry (all languages)
+REC|MEDIUM|Health Checks|Add /health endpoints with liveness and readiness probes for orchestration.|FastAPI health (Python),Terminus (JS),Spring Actuator (Java)
+REC|LOW|Bulkheads|Consider thread pool isolation and connection pool limits to prevent resource exhaustion.|concurrent.futures (Python),generic-pool (JS),HikariCP (Java)
+
+--------------------------------------------------------------------------------
+PRIORITIES
+--------------------------------------------------------------------------------
+PRIORITY|1|Timeouts|Missing timeouts are the #1 cause of cascading failures|Audit all HTTP client instantiations; Add connect_timeout and read_timeout to each; Default: 5s connect, 30s read (adjust per use case)
+PRIORITY|3|Observability|You cannot fix what you cannot see|Add structured logging (structlog, pino); Log at function entry/exit for critical paths; Include correlation IDs for request tracing
+
+--------------------------------------------------------------------------------
+FILE_METRICS_TSV
+--------------------------------------------------------------------------------
+FILE	LOC	CYCLOMATIC	MAINTAINABILITY	TRY_BLOCKS	BARE_EXCEPTS	TIMEOUTS	LOG_DENSITY	RESILIENCE_SCORE
+
+================================================================================
+END DUMP
+================================================================================

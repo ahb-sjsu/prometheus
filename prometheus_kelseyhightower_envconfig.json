@@ -1,0 +1,79 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_kelseyhightower_envconfig_on2phcuc\\kelseyhightower_envconfig",
+  "timestamp": "2025-12-30T19:05:58.179978",
+  "quadrant": "BUNKER",
+  "fitness_verdict": "🏰 BUNKER: Low complexity, high resilience. The ideal state.\n\nRecommended Action: Maintain current practices. Consider if any resilience measures are redundant.",
+  "scores": {
+    "complexity_risk": "LOW",
+    "complexity_score": 80,
+    "resilience_score": 52.56401384083045,
+    "shield_rating": "BRONZE"
+  },
+  "priorities": [],
+  "complexity_analysis": {
+    "risk_level": "LOW",
+    "verdict": "Complexity appears well-matched to task requirements. The codebase follows the principle that simplicity enables reliability.",
+    "recommendations": [],
+    "hotspots": [],
+    "metrics": {
+      "total_loc": 1445,
+      "avg_cyclomatic": 0.0,
+      "maintainability": 0.0,
+      "entropy": 5.595761407475491
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "BRONZE",
+    "overall_score": 52.56401384083045,
+    "category_scores": {
+      "error_handling": 0.3460207612456747,
+      "timeouts": 50.0,
+      "retries": 0.0,
+      "circuit_breakers": 0.0,
+      "observability": 90.43478260869566
+    },
+    "vulnerabilities": [],
+    "recommendations": [
+      {
+        "priority": "HIGH",
+        "category": "Error Handling",
+        "message": "Add try/catch blocks around I/O operations, network calls, and parsing logic.",
+        "libraries": [
+          "Custom exceptions for domain errors"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "MEDIUM",
+        "category": "Circuit Breakers",
+        "message": "Protect against cascading failures by adding circuit breakers to external dependencies.",
+        "libraries": [
+          "pybreaker (Python)",
+          "opossum (JS)",
+          "resilience4j (Java)",
+          "sony/gobreaker (Go)"
+        ]
+      },
+      {
+        "priority": "LOW",
+        "category": "Bulkheads",
+        "message": "Consider thread pool isolation and connection pool limits to prevent resource exhaustion.",
+        "libraries": [
+          "concurrent.futures (Python)",
+          "generic-pool (JS)",
+          "HikariCP (Java)"
+        ]
+      }
+    ]
+  }
+}

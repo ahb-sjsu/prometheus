@@ -1,0 +1,93 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_ahb-sjsu_erisml-lib_uzis3ybk\\ahb-sjsu_erisml-lib",
+  "timestamp": "2025-12-30T19:17:41.349362",
+  "total_files": 69,
+  "total_loc": 31120,
+  "nih_score": 1.7391304347826086,
+  "smell_score": 100,
+  "outdated_score": 11.304347826086957,
+  "naming_score": 3.333333333333333,
+  "overall_smell_score": 43.19565217391304,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "src\\erisml\\examples\\bond_index_llm_evaluation.py",
+      "score": 65.57217504898759,
+      "issues": []
+    },
+    {
+      "path": "qnd_blind_bell_test_v04.py",
+      "score": 46.21052631578947,
+      "issues": []
+    },
+    {
+      "path": "src\\erisml\\examples\\bond_invariance_demo.py",
+      "score": 44.94517958412098,
+      "issues": []
+    },
+    {
+      "path": "src\\erisml\\examples\\triage_ethics_provenance_demo.py",
+      "score": 44.65165165165165,
+      "issues": []
+    },
+    {
+      "path": "qnd_bell_test_experiment.py",
+      "score": 43.725261932479626,
+      "issues": []
+    },
+    {
+      "path": "qnd_bell_test_experiment2.py",
+      "score": 43.725261932479626,
+      "issues": []
+    },
+    {
+      "path": "src\\erisml\\examples\\llm-eval\\itai_bond_index_evaluation.py",
+      "score": 41.71584699453552,
+      "issues": []
+    },
+    {
+      "path": "qnd_batch_bell_v06.py",
+      "score": 39,
+      "issues": []
+    },
+    {
+      "path": "src\\erisml\\examples\\bond_invariance_demo.orig2.py",
+      "score": 37.872093023255815,
+      "issues": []
+    },
+    {
+      "path": "src\\erisml\\examples\\bond_index_calibration_deme_fuzzing_v3.py",
+      "score": 36.09126594700687,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 4427
+    },
+    {
+      "issue": "Very long functions",
+      "count": 52
+    },
+    {
+      "issue": "Deprecated APIs",
+      "count": 52
+    },
+    {
+      "issue": "Print-based logging",
+      "count": 30
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 29
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    }
+  ]
+}

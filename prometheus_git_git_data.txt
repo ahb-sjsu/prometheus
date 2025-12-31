@@ -1,0 +1,75 @@
+================================================================================
+PROMETHEUS RAW DATA DUMP
+================================================================================
+
+CODEBASE_PATH=C:\Users\abptl\AppData\Local\Temp\prometheus_git_git_vc7_vn5u\git_git
+TIMESTAMP=2025-12-30T18:17:52.772491
+QUADRANT=DEATHTRAP
+COMPLEXITY_RISK=HIGH
+COMPLEXITY_SCORE=40
+SHIELD_RATING=BRONZE
+RESILIENCE_SCORE=45.84244120241238
+AVG_CYCLOMATIC=4.115595075239398
+LOC_PER_FP=162862.17391304346
+ENTROPY=6.470514714199978
+
+--------------------------------------------------------------------------------
+COMPLEXITY_METRICS
+--------------------------------------------------------------------------------
+COMPLEXITY.TOTAL_LOC=374583
+COMPLEXITY.AVG_CYCLOMATIC=4.115595075239398
+COMPLEXITY.MAINTAINABILITY=35.82413163772236
+COMPLEXITY.ENTROPY=6.470514714199978
+
+--------------------------------------------------------------------------------
+RESILIENCE_CATEGORY_SCORES
+--------------------------------------------------------------------------------
+RESILIENCE.ERROR_HANDLING=31.781035962211288
+RESILIENCE.TIMEOUTS=0.017977528089887642
+RESILIENCE.RETRIES=0.0
+RESILIENCE.CIRCUIT_BREAKERS=40.0
+RESILIENCE.OBSERVABILITY=7.507747188510303
+
+--------------------------------------------------------------------------------
+HOTSPOTS
+--------------------------------------------------------------------------------
+HOTSPOT|git-p4.py|Deep nesting: 10 levels
+HOTSPOT|git-p4.py|High estimated bug count: 9.12
+HOTSPOT|t\unit-tests\clar\generate.py|Poor maintainability index: 35.8
+HOTSPOT|t\unit-tests\clar\generate.py|Deep nesting: 5 levels
+
+--------------------------------------------------------------------------------
+VULNERABILITIES
+--------------------------------------------------------------------------------
+VULN|MEDIUM|git-p4.py|Bare except catches all exceptions including KeyboardInterrupt
+VULN|MEDIUM|git-p4.py|Bare except catches all exceptions including KeyboardInterrupt
+VULN|MEDIUM|git-p4.py|Bare except catches all exceptions including KeyboardInterrupt
+VULN|MEDIUM|git-p4.py|Bare except catches all exceptions including KeyboardInterrupt
+VULN|MEDIUM|git-p4.py|Bare except catches all exceptions including KeyboardInterrupt
+
+--------------------------------------------------------------------------------
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+REC|CRITICAL|Timeouts|Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.|httpx (Python),axios with timeout (JS),OkHttp timeouts (Java)
+REC|HIGH|Error Handling|Add try/catch blocks around I/O operations, network calls, and parsing logic.|Custom exceptions for domain errors
+REC|HIGH|Retry Logic|Transient failures are common. Implement retry with exponential backoff for external service calls.|tenacity (Python),async-retry (JS),resilience4j (Java),cenkalti/backoff (Go)
+REC|HIGH|Observability|Insufficient logging/metrics makes debugging production issues nearly impossible.|structlog (Python),pino (JS),OpenTelemetry (all languages)
+REC|LOW|Bulkheads|Consider thread pool isolation and connection pool limits to prevent resource exhaustion.|concurrent.futures (Python),generic-pool (JS),HikariCP (Java)
+
+--------------------------------------------------------------------------------
+PRIORITIES
+--------------------------------------------------------------------------------
+PRIORITY|0|CRITICAL|This codebase is at high risk. Every deployment is a gamble.|Add timeouts to ALL network calls immediately; Add basic error handling around I/O operations; Set up centralized logging before the next incident
+PRIORITY|1|Timeouts|Missing timeouts are the #1 cause of cascading failures|Audit all HTTP client instantiations; Add connect_timeout and read_timeout to each; Default: 5s connect, 30s read (adjust per use case)
+PRIORITY|2|Error Handling|Unhandled exceptions crash processes and lose context|Wrap external calls in try/except; Create domain-specific exception classes; Log errors with context before re-raising
+PRIORITY|3|Observability|You cannot fix what you cannot see|Add structured logging (structlog, pino); Log at function entry/exit for critical paths; Include correlation IDs for request tracing
+PRIORITY|5|Over-Engineering|162862 LOC per feature is excessive|Look for abstraction layers that add no value; Remove speculative generality (YAGNI); Inline trivial wrapper functions
+
+--------------------------------------------------------------------------------
+FILE_METRICS_TSV
+--------------------------------------------------------------------------------
+FILE	LOC	CYCLOMATIC	MAINTAINABILITY	TRY_BLOCKS	BARE_EXCEPTS	TIMEOUTS	LOG_DENSITY	RESILIENCE_SCORE
+
+================================================================================
+END DUMP
+================================================================================

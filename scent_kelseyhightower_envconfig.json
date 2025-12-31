@@ -1,0 +1,75 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_kelseyhightower_envconfig_on2phcuc\\kelseyhightower_envconfig",
+  "timestamp": "2025-12-30T19:05:58.367445",
+  "total_files": 8,
+  "total_loc": 1445,
+  "nih_score": 0.0,
+  "smell_score": 92.5,
+  "outdated_score": 0.0,
+  "naming_score": 1.875,
+  "overall_smell_score": 37.28125,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "envconfig.go",
+      "score": 21.29850746268657,
+      "issues": []
+    },
+    {
+      "path": "usage.go",
+      "score": 14.671140939597315,
+      "issues": []
+    },
+    {
+      "path": "envconfig_test.go",
+      "score": 13.70860927152318,
+      "issues": []
+    },
+    {
+      "path": "doc.go",
+      "score": 5,
+      "issues": []
+    },
+    {
+      "path": "usage_test.go",
+      "score": 3.7246376811594204,
+      "issues": []
+    },
+    {
+      "path": "envconfig_1.8_test.go",
+      "score": 0.0,
+      "issues": []
+    },
+    {
+      "path": "env_os.go",
+      "score": 0.0,
+      "issues": []
+    },
+    {
+      "path": "env_syscall.go",
+      "score": 0.0,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 68
+    },
+    {
+      "issue": "Very long functions",
+      "count": 2
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    }
+  ]
+}

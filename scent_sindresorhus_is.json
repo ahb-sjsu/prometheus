@@ -1,0 +1,60 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_sindresorhus_is_mbtdf4gy\\sindresorhus_is",
+  "timestamp": "2025-12-30T19:06:00.652625",
+  "total_files": 4,
+  "total_loc": 3647,
+  "nih_score": 0.0,
+  "smell_score": 72.5,
+  "outdated_score": 0.0,
+  "naming_score": 62.5,
+  "overall_smell_score": 38.375,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "test\\test.ts",
+      "score": 26.61369193154034,
+      "issues": []
+    },
+    {
+      "path": "source\\index.ts",
+      "score": 14.196078431372548,
+      "issues": []
+    },
+    {
+      "path": "source\\types.ts",
+      "score": 0.0,
+      "issues": []
+    },
+    {
+      "path": "source\\utilities.ts",
+      "score": 0.0,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 17
+    },
+    {
+      "issue": "Very long functions",
+      "count": 5
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    },
+    {
+      "category": "Naming",
+      "priority": "LOW",
+      "recommendation": "Use descriptive variable names, establish consistent conventions"
+    }
+  ]
+}

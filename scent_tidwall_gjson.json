@@ -1,0 +1,50 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_tidwall_gjson_rjtb57w8\\tidwall_gjson",
+  "timestamp": "2025-12-30T19:05:56.096737",
+  "total_files": 2,
+  "total_loc": 6054,
+  "nih_score": 0.0,
+  "smell_score": 100,
+  "outdated_score": 0.0,
+  "naming_score": 100,
+  "overall_smell_score": 55.0,
+  "freshness_rating": "MOLDY",
+  "worst_files": [
+    {
+      "path": "gjson_test.go",
+      "score": 40,
+      "issues": []
+    },
+    {
+      "path": "gjson.go",
+      "score": 36.17411225658648,
+      "issues": []
+    }
+  ],
+  "top_issues": [
+    {
+      "issue": "Deep nesting",
+      "count": 1173
+    },
+    {
+      "issue": "Very long functions",
+      "count": 7
+    },
+    {
+      "issue": "Magic numbers",
+      "count": 2
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "Code Smells",
+      "priority": "HIGH",
+      "recommendation": "Break up long functions (>50 lines) and reduce nesting depth"
+    },
+    {
+      "category": "Naming",
+      "priority": "LOW",
+      "recommendation": "Use descriptive variable names, establish consistent conventions"
+    }
+  ]
+}
