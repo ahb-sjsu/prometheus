@@ -38,7 +38,7 @@ from prometheus_ui import (
     generate_comparison_table_html,
     calculate_dot_position,
 )
-
+set PYTHONIOENCODING=utf-8
 
 @dataclass
 class RepoSnapshot:
@@ -449,11 +449,13 @@ def clone_and_analyze(repo: str, work_dir: Path) -> Optional[str]:
         is_local = False
     else:
         # Local path
-        repo_dir = Path(repo)
+        repo_dir = Path(repo).resolve()  # Resolve to absolute path
         if not repo_dir.exists():
             print(f"  [skip] {repo} - path not found")
             return None
         name = repo_dir.name
+        if not name:  # Handle '.' case
+            name = repo_dir.resolve().name
         json_path = work_dir / f"prometheus_{name}.json"
         is_local = True
         owner = "local"
@@ -538,7 +540,9 @@ def clone_and_analyze(repo: str, work_dir: Path) -> Optional[str]:
         else:
             # Show why it failed
             if result.stderr:
-                print(f"FAILED: {result.stderr.strip()[:80]}")
+                # Show first 200 chars of error
+                err_msg = result.stderr.strip()[:200]
+                print(f"FAILED: {err_msg}")
             elif not hubris_json.exists():
                 print(f"FAILED: No output file")
             else:
