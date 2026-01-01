@@ -16,6 +16,19 @@ Takes multiple Prometheus/Hubris reports and generates:
 3. Trend analysis (if historical data available)
 """
 
+import os
+import sys
+
+# Fix Windows console encoding for emoji support
+if sys.platform == 'win32':
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    # Also try to set console to UTF-8 mode
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass  # Python < 3.7
+
 import json
 import argparse
 from pathlib import Path
@@ -38,7 +51,7 @@ from prometheus_ui import (
     generate_comparison_table_html,
     calculate_dot_position,
 )
-set PYTHONIOENCODING=utf-8
+
 
 @dataclass
 class RepoSnapshot:
@@ -511,9 +524,14 @@ def clone_and_analyze(repo: str, work_dir: Path) -> Optional[str]:
     if hubris_py.exists():
         hubris_json = work_dir / f"hubris_{owner}_{name}.json"
         print(f"  [hubris] {display_name}...", end=' ', flush=True)
+        
+        # Set UTF-8 encoding for subprocess to handle emojis on Windows
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'
+        
         result = subprocess.run(
             ['python', str(hubris_py), str(repo_dir), '-o', str(hubris_json)],
-            capture_output=True, text=True
+            capture_output=True, text=True, env=env
         )
         
         if result.returncode == 0 and hubris_json.exists():
