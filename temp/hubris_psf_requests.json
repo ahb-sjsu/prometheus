@@ -1,0 +1,209 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\hubris_psf_requests_ej2y660p\\psf_requests",
+  "timestamp": "2025-12-31T19:29:37.818184",
+  "quadrant": "CARGO_CULT",
+  "verdict": "Many patterns, implemented incorrectly. High risk.",
+  "risk_level": "CRITICAL",
+  "theater_ratio": 10.0,
+  "patterns_detected": 10,
+  "patterns_correct": 0,
+  "patterns_partial": 1,
+  "patterns_cargo_cult": 9,
+  "total_issues": 10,
+  "high_severity_count": 10,
+  "medium_severity_count": 0,
+  "low_severity_count": 0,
+  "resilience_libraries": [],
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "category": "High Severity Issues",
+      "message": "10 high-severity issues found"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Swallowed Exceptions",
+      "message": "4 locations silently ignore exceptions"
+    }
+  ],
+  "issues": {
+    "high": [
+      {
+        "file": "src\\requests\\compat.py",
+        "line": 37,
+        "type": "exception",
+        "issue_type": "swallow",
+        "severity": "HIGH",
+        "description": "Exception swallowed silently - errors invisible"
+      },
+      {
+        "file": "src\\requests\\sessions.py",
+        "line": 742,
+        "type": "exception",
+        "issue_type": "swallow",
+        "severity": "HIGH",
+        "description": "Exception swallowed silently - errors invisible"
+      },
+      {
+        "file": "src\\requests\\utils.py",
+        "line": 247,
+        "type": "exception",
+        "issue_type": "swallow",
+        "severity": "HIGH",
+        "description": "Exception swallowed silently - errors invisible"
+      },
+      {
+        "file": "src\\requests\\__init__.py",
+        "line": 139,
+        "type": "exception",
+        "issue_type": "swallow",
+        "severity": "HIGH",
+        "description": "Exception swallowed silently - errors invisible"
+      },
+      {
+        "file": "src\\requests\\models.py",
+        "line": 831,
+        "type": "retry",
+        "issue_type": "no_backoff",
+        "severity": "HIGH",
+        "description": "Retry without backoff - will cause thundering herd on failure"
+      },
+      {
+        "file": "src\\requests\\models.py",
+        "line": 831,
+        "type": "retry",
+        "issue_type": "no_max",
+        "severity": "HIGH",
+        "description": "Retry without maximum attempts - may retry forever"
+      },
+      {
+        "file": "src\\requests\\adapters.py",
+        "line": 120,
+        "type": "timeout",
+        "issue_type": "disabled",
+        "severity": "HIGH",
+        "description": "Explicit timeout=None disables timeout - can hang indefinitely"
+      },
+      {
+        "file": "src\\requests\\adapters.py",
+        "line": 591,
+        "type": "timeout",
+        "issue_type": "disabled",
+        "severity": "HIGH",
+        "description": "Explicit timeout=None disables timeout - can hang indefinitely"
+      },
+      {
+        "file": "src\\requests\\sessions.py",
+        "line": 164,
+        "type": "timeout",
+        "issue_type": "disabled",
+        "severity": "HIGH",
+        "description": "Explicit timeout=None disables timeout - can hang indefinitely"
+      },
+      {
+        "file": "src\\requests\\sessions.py",
+        "line": 510,
+        "type": "timeout",
+        "issue_type": "disabled",
+        "severity": "HIGH",
+        "description": "Explicit timeout=None disables timeout - can hang indefinitely"
+      }
+    ],
+    "medium": [],
+    "low": []
+  },
+  "patterns": [
+    {
+      "file": "src\\requests\\adapters.py",
+      "line": 120,
+      "pattern_type": "timeout",
+      "quality": "CARGO_CULT",
+      "details": {
+        "no_timeout": true
+      }
+    },
+    {
+      "file": "src\\requests\\adapters.py",
+      "line": 591,
+      "pattern_type": "timeout",
+      "quality": "CARGO_CULT",
+      "details": {
+        "no_timeout": true
+      }
+    },
+    {
+      "file": "src\\requests\\compat.py",
+      "line": 37,
+      "pattern_type": "exception_handling",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "file": "src\\requests\\models.py",
+      "line": 831,
+      "pattern_type": "retry",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "file": "src\\requests\\sessions.py",
+      "line": 164,
+      "pattern_type": "timeout",
+      "quality": "CARGO_CULT",
+      "details": {
+        "no_timeout": true
+      }
+    },
+    {
+      "file": "src\\requests\\sessions.py",
+      "line": 510,
+      "pattern_type": "timeout",
+      "quality": "CARGO_CULT",
+      "details": {
+        "no_timeout": true
+      }
+    },
+    {
+      "file": "src\\requests\\sessions.py",
+      "line": 742,
+      "pattern_type": "exception_handling",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "file": "src\\requests\\utils.py",
+      "line": 303,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "src\\requests\\utils.py",
+      "line": 247,
+      "pattern_type": "exception_handling",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "file": "src\\requests\\__init__.py",
+      "line": 139,
+      "pattern_type": "exception_handling",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    }
+  ]
+}

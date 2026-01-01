@@ -1,0 +1,132 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\hubris_encode_httpx_lzcy79st\\encode_httpx",
+  "timestamp": "2025-12-31T19:58:55.492307",
+  "quadrant": "BATTLE_HARDENED",
+  "verdict": "High complexity, correctly implemented. Genuinely resilient.",
+  "risk_level": "LOW",
+  "theater_ratio": 1.25,
+  "patterns_detected": 10,
+  "patterns_correct": 1,
+  "patterns_partial": 7,
+  "patterns_cargo_cult": 2,
+  "total_issues": 2,
+  "high_severity_count": 0,
+  "medium_severity_count": 2,
+  "low_severity_count": 0,
+  "resilience_libraries": [],
+  "recommendations": [],
+  "issues": {
+    "high": [],
+    "medium": [
+      {
+        "file": "httpx\\_utils.py",
+        "line": 232,
+        "type": "exception",
+        "issue_type": "broad_catch",
+        "severity": "MEDIUM",
+        "description": "Catching Exception hides specific error types"
+      },
+      {
+        "file": "httpx\\_utils.py",
+        "line": 240,
+        "type": "exception",
+        "issue_type": "broad_catch",
+        "severity": "MEDIUM",
+        "description": "Catching Exception hides specific error types"
+      }
+    ],
+    "low": []
+  },
+  "patterns": [
+    {
+      "file": "httpx\\_client.py",
+      "line": 926,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_client.py",
+      "line": 958,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_client.py",
+      "line": 997,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_client.py",
+      "line": 1641,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_client.py",
+      "line": 1673,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_client.py",
+      "line": 1713,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_config.py",
+      "line": 246,
+      "pattern_type": "timeout",
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 5.0
+      }
+    },
+    {
+      "file": "httpx\\_utils.py",
+      "line": 232,
+      "pattern_type": "exception_handling",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_utils.py",
+      "line": 240,
+      "pattern_type": "exception_handling",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "httpx\\_transports\\asgi.py",
+      "line": 171,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    }
+  ]
+}

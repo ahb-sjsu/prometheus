@@ -30,10 +30,13 @@ Detects code quality issues that aren't bugs but indicate maintainability proble
 """
 
 import re
+import logging
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 import json
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -258,7 +261,8 @@ class ScentAnalyzer:
         """Analyze a single file."""
         try:
             content = filepath.read_text(encoding='utf-8', errors='ignore')
-        except Exception:
+        except (OSError, UnicodeDecodeError) as e:
+            logger.debug(f"Could not read {filepath}: {e}")
             return None
         
         lines = content.splitlines()

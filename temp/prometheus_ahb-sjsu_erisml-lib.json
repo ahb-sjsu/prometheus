@@ -1,0 +1,213 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_ahb-sjsu_erisml-lib_q_54zwxe\\ahb-sjsu_erisml-lib",
+  "timestamp": "2025-12-31T19:19:10.729194",
+  "quadrant": "GLASS HOUSE",
+  "fitness_verdict": "🏠 GLASS HOUSE: Low complexity, low resilience. Simple but fragile.\n\nRecommended Action: Add defensive patterns: error handling, timeouts, retries. Complexity will increase but reliability will improve.",
+  "scores": {
+    "complexity_risk": "MEDIUM",
+    "complexity_score": 60,
+    "resilience_score": 46.106810309212825,
+    "shield_rating": "BRONZE"
+  },
+  "priorities": [
+    {
+      "priority": 1,
+      "category": "Timeouts",
+      "action": "Missing timeouts are the #1 cause of cascading failures",
+      "first_steps": [
+        "Audit all HTTP client instantiations",
+        "Add connect_timeout and read_timeout to each",
+        "Default: 5s connect, 30s read (adjust per use case)"
+      ]
+    }
+  ],
+  "complexity_analysis": {
+    "risk_level": "MEDIUM",
+    "verdict": "Complexity is within acceptable bounds but trending toward excess. Monitor during future development and address hotspots proactively.",
+    "recommendations": [
+      "NOTE: Maintainability index could be improved through better documentation and smaller functions.",
+      "WARNING: 1182 lines per function point suggests over-engineering. Industry standard is ~50."
+    ],
+    "hotspots": [
+      {
+        "file": "analyze_qnd_results_crash.py",
+        "issues": [
+          "High cyclomatic complexity: 11.2",
+          "Poor maintainability index: 32.6",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "HIGH"
+      },
+      {
+        "file": "qnd_real_experiment.py",
+        "issues": [
+          "High cyclomatic complexity: 13.2",
+          "Poor maintainability index: 38.8",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "HIGH"
+      },
+      {
+        "file": "src\\erisml\\examples\\bond_index_llm_evaluation.py",
+        "issues": [
+          "Poor maintainability index: 6.8",
+          "Deep nesting: 8 levels",
+          "High estimated bug count: 1.60"
+        ],
+        "severity": "HIGH"
+      },
+      {
+        "file": "collect_datasets.py",
+        "issues": [
+          "Poor maintainability index: 35.0",
+          "Deep nesting: 8 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "qnd_batch_bell_v06.py",
+        "issues": [
+          "Poor maintainability index: 29.8",
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "qnd_bell_test_experiment.py",
+        "issues": [
+          "Poor maintainability index: 29.5",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "qnd_bell_test_experiment2.py",
+        "issues": [
+          "Poor maintainability index: 29.5",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "qnd_blind_bell_test_v04.py",
+        "issues": [
+          "Poor maintainability index: 35.8",
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "tests\\test_bond_index_calibration.py",
+        "issues": [
+          "Poor maintainability index: 27.4",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "src\\erisml\\examples\\bond_index_calibration_deme_fuzzing.py",
+        "issues": [
+          "Deep nesting: 8 levels",
+          "High estimated bug count: 2.58"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 31320,
+      "avg_cyclomatic": 4.4550915880529125,
+      "maintainability": 60.09585302979949,
+      "entropy": 7.616984508036204
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "BRONZE",
+    "overall_score": 46.106810309212825,
+    "category_scores": {
+      "error_handling": 46.388558263787395,
+      "timeouts": 2.2535211267605635,
+      "retries": 0.0,
+      "circuit_breakers": 25.0,
+      "observability": 50.70422535211268
+    },
+    "vulnerabilities": [
+      {
+        "type": "bare_except",
+        "line": 449,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "qnd_aita_experiment.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 458,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "qnd_aita_experiment.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 545,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "qnd_aita_experiment.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 449,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "qnd_aita_experiment2.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 458,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "qnd_aita_experiment2.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 545,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "qnd_aita_experiment2.py"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "LOW",
+        "category": "Bulkheads",
+        "message": "Consider thread pool isolation and connection pool limits to prevent resource exhaustion.",
+        "libraries": [
+          "concurrent.futures (Python)",
+          "generic-pool (JS)",
+          "HikariCP (Java)"
+        ]
+      }
+    ],
+    "too_small_to_score": false,
+    "total_loc": 31467
+  }
+}

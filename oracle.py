@@ -8,9 +8,12 @@ Does not guess about external systems - only analyzes repo contents.
 """
 
 import re
+import logging
 from pathlib import Path
 from dataclasses import dataclass, field
 import json
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -185,8 +188,8 @@ class Oracle:
                 try:
                     content = filepath.read_text(encoding='utf-8', errors='ignore')
                     self._analyze_file_content(content, report)
-                except Exception:
-                    pass
+                except (OSError, UnicodeDecodeError) as e:
+                    logger.debug(f"Could not read {filepath}: {e}")
     
     def _analyze_file_content(self, content: str, report: OracleReport):
         obs = report.observability
@@ -247,7 +250,8 @@ class Oracle:
                 if 'USER' in content: score += 15
                 if 'HEALTHCHECK' in content: score += 10
                 deploy.dockerfile_quality = score
-            except Exception:
+            except (OSError, UnicodeDecodeError) as e:
+                logger.debug(f"Could not read Dockerfile: {e}")
                 deploy.dockerfile_quality = 50
         
         deploy.docker_compose = bool(list(path.rglob('docker-compose*.y*ml')))
@@ -321,15 +325,15 @@ class Oracle:
             try:
                 pkg = json.loads((path / 'package.json').read_text())
                 deps.dependency_count = len(pkg.get('dependencies', {}))
-            except Exception:
-                pass
+            except (OSError, json.JSONDecodeError) as e:
+                logger.debug(f"Could not parse package.json: {e}")
         
         if (path / 'requirements.txt').exists():
             try:
                 lines = (path / 'requirements.txt').read_text().splitlines()
                 deps.dependency_count = len([l for l in lines if l.strip() and not l.startswith('#')])
-            except Exception:
-                pass
+            except OSError as e:
+                logger.debug(f"Could not read requirements.txt: {e}")
     
     def _calculate_scores(self, report: OracleReport):
         scores = {}

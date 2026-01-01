@@ -300,86 +300,9 @@ class Prometheus:
         report.avg_cyclomatic = complexity_result.codebase_metrics.avg_cyclomatic
         report.entropy = complexity_result.codebase_metrics.codebase_entropy
         
-        # =================================================================
-        # INDUSTRY-CALIBRATED COMPLEXITY SCORING
-        # =================================================================
-        # Normalized against industry benchmarks:
-        # - Small focused library (<20k LOC): Can score 85-100
-        # - Medium project (20-100k LOC): Typically 60-85
-        # - Large framework (100-300k LOC): Typically 45-70
-        # - Massive codebase (300k+ LOC): Typically 30-55
-        # 
-        # Factors weighted by industry importance:
-        # 1. Size penalty (larger = harder to maintain) - 25%
-        # 2. Cyclomatic complexity (cognitive load) - 25%
-        # 3. Maintainability index (code quality) - 25%
-        # 4. Hotspot density (problem areas) - 25%
-        
-        total_loc = complexity_result.codebase_metrics.total_loc
-        avg_cyclo = complexity_result.codebase_metrics.avg_cyclomatic
-        maint = complexity_result.codebase_metrics.avg_maintainability
-        num_hotspots = len(complexity_result.hotspots)
-        
-        # 1. SIZE SCORE (0-25 points)
-        # Industry baseline: 50k LOC is "normal", scales logarithmically
-        # <10k = 25, 50k = 20, 100k = 15, 300k = 10, 500k+ = 5
-        import math
-        if total_loc < 5000:
-            size_score = 25
-        else:
-            # Logarithmic decay: every 3x increase in LOC = -5 points
-            size_score = max(5, 25 - (math.log10(total_loc / 5000) / math.log10(3)) * 5)
-        
-        # 2. CYCLOMATIC SCORE (0-25 points)
-        # Industry baseline: 2.0-2.5 is typical for well-maintained code
-        # <1.5 = 25, 2.0 = 22, 2.5 = 18, 3.0 = 14, 4.0 = 8, 5.0+ = 2
-        if avg_cyclo <= 1.5:
-            cyclo_score = 25
-        elif avg_cyclo <= 3.0:
-            cyclo_score = 25 - (avg_cyclo - 1.5) * 7  # Linear decrease
-        elif avg_cyclo <= 5.0:
-            cyclo_score = 14 - (avg_cyclo - 3.0) * 6  # Steeper decrease
-        else:
-            cyclo_score = max(0, 2 - (avg_cyclo - 5.0))
-        cyclo_score = max(0, min(25, cyclo_score))
-        
-        # 3. MAINTAINABILITY SCORE (0-25 points)  
-        # Industry baseline: 65-75 is typical, >80 is excellent
-        # MI > 80 = 25, 70 = 20, 60 = 15, 50 = 10, 40 = 5, <30 = 0
-        if maint >= 80:
-            maint_score = 25
-        elif maint >= 40:
-            maint_score = (maint - 40) / 40 * 25  # Linear scale 40-80 -> 0-25
-        else:
-            maint_score = 0
-        maint_score = max(0, min(25, maint_score))
-        
-        # 4. HOTSPOT SCORE (0-25 points)
-        # Hotspots per 10k LOC - industry baseline: <1 is good, >3 is concerning
-        hotspots_per_10k = (num_hotspots / max(1, total_loc)) * 10000
-        if hotspots_per_10k <= 0.5:
-            hotspot_score = 25
-        elif hotspots_per_10k <= 3.0:
-            hotspot_score = 25 - (hotspots_per_10k - 0.5) * 8  # Linear decrease
-        else:
-            hotspot_score = max(0, 5 - (hotspots_per_10k - 3.0) * 2)
-        hotspot_score = max(0, min(25, hotspot_score))
-        
-        # FINAL COMPLEXITY SCORE (0-100)
-        report.complexity_score = size_score + cyclo_score + maint_score + hotspot_score
-        
-        # Store breakdown for transparency
-        report.complexity_breakdown = {
-            'size_score': round(size_score, 1),
-            'cyclo_score': round(cyclo_score, 1),
-            'maint_score': round(maint_score, 1),
-            'hotspot_score': round(hotspot_score, 1),
-            'total_loc': total_loc,
-            'avg_cyclomatic': round(avg_cyclo, 2),
-            'maintainability': round(maint, 1),
-            'num_hotspots': num_hotspots,
-            'hotspots_per_10k': round(hotspots_per_10k, 2)
-        }
+        # Convert risk level to score (inverted: lower complexity = higher score for quadrant calc)
+        risk_scores = {'LOW': 80, 'MEDIUM': 60, 'HIGH': 40, 'CRITICAL': 20}
+        report.complexity_score = risk_scores.get(complexity_result.risk_level, 50)
         
         # Run resilience analysis
         print("\n[2/2] Running resilience analysis...")
@@ -430,16 +353,10 @@ class Prometheus:
         return report
     
     def _determine_quadrant(self, report: PrometheusReport, resilience_result):
-        """Determine which quadrant the codebase falls into.
-        
-        Industry-calibrated thresholds:
-        - Complexity >= 50: Low complexity (well-structured)
-        - Resilience >= 35: Adequate resilience for frameworks
-        - Resilience >= 50: Good resilience for applications
-        """
-        # Thresholds - calibrated to industry benchmarks
-        complexity_threshold = 50  # >= 50 = low complexity (good)
-        resilience_threshold = 35  # >= 35 = adequate resilience for frameworks
+        """Determine which quadrant the codebase falls into."""
+        # Thresholds
+        complexity_threshold = 50  # Below = low complexity
+        resilience_threshold = 50  # Above = high resilience
         
         # Check if codebase is too small to score resilience
         if getattr(resilience_result, 'too_small_to_score', False):
@@ -1548,7 +1465,6 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
             </div>
             
             <div class="card verdict">
-                {"" if len(reports_data) > 1 else f'''
                 <div class="verdict-quadrant">
                     {"🏰" if report.quadrant == "BUNKER" else "🏯" if report.quadrant == "FORTRESS" else "🏠" if report.quadrant == "GLASS HOUSE" else "💀"}
                 </div>
@@ -1557,13 +1473,13 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
                 
                 <div class="scores">
                     <div class="score">
-                        <div class="score-value" style="color: {"#22c55e" if report.complexity_score >= 60 else "#eab308" if report.complexity_score >= 40 else "#ef4444"}">
+                        <div class="score-value" style="color: {'#22c55e' if report.complexity_score >= 60 else '#eab308' if report.complexity_score >= 40 else '#ef4444'}">
                             {report.complexity_risk}
                         </div>
                         <div class="score-label">Complexity Risk</div>
                     </div>
                     <div class="score">
-                        <div class="score-value" style="color: {"#22c55e" if report.resilience_score >= 60 else "#eab308" if report.resilience_score >= 40 else "#ef4444"}">
+                        <div class="score-value" style="color: {'#22c55e' if report.resilience_score >= 60 else '#eab308' if report.resilience_score >= 40 else '#ef4444'}">
                             {report.shield_rating}
                         </div>
                         <div class="score-label">Shield Rating</div>
@@ -1586,35 +1502,6 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
                         Fitness = f(1/Complexity, Resilience)
                     </div>
                 </div>
-                '''}
-                {f'''
-                <h2 style="margin-bottom: 1rem;">Comparison Summary</h2>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    {"".join(f"""
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {
-                        '#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'
-                    };">
-                        <div style="flex: 1;">
-                            <div style="font-weight: bold; color: #f8fafc;">{r.github.full_name if r.github.full_name else Path(r.codebase_path).name}</div>
-                            <div style="font-size: 0.8rem; color: #94a3b8;">{r.github.description[:40] + '...' if r.github.description and len(r.github.description) > 40 else r.github.description or ''}</div>
-                        </div>
-                        <div style="text-align: center; min-width: 80px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: {'#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'};">{r.quadrant.split()[0]}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">QUADRANT</div>
-                        </div>
-                        <div style="text-align: center; min-width: 60px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{r.resilience_score:.0f}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
-                        </div>
-                    </div>
-                    """ for r in sorted(reports_data, key=lambda x: -x.resilience_score))}
-                </div>
-                <div class="formula" style="margin-top: 1rem;">
-                    <div class="formula-text">
-                        Higher resilience = better defended
-                    </div>
-                </div>
-                ''' if len(reports_data) > 1 else ''}
             </div>
         </div>
         

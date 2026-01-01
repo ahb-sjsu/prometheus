@@ -33,10 +33,13 @@ aggregating results into a unified security report.
 import subprocess
 import json
 import shutil
+import logging
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 import re
+
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -217,8 +220,12 @@ class BanditWrapper(ToolWrapper):
                         cwe=r.get('issue_cwe', {}).get('id', '') if isinstance(r.get('issue_cwe'), dict) else '',
                         owasp=cls.OWASP_MAP.get(test_id, ''),
                     ))
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-            pass
+        except subprocess.TimeoutExpired:
+            logger.debug("bandit timed out after 300s")
+        except json.JSONDecodeError:
+            logger.debug("bandit returned invalid JSON")
+        except FileNotFoundError:
+            logger.debug("bandit not installed")
         
         return findings
 
@@ -255,8 +262,12 @@ class GosecWrapper(ToolWrapper):
                         tool='gosec',
                         cwe=issue.get('cwe', {}).get('id', '') if isinstance(issue.get('cwe'), dict) else '',
                     ))
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-            pass
+        except subprocess.TimeoutExpired:
+            logger.debug("gosec timed out after 300s")
+        except json.JSONDecodeError:
+            logger.debug("gosec returned invalid JSON")
+        except FileNotFoundError:
+            logger.debug("gosec not installed")
         
         return findings
 
@@ -296,8 +307,12 @@ class SemgrepWrapper(ToolWrapper):
                         cwe=metadata.get('cwe', [''])[0] if metadata.get('cwe') else '',
                         owasp=metadata.get('owasp', [''])[0] if metadata.get('owasp') else '',
                     ))
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-            pass
+        except subprocess.TimeoutExpired:
+            logger.debug("semgrep timed out after 600s")
+        except json.JSONDecodeError:
+            logger.debug("semgrep returned invalid JSON")
+        except FileNotFoundError:
+            logger.debug("semgrep not installed")
         
         return findings
 
@@ -334,8 +349,12 @@ class GitleaksWrapper(ToolWrapper):
                         snippet=redacted,
                         severity='HIGH'
                     ))
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-            pass
+        except subprocess.TimeoutExpired:
+            logger.debug("gitleaks timed out after 300s")
+        except json.JSONDecodeError:
+            logger.debug("gitleaks returned invalid JSON")
+        except FileNotFoundError:
+            logger.debug("gitleaks not installed")
         
         return secrets
 
@@ -377,8 +396,12 @@ class NpmAuditWrapper(ToolWrapper):
                         severity=advisory.get('severity', 'unknown').upper(),
                         cve=advisory.get('cve', ''),
                     ))
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-            pass
+        except subprocess.TimeoutExpired:
+            logger.debug("npm audit timed out after 120s")
+        except json.JSONDecodeError:
+            logger.debug("npm audit returned invalid JSON")
+        except FileNotFoundError:
+            logger.debug("npm not installed")
         
         return vulns
 
@@ -424,8 +447,12 @@ class PipAuditWrapper(ToolWrapper):
                             severity=vuln.get('fix_versions', [''])[0] if vuln.get('fix_versions') else 'unknown',
                             fixed_version=vuln.get('fix_versions', [''])[0] if vuln.get('fix_versions') else '',
                         ))
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-            pass
+        except subprocess.TimeoutExpired:
+            logger.debug("pip-audit timed out after 120s")
+        except json.JSONDecodeError:
+            logger.debug("pip-audit returned invalid JSON")
+        except FileNotFoundError:
+            logger.debug("pip-audit not installed")
         
         return vulns
 
@@ -581,8 +608,8 @@ class FallbackSecurityScanner:
                                 tool='fallback-scanner',
                                 owasp=owasp,
                             ))
-                except Exception:
-                    pass
+                except (UnicodeDecodeError, OSError) as e:
+                    logger.debug(f"Could not read {filepath}: {e}")
         
         return findings
 

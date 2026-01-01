@@ -226,7 +226,7 @@ def check_security_tools() -> bool:
     try:
         result = subprocess.run(["bandit", "--version"], capture_output=True, timeout=5)
         return result.returncode == 0
-    except Exception:
+    except (subprocess.SubprocessError, FileNotFoundError, subprocess.TimeoutExpired):
         return False
 
 

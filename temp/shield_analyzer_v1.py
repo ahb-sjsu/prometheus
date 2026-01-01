@@ -236,12 +236,10 @@ class PatternDetector:
     
     # Regex patterns for various resilience constructs
     PATTERNS = {
-        # Circuit breaker patterns - require multiple state machine indicators
-        # Single OPEN/CLOSED matches too many things (file open, connection closed)
-        'circuit_states': re.compile(r'\b(HALF_OPEN|CircuitState|circuit_state|circuit_breaker|CircuitBreaker)\b'),
-        'circuit_state_machine': re.compile(r'\b(OPEN|CLOSED)\b.*\b(OPEN|CLOSED|HALF_OPEN)\b', re.DOTALL),
-        'failure_threshold': re.compile(r'\b(failure_threshold|failureThreshold|failure_rate|error_threshold|failure_count)\s*[=:]\s*\d+'),
-        'fallback': re.compile(r'\b(@Fallback|with_fallback|fallbackMethod|on_fallback|fallback_handler)\b'),
+        # Circuit breaker patterns
+        'circuit_states': re.compile(r'\b(OPEN|CLOSED|HALF_OPEN|CircuitState|circuit_state)\b'),
+        'failure_threshold': re.compile(r'\b(failure_threshold|failureThreshold|failure_rate|error_threshold)\s*[=:]\s*\d+'),
+        'fallback': re.compile(r'\b(fallback|Fallback|@Fallback|with_fallback|fallbackMethod)\b'),
         
         # Retry patterns
         'retry_decorator': re.compile(r'@(retry|Retry|Retryable|with_retry|retrying)'),
@@ -280,9 +278,8 @@ class PatternDetector:
         'dependency_check': re.compile(r'\b(check_dependency|checkDependency|dependency_health|ping_database|ping_redis)\b'),
         
         # Network calls (to check for missing timeouts)
-        # More specific patterns to avoid matching ORM methods or internal functions
-        'http_call': re.compile(r'\b(requests\.(get|post|put|delete|patch|head|options)\s*\(|urllib\.request\.|httpx\.(get|post|put|delete|patch|head|options|Client)|aiohttp\.(get|post|ClientSession)|fetch\s*\(\s*["\']https?://|axios\.(get|post|put|delete)|http\.request\s*\(|new\s+HttpClient)\b'),
-        'db_call': re.compile(r'\b(cursor\.execute|\.raw\s*\(|connection\.execute)\s*\('),
+        'http_call': re.compile(r'\b(requests\.(get|post|put|delete)|fetch\(|axios\.|http\.request|HttpClient)\b'),
+        'db_call': re.compile(r'\b(execute|query|find|findOne|select|insert|update|delete)\s*\('),
     }
 
 
@@ -455,20 +452,15 @@ class PythonResilienceAnalyzer(PatternDetector):
         )
         
         # Check for network calls without timeouts
-        # Only flag this as a vulnerability if:
-        # 1. There are actual HTTP calls (not just method names)
-        # 2. The file is not a test file (tests often use synchronous clients intentionally)
         http_calls = self.PATTERNS['http_call'].findall(content)
         timeout_mentions = self.PATTERNS['timeout_config'].findall(content)
-        
-        # Count actual HTTP calls (filter out partial matches)
-        actual_http_calls = len([c for c in http_calls if c[0]])  # First group is the actual call
-        
-        if actual_http_calls > len(timeout_mentions):
-            missing = actual_http_calls - len(timeout_mentions)
-            metrics.timeouts.missing_timeouts += missing
-            # Don't add vulnerability here - will be filtered at report level
-            # based on file path (test files excluded)
+        if len(http_calls) > len(timeout_mentions):
+            metrics.timeouts.missing_timeouts += len(http_calls) - len(timeout_mentions)
+            metrics.vulnerabilities.append({
+                'type': 'missing_timeout',
+                'severity': 'HIGH',
+                'message': f'{metrics.timeouts.missing_timeouts} network calls may lack timeout configuration'
+            })
         
         # Bulkhead patterns
         metrics.bulkheads.thread_pool_configs += len(
@@ -944,6 +936,15 @@ class Aegis:
             # Still calculate category scores for informational purposes
             # but they won't affect the overall rating
         
+        # Overall resilience score (weighted average)
+        if total_loc > 0:
+            weighted_score = sum(
+                fm.resilience_score * fm.lines_of_code 
+                for fm in self.file_metrics
+            ) / total_loc
+            if not getattr(report, 'too_small_to_score', False):
+                report.overall_resilience_score = weighted_score
+        
         # Category scores (always calculate for informational purposes)
         n = len(self.file_metrics)
         
@@ -958,23 +959,10 @@ class Aegis:
                 (total_specific / max(1, total_specific + total_bare)) * 50  # Specificity
             ))
         
-        # Circuit breaker score - require actual circuit breaker patterns
-        # Not just fallback methods (which could be normal code)
+        # Circuit breaker score
         cb_files = sum(1 for fm in self.file_metrics if fm.circuit_breakers.library_imports)
-        cb_state_machines = sum(fm.circuit_breakers.state_machine_patterns for fm in self.file_metrics)
-        cb_thresholds = sum(fm.circuit_breakers.failure_threshold_configs for fm in self.file_metrics)
         cb_fallbacks = sum(fm.circuit_breakers.fallback_methods for fm in self.file_metrics)
-        
-        # Only count fallbacks if there's evidence of actual circuit breaker usage
-        has_cb_evidence = cb_files > 0 or cb_state_machines > 0 or cb_thresholds > 0
-        effective_fallbacks = cb_fallbacks if has_cb_evidence else 0
-        
-        report.circuit_breaker_score = min(100, (
-            cb_files / n * 50 + 
-            min(cb_state_machines, 5) * 5 +
-            min(cb_thresholds, 5) * 5 +
-            min(effective_fallbacks, 5) * 4
-        ))
+        report.circuit_breaker_score = min(100, (cb_files / n * 50 + min(cb_fallbacks, 10) * 5))
         
         # Retry score
         retry_files = sum(1 for fm in self.file_metrics if 
@@ -1042,88 +1030,14 @@ class Aegis:
         else:
             report.health_check_score = min(100, health_patterns * 20)
         
-        # =================================================================
-        # INDUSTRY-CALIBRATED OVERALL RESILIENCE SCORE
-        # =================================================================
-        # 
-        # Key insight: Not all codebases need the same resilience patterns.
-        # - Web frameworks: Error handling + observability matter most
-        # - Microservices: Timeouts + retries + circuit breakers critical
-        # - Libraries: Clean error propagation matters most
-        #
-        # We detect the "type" of codebase and adjust expectations accordingly.
-        
-        if not getattr(report, 'too_small_to_score', False):
-            # Detect codebase characteristics
-            has_network_code = sum(fm.timeouts.missing_timeouts for fm in self.file_metrics) > 0
-            has_retry_patterns = report.retry_score > 0 or any(fm.retries.library_imports for fm in self.file_metrics)
-            has_good_error_handling = report.error_handling_score >= 40
-            
-            if self.library_mode:
-                # Libraries: Error handling and API design matter most
-                report.overall_resilience_score = (
-                    report.error_handling_score * 0.50 +
-                    report.observability_score * 0.30 +
-                    report.timeout_score * 0.10 +
-                    report.retry_score * 0.05 +
-                    report.circuit_breaker_score * 0.05
-                )
-            elif not has_network_code and has_good_error_handling:
-                # Framework/library without network calls: Error handling is key
-                # This covers Django, Flask, FastAPI core code
-                report.overall_resilience_score = (
-                    report.error_handling_score * 0.50 +
-                    report.observability_score * 0.30 +
-                    report.degradation_score * 0.10 +
-                    report.timeout_score * 0.05 +
-                    report.retry_score * 0.05
-                )
-            else:
-                # Application with network calls: Full resilience stack expected
-                report.overall_resilience_score = (
-                    report.error_handling_score * 0.25 +
-                    report.timeout_score * 0.25 +
-                    report.retry_score * 0.20 +
-                    report.circuit_breaker_score * 0.15 +
-                    report.observability_score * 0.15
-                )
-                
-                # Penalty only for applications that SHOULD have timeouts but don't
-                if has_network_code and report.timeout_score == 0:
-                    report.overall_resilience_score *= 0.85  # 15% penalty
-        
-        # Collect all vulnerabilities (filter test files for missing_timeout)
+        # Collect all vulnerabilities
         for fm in self.file_metrics:
             for vuln in fm.vulnerabilities:
                 vuln['file'] = fm.path
                 report.vulnerabilities.append(vuln)
-        
-        # Add missing timeout vulnerabilities (excluding test files)
-        for fm in self.file_metrics:
-            # Skip test files for timeout vulnerability reporting
-            is_test_file = any(t in fm.path.lower() for t in [
-                '/test', '/tests', 'test_', '_test.', 'spec.', '.spec',
-                '/fixtures', '/mocks', '/conftest'
-            ])
-            
-            if not is_test_file and fm.timeouts.missing_timeouts > 0:
-                report.vulnerabilities.append({
-                    'type': 'missing_timeout',
-                    'severity': 'HIGH',
-                    'message': f'{fm.timeouts.missing_timeouts} network calls may lack timeout configuration',
-                    'file': fm.path
-                })
     
     def _rate_shield(self, report: AegisReport):
-        """Assign shield rating based on overall score.
-        
-        Industry-calibrated thresholds:
-        - ADAMANTINE (80+): Netflix, Google-level resilience (rare)
-        - STEEL (60-79): Production-ready, well-defended
-        - BRONZE (40-59): Adequate for most applications
-        - WOOD (20-39): Minimal protection, improvement needed
-        - PAPER (<20): Essentially undefended, high risk
-        """
+        """Assign shield rating based on overall score."""
         # Skip rating if already marked as too small
         if report.too_small_to_score:
             # Rating already set to TOO_SMALL in _calculate_scores

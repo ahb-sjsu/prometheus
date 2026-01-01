@@ -1,0 +1,221 @@
+{
+  "codebase_path": ".",
+  "timestamp": "2025-12-31T19:17:31.692768",
+  "quadrant": "BATTLE_HARDENED",
+  "verdict": "High complexity, correctly implemented. Genuinely resilient.",
+  "risk_level": "LOW",
+  "theater_ratio": 1.0666666666666667,
+  "patterns_detected": 16,
+  "patterns_correct": 4,
+  "patterns_partial": 11,
+  "patterns_cargo_cult": 1,
+  "total_issues": 6,
+  "high_severity_count": 0,
+  "medium_severity_count": 6,
+  "low_severity_count": 0,
+  "resilience_libraries": [
+    "pybreaker",
+    "tenacity"
+  ],
+  "recommendations": [],
+  "issues": {
+    "high": [],
+    "medium": [
+      {
+        "file": "benchmark.py",
+        "line": 326,
+        "type": "exception",
+        "issue_type": "broad_catch",
+        "severity": "MEDIUM",
+        "description": "Catching Exception hides specific error types"
+      },
+      {
+        "file": "benchmark.py",
+        "line": 255,
+        "type": "timeout",
+        "issue_type": "too_long",
+        "severity": "MEDIUM",
+        "description": "Timeout of 600.0s is very long"
+      },
+      {
+        "file": "sentinel.py",
+        "line": 205,
+        "type": "timeout",
+        "issue_type": "too_long",
+        "severity": "MEDIUM",
+        "description": "Timeout of 300.0s is very long"
+      },
+      {
+        "file": "sentinel.py",
+        "line": 248,
+        "type": "timeout",
+        "issue_type": "too_long",
+        "severity": "MEDIUM",
+        "description": "Timeout of 300.0s is very long"
+      },
+      {
+        "file": "sentinel.py",
+        "line": 290,
+        "type": "timeout",
+        "issue_type": "too_long",
+        "severity": "MEDIUM",
+        "description": "Timeout of 600.0s is very long"
+      },
+      {
+        "file": "sentinel.py",
+        "line": 335,
+        "type": "timeout",
+        "issue_type": "too_long",
+        "severity": "MEDIUM",
+        "description": "Timeout of 300.0s is very long"
+      }
+    ],
+    "low": []
+  },
+  "patterns": [
+    {
+      "file": "benchmark.py",
+      "line": 227,
+      "pattern_type": "timeout",
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 5.0
+      }
+    },
+    {
+      "file": "benchmark.py",
+      "line": 255,
+      "pattern_type": "timeout",
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 600.0
+      }
+    },
+    {
+      "file": "benchmark.py",
+      "line": 289,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "benchmark.py",
+      "line": 326,
+      "pattern_type": "exception_handling",
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "entropy_analyzer.py",
+      "line": 322,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "entropy_analyzer.py",
+      "line": 357,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "olympus.py",
+      "line": 100,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "olympus.py",
+      "line": 468,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "oracle.py",
+      "line": 290,
+      "pattern_type": "exception_handling",
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "file": "prometheus.py",
+      "line": 96,
+      "pattern_type": "timeout",
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "file": "sentinel.py",
+      "line": 205,
+      "pattern_type": "timeout",
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 300.0
+      }
+    },
+    {
+      "file": "sentinel.py",
+      "line": 248,
+      "pattern_type": "timeout",
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 300.0
+      }
+    },
+    {
+      "file": "sentinel.py",
+      "line": 290,
+      "pattern_type": "timeout",
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 600.0
+      }
+    },
+    {
+      "file": "sentinel.py",
+      "line": 335,
+      "pattern_type": "timeout",
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 300.0
+      }
+    },
+    {
+      "file": "sentinel.py",
+      "line": 385,
+      "pattern_type": "timeout",
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "file": "sentinel.py",
+      "line": 435,
+      "pattern_type": "timeout",
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    }
+  ]
+}

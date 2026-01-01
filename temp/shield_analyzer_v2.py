@@ -944,6 +944,15 @@ class Aegis:
             # Still calculate category scores for informational purposes
             # but they won't affect the overall rating
         
+        # Overall resilience score (weighted average)
+        if total_loc > 0:
+            weighted_score = sum(
+                fm.resilience_score * fm.lines_of_code 
+                for fm in self.file_metrics
+            ) / total_loc
+            if not getattr(report, 'too_small_to_score', False):
+                report.overall_resilience_score = weighted_score
+        
         # Category scores (always calculate for informational purposes)
         n = len(self.file_metrics)
         
@@ -1042,56 +1051,6 @@ class Aegis:
         else:
             report.health_check_score = min(100, health_patterns * 20)
         
-        # =================================================================
-        # INDUSTRY-CALIBRATED OVERALL RESILIENCE SCORE
-        # =================================================================
-        # 
-        # Key insight: Not all codebases need the same resilience patterns.
-        # - Web frameworks: Error handling + observability matter most
-        # - Microservices: Timeouts + retries + circuit breakers critical
-        # - Libraries: Clean error propagation matters most
-        #
-        # We detect the "type" of codebase and adjust expectations accordingly.
-        
-        if not getattr(report, 'too_small_to_score', False):
-            # Detect codebase characteristics
-            has_network_code = sum(fm.timeouts.missing_timeouts for fm in self.file_metrics) > 0
-            has_retry_patterns = report.retry_score > 0 or any(fm.retries.library_imports for fm in self.file_metrics)
-            has_good_error_handling = report.error_handling_score >= 40
-            
-            if self.library_mode:
-                # Libraries: Error handling and API design matter most
-                report.overall_resilience_score = (
-                    report.error_handling_score * 0.50 +
-                    report.observability_score * 0.30 +
-                    report.timeout_score * 0.10 +
-                    report.retry_score * 0.05 +
-                    report.circuit_breaker_score * 0.05
-                )
-            elif not has_network_code and has_good_error_handling:
-                # Framework/library without network calls: Error handling is key
-                # This covers Django, Flask, FastAPI core code
-                report.overall_resilience_score = (
-                    report.error_handling_score * 0.50 +
-                    report.observability_score * 0.30 +
-                    report.degradation_score * 0.10 +
-                    report.timeout_score * 0.05 +
-                    report.retry_score * 0.05
-                )
-            else:
-                # Application with network calls: Full resilience stack expected
-                report.overall_resilience_score = (
-                    report.error_handling_score * 0.25 +
-                    report.timeout_score * 0.25 +
-                    report.retry_score * 0.20 +
-                    report.circuit_breaker_score * 0.15 +
-                    report.observability_score * 0.15
-                )
-                
-                # Penalty only for applications that SHOULD have timeouts but don't
-                if has_network_code and report.timeout_score == 0:
-                    report.overall_resilience_score *= 0.85  # 15% penalty
-        
         # Collect all vulnerabilities (filter test files for missing_timeout)
         for fm in self.file_metrics:
             for vuln in fm.vulnerabilities:
@@ -1115,15 +1074,7 @@ class Aegis:
                 })
     
     def _rate_shield(self, report: AegisReport):
-        """Assign shield rating based on overall score.
-        
-        Industry-calibrated thresholds:
-        - ADAMANTINE (80+): Netflix, Google-level resilience (rare)
-        - STEEL (60-79): Production-ready, well-defended
-        - BRONZE (40-59): Adequate for most applications
-        - WOOD (20-39): Minimal protection, improvement needed
-        - PAPER (<20): Essentially undefended, high risk
-        """
+        """Assign shield rating based on overall score."""
         # Skip rating if already marked as too small
         if report.too_small_to_score:
             # Rating already set to TOO_SMALL in _calculate_scores

@@ -126,71 +126,10 @@ def is_github_url(path: str) -> bool:
 
 
 @dataclass
-class GitHubMetadata:
-    """Metadata fetched from GitHub API."""
-    name: str = ""
-    full_name: str = ""
-    description: str = ""
-    stars: int = 0
-    forks: int = 0
-    language: str = ""
-    topics: list = field(default_factory=list)
-    created_at: str = ""
-    updated_at: str = ""
-    open_issues: int = 0
-    license: str = ""
-    url: str = ""
-
-
-def fetch_github_metadata(repo_path: str) -> GitHubMetadata:
-    """Fetch metadata from GitHub API for a repo."""
-    import urllib.request
-    
-    # Extract owner/repo from various formats
-    if 'github.com' in repo_path:
-        match = re.search(r'github\.com[/:]([^/]+)/([^/\.]+)', repo_path)
-        if match:
-            owner, repo = match.groups()
-        else:
-            return GitHubMetadata()
-    elif '/' in repo_path and not repo_path.startswith('/'):
-        parts = repo_path.split('/')
-        owner, repo = parts[0], parts[1].replace('.git', '')
-    else:
-        return GitHubMetadata()
-    
-    try:
-        api_url = f"https://api.github.com/repos/{owner}/{repo}"
-        req = urllib.request.Request(api_url, headers={'User-Agent': 'Prometheus/1.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode())
-            
-            return GitHubMetadata(
-                name=data.get('name', ''),
-                full_name=data.get('full_name', ''),
-                description=data.get('description', '') or '',
-                stars=data.get('stargazers_count', 0),
-                forks=data.get('forks_count', 0),
-                language=data.get('language', '') or '',
-                topics=data.get('topics', []),
-                created_at=data.get('created_at', ''),
-                updated_at=data.get('updated_at', ''),
-                open_issues=data.get('open_issues_count', 0),
-                license=data.get('license', {}).get('spdx_id', '') if data.get('license') else '',
-                url=data.get('html_url', '')
-            )
-    except Exception:
-        return GitHubMetadata(name=repo, full_name=f"{owner}/{repo}")
-
-
-@dataclass
 class PrometheusReport:
     """Combined fitness report."""
     codebase_path: str
     timestamp: str
-    
-    # GitHub metadata (optional)
-    github: GitHubMetadata = field(default_factory=GitHubMetadata)
     
     # Complexity metrics (from pipeline)
     complexity_risk: str = ""
@@ -300,86 +239,9 @@ class Prometheus:
         report.avg_cyclomatic = complexity_result.codebase_metrics.avg_cyclomatic
         report.entropy = complexity_result.codebase_metrics.codebase_entropy
         
-        # =================================================================
-        # INDUSTRY-CALIBRATED COMPLEXITY SCORING
-        # =================================================================
-        # Normalized against industry benchmarks:
-        # - Small focused library (<20k LOC): Can score 85-100
-        # - Medium project (20-100k LOC): Typically 60-85
-        # - Large framework (100-300k LOC): Typically 45-70
-        # - Massive codebase (300k+ LOC): Typically 30-55
-        # 
-        # Factors weighted by industry importance:
-        # 1. Size penalty (larger = harder to maintain) - 25%
-        # 2. Cyclomatic complexity (cognitive load) - 25%
-        # 3. Maintainability index (code quality) - 25%
-        # 4. Hotspot density (problem areas) - 25%
-        
-        total_loc = complexity_result.codebase_metrics.total_loc
-        avg_cyclo = complexity_result.codebase_metrics.avg_cyclomatic
-        maint = complexity_result.codebase_metrics.avg_maintainability
-        num_hotspots = len(complexity_result.hotspots)
-        
-        # 1. SIZE SCORE (0-25 points)
-        # Industry baseline: 50k LOC is "normal", scales logarithmically
-        # <10k = 25, 50k = 20, 100k = 15, 300k = 10, 500k+ = 5
-        import math
-        if total_loc < 5000:
-            size_score = 25
-        else:
-            # Logarithmic decay: every 3x increase in LOC = -5 points
-            size_score = max(5, 25 - (math.log10(total_loc / 5000) / math.log10(3)) * 5)
-        
-        # 2. CYCLOMATIC SCORE (0-25 points)
-        # Industry baseline: 2.0-2.5 is typical for well-maintained code
-        # <1.5 = 25, 2.0 = 22, 2.5 = 18, 3.0 = 14, 4.0 = 8, 5.0+ = 2
-        if avg_cyclo <= 1.5:
-            cyclo_score = 25
-        elif avg_cyclo <= 3.0:
-            cyclo_score = 25 - (avg_cyclo - 1.5) * 7  # Linear decrease
-        elif avg_cyclo <= 5.0:
-            cyclo_score = 14 - (avg_cyclo - 3.0) * 6  # Steeper decrease
-        else:
-            cyclo_score = max(0, 2 - (avg_cyclo - 5.0))
-        cyclo_score = max(0, min(25, cyclo_score))
-        
-        # 3. MAINTAINABILITY SCORE (0-25 points)  
-        # Industry baseline: 65-75 is typical, >80 is excellent
-        # MI > 80 = 25, 70 = 20, 60 = 15, 50 = 10, 40 = 5, <30 = 0
-        if maint >= 80:
-            maint_score = 25
-        elif maint >= 40:
-            maint_score = (maint - 40) / 40 * 25  # Linear scale 40-80 -> 0-25
-        else:
-            maint_score = 0
-        maint_score = max(0, min(25, maint_score))
-        
-        # 4. HOTSPOT SCORE (0-25 points)
-        # Hotspots per 10k LOC - industry baseline: <1 is good, >3 is concerning
-        hotspots_per_10k = (num_hotspots / max(1, total_loc)) * 10000
-        if hotspots_per_10k <= 0.5:
-            hotspot_score = 25
-        elif hotspots_per_10k <= 3.0:
-            hotspot_score = 25 - (hotspots_per_10k - 0.5) * 8  # Linear decrease
-        else:
-            hotspot_score = max(0, 5 - (hotspots_per_10k - 3.0) * 2)
-        hotspot_score = max(0, min(25, hotspot_score))
-        
-        # FINAL COMPLEXITY SCORE (0-100)
-        report.complexity_score = size_score + cyclo_score + maint_score + hotspot_score
-        
-        # Store breakdown for transparency
-        report.complexity_breakdown = {
-            'size_score': round(size_score, 1),
-            'cyclo_score': round(cyclo_score, 1),
-            'maint_score': round(maint_score, 1),
-            'hotspot_score': round(hotspot_score, 1),
-            'total_loc': total_loc,
-            'avg_cyclomatic': round(avg_cyclo, 2),
-            'maintainability': round(maint, 1),
-            'num_hotspots': num_hotspots,
-            'hotspots_per_10k': round(hotspots_per_10k, 2)
-        }
+        # Convert risk level to score (inverted: lower complexity = higher score for quadrant calc)
+        risk_scores = {'LOW': 80, 'MEDIUM': 60, 'HIGH': 40, 'CRITICAL': 20}
+        report.complexity_score = risk_scores.get(complexity_result.risk_level, 50)
         
         # Run resilience analysis
         print("\n[2/2] Running resilience analysis...")
@@ -430,16 +292,10 @@ class Prometheus:
         return report
     
     def _determine_quadrant(self, report: PrometheusReport, resilience_result):
-        """Determine which quadrant the codebase falls into.
-        
-        Industry-calibrated thresholds:
-        - Complexity >= 50: Low complexity (well-structured)
-        - Resilience >= 35: Adequate resilience for frameworks
-        - Resilience >= 50: Good resilience for applications
-        """
-        # Thresholds - calibrated to industry benchmarks
-        complexity_threshold = 50  # >= 50 = low complexity (good)
-        resilience_threshold = 35  # >= 35 = adequate resilience for frameworks
+        """Determine which quadrant the codebase falls into."""
+        # Thresholds
+        complexity_threshold = 50  # Below = low complexity
+        resilience_threshold = 50  # Above = high resilience
         
         # Check if codebase is too small to score resilience
         if getattr(resilience_result, 'too_small_to_score', False):
@@ -1064,113 +920,11 @@ def dump_raw_data(report: PrometheusReport, output_path: str) -> str:
     return output_path
 
 
-def generate_quadrant_html(report: PrometheusReport, output_path: str = None, repo_name: str = "Codebase", comparison_reports: list = None) -> str:
+def generate_quadrant_html(report: PrometheusReport, output_path: str = None, repo_name: str = "Codebase") -> str:
     """Generate visual HTML report with quadrant chart."""
     
     if output_path is None:
         output_path = "prometheus_report.html"
-    
-    reports_data = comparison_reports if comparison_reports else [report]
-    
-    # Generate points for all reports
-    points_html = ""
-    legend_html = ""
-    colors = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
-    
-    for idx, r in enumerate(reports_data):
-        x = r.complexity_score
-        y = r.resilience_score
-        
-        name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
-        short_name = name.split('/')[-1][:10] if '/' in name else name[:10]
-        
-        if len(reports_data) == 1:
-            quadrant_colors = {
-                'BUNKER': '#22c55e',
-                'FORTRESS': '#3b82f6', 
-                'GLASS HOUSE': '#eab308',
-                'DEATHTRAP': '#ef4444'
-            }
-            color = quadrant_colors.get(r.quadrant, '#666')
-        else:
-            color = colors[idx % len(colors)]
-        
-        points_html += f'''
-            <div class="point" style="left: {x}%; bottom: {y}%; background: {color};" title="{name}: {r.quadrant}">
-                {'<span class="point-label">' + short_name + '</span>' if len(reports_data) > 1 else ''}
-            </div>'''
-        
-        if len(reports_data) > 1:
-            stars_str = f" ⭐{r.github.stars:,}" if r.github.stars else ""
-            legend_html += f'''
-                <div class="legend-item">
-                    <span class="legend-dot" style="background: {color};"></span>
-                    <span class="legend-name">{name}{stars_str}</span>
-                    <span class="legend-quadrant" style="color: {color};">{r.quadrant}</span>
-                </div>'''
-    
-    # Build title with GitHub metadata
-    gh = report.github
-    if gh.full_name:
-        display_name = gh.full_name
-        meta_parts = []
-        if gh.stars:
-            meta_parts.append(f"⭐ {gh.stars:,}")
-        if gh.language:
-            meta_parts.append(gh.language)
-        if gh.license:
-            meta_parts.append(gh.license)
-        subtitle = " • ".join(meta_parts) if meta_parts else ""
-        description = gh.description or ""
-    else:
-        display_name = repo_name.replace('_', '/') if '_' in repo_name else repo_name
-        subtitle = ""
-        description = ""
-    
-    if len(reports_data) > 1:
-        display_name = "Comparison"
-        subtitle = f"{len(reports_data)} repositories analyzed"
-        description = ""
-    
-    # Comparison table if multiple reports
-    comparison_table = ""
-    if len(reports_data) > 1:
-        comparison_rows = ""
-        for r in sorted(reports_data, key=lambda x: (-x.github.stars if x.github.stars else 0, -x.resilience_score)):
-            quadrant_colors = {'BUNKER': '#22c55e', 'FORTRESS': '#3b82f6', 'GLASS HOUSE': '#eab308', 'DEATHTRAP': '#ef4444'}
-            q_color = quadrant_colors.get(r.quadrant, '#6b7280')
-            name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
-            stars = f"⭐ {r.github.stars:,}" if r.github.stars else "-"
-            lang = r.github.language or "-"
-            comparison_rows += f"""
-            <tr>
-                <td>
-                    <strong>{name}</strong>
-                    {f'<br/><small style="color: #64748b;">{r.github.description[:50]}...</small>' if r.github.description else ''}
-                </td>
-                <td>{stars}</td>
-                <td>{lang}</td>
-                <td><span style="color: {q_color}; font-weight: bold;">{r.quadrant}</span></td>
-                <td>{r.complexity_score:.0f}</td>
-                <td>{r.resilience_score:.0f}</td>
-            </tr>"""
-        comparison_table = f'''
-        <div class="section">
-            <h2>Comparison ({len(reports_data)} repositories)</h2>
-            <table style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px;">
-                <thead>
-                    <tr style="background: #0f172a;">
-                        <th style="padding: 0.75rem; text-align: left; color: #94a3b8;">Repository</th>
-                        <th style="padding: 0.75rem; text-align: left; color: #94a3b8;">Stars</th>
-                        <th style="padding: 0.75rem; text-align: left; color: #94a3b8;">Language</th>
-                        <th style="padding: 0.75rem; text-align: left; color: #94a3b8;">Quadrant</th>
-                        <th style="padding: 0.75rem; text-align: left; color: #94a3b8;">Complexity</th>
-                        <th style="padding: 0.75rem; text-align: left; color: #94a3b8;">Resilience</th>
-                    </tr>
-                </thead>
-                <tbody>{comparison_rows}</tbody>
-            </table>
-        </div>'''
     
     # Calculate position on quadrant (0-100 scale)
     x = report.complexity_score  # Higher = less complex (right side)
@@ -1184,6 +938,9 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
         'DEATHTRAP': '#ef4444'
     }
     color = quadrant_colors.get(report.quadrant, '#666')
+    
+    # Format repo name for display
+    display_name = repo_name.replace('_', '/') if '_' in repo_name else repo_name
     
     # Generate priority HTML
     priorities_html = ""
@@ -1449,81 +1206,13 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
             color: #64748b;
             font-size: 0.875rem;
         }}
-        
-        .point {{
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 20px currentColor;
-            transform: translate(-50%, 50%);
-            z-index: 10;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }}
-        .point:hover {{ transform: translate(-50%, 50%) scale(1.3); }}
-        .point-label {{
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.6rem;
-            color: white;
-            white-space: nowrap;
-            background: #0f172a;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }}
-        
-        .legend {{
-            margin-top: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }}
-        .legend-item {{
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-        }}
-        .legend-dot {{
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }}
-        .legend-name {{ color: #e2e8f0; }}
-        .legend-quadrant {{ font-size: 0.7rem; }}
-        
-        .repo-meta {{
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }}
-        .repo-description {{
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-        }}
-        .repo-name a {{
-            color: #e2e8f0;
-            text-decoration: none;
-        }}
-        .repo-name a:hover {{
-            color: #7dd3fc;
-        }}
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔥 Prometheus</h1>
-        <p class="repo-name">{f'<a href="{report.github.url}" target="_blank">{display_name}</a>' if report.github.url else display_name}</p>
-        {f'<p class="repo-meta">{subtitle}</p>' if subtitle else ''}
-        {f'<p class="repo-description">{description}</p>' if description else ''}
+        <p class="repo-name">{display_name}</p>
         <p class="subtitle">Combined Fitness Analysis • {report.timestamp[:10]}</p>
-        
-        {comparison_table}
         
         <div class="grid">
             <div class="card">
@@ -1542,13 +1231,11 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
                     <span class="axis-label label-left">High Complexity</span>
                     <span class="axis-label label-right">Low Complexity</span>
                     
-                    {points_html if len(reports_data) > 1 else f'<div class="position-dot" style="left: {x}%; bottom: {y}%;"></div>'}
+                    <div class="position-dot" style="left: {x}%; bottom: {y}%;"></div>
                 </div>
-                {f'<div class="legend">{legend_html}</div>' if legend_html else ''}
             </div>
             
             <div class="card verdict">
-                {"" if len(reports_data) > 1 else f'''
                 <div class="verdict-quadrant">
                     {"🏰" if report.quadrant == "BUNKER" else "🏯" if report.quadrant == "FORTRESS" else "🏠" if report.quadrant == "GLASS HOUSE" else "💀"}
                 </div>
@@ -1557,13 +1244,13 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
                 
                 <div class="scores">
                     <div class="score">
-                        <div class="score-value" style="color: {"#22c55e" if report.complexity_score >= 60 else "#eab308" if report.complexity_score >= 40 else "#ef4444"}">
+                        <div class="score-value" style="color: {'#22c55e' if report.complexity_score >= 60 else '#eab308' if report.complexity_score >= 40 else '#ef4444'}">
                             {report.complexity_risk}
                         </div>
                         <div class="score-label">Complexity Risk</div>
                     </div>
                     <div class="score">
-                        <div class="score-value" style="color: {"#22c55e" if report.resilience_score >= 60 else "#eab308" if report.resilience_score >= 40 else "#ef4444"}">
+                        <div class="score-value" style="color: {'#22c55e' if report.resilience_score >= 60 else '#eab308' if report.resilience_score >= 40 else '#ef4444'}">
                             {report.shield_rating}
                         </div>
                         <div class="score-label">Shield Rating</div>
@@ -1586,35 +1273,6 @@ def generate_quadrant_html(report: PrometheusReport, output_path: str = None, re
                         Fitness = f(1/Complexity, Resilience)
                     </div>
                 </div>
-                '''}
-                {f'''
-                <h2 style="margin-bottom: 1rem;">Comparison Summary</h2>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    {"".join(f"""
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {
-                        '#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'
-                    };">
-                        <div style="flex: 1;">
-                            <div style="font-weight: bold; color: #f8fafc;">{r.github.full_name if r.github.full_name else Path(r.codebase_path).name}</div>
-                            <div style="font-size: 0.8rem; color: #94a3b8;">{r.github.description[:40] + '...' if r.github.description and len(r.github.description) > 40 else r.github.description or ''}</div>
-                        </div>
-                        <div style="text-align: center; min-width: 80px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: {'#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'};">{r.quadrant.split()[0]}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">QUADRANT</div>
-                        </div>
-                        <div style="text-align: center; min-width: 60px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{r.resilience_score:.0f}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
-                        </div>
-                    </div>
-                    """ for r in sorted(reports_data, key=lambda x: -x.resilience_score))}
-                </div>
-                <div class="formula" style="margin-top: 1rem;">
-                    <div class="formula-text">
-                        Higher resilience = better defended
-                    </div>
-                </div>
-                ''' if len(reports_data) > 1 else ''}
             </div>
         </div>
         
@@ -1660,10 +1318,9 @@ Examples:
   python prometheus.py https://github.com/owner/repo
   python prometheus.py owner/repo
   python prometheus.py pallets/flask --report --dump
-  python prometheus.py repo1 repo2 repo3 --compare
         """
     )
-    parser.add_argument('paths', nargs='+', help='Path(s) to codebase or GitHub URL(s)')
+    parser.add_argument('path', help='Path to codebase or GitHub URL (https://github.com/owner/repo or owner/repo)')
     parser.add_argument('-o', '--output', help='Output JSON path (default: prometheus_<repo>.json)')
     parser.add_argument('--html', help='Output HTML report path (default: prometheus_<repo>.html)')
     parser.add_argument('--report', action='store_true', help='Generate detailed technical report in Markdown')
@@ -1672,7 +1329,6 @@ Examples:
     parser.add_argument('--dump-path', help='Path for data dump (default: prometheus_<repo>_data.txt)')
     parser.add_argument('--library', action='store_true', 
                         help='Library mode: adjusts scoring for libraries (less penalty for missing timeouts/retries)')
-    parser.add_argument('--compare', action='store_true', help='Generate comparison chart for multiple repos')
     parser.add_argument('--security', action='store_true',
                         help='Run security analysis (requires bandit, semgrep, or gosec)')
     parser.add_argument('--smells', action='store_true',
@@ -1681,72 +1337,10 @@ Examples:
     
     args = parser.parse_args()
     
-    # Multi-repo comparison mode
-    if len(args.paths) > 1 or args.compare:
-        reports = []
-        prometheus_instances = []
-        
-        for path in args.paths:
-            safe_print(f"\n[ANALYZE] {path}")
-            prometheus = Prometheus(path, library_mode=args.library)
-            prometheus_instances.append(prometheus)
-            
-            try:
-                report = prometheus.analyze()
-                
-                # Fetch GitHub metadata
-                if is_github_url(path):
-                    safe_print(f"[META] Fetching GitHub metadata...")
-                    report.github = fetch_github_metadata(path)
-                    if report.github.stars:
-                        safe_print(f"       ⭐ {report.github.stars:,} | {report.github.language}")
-                
-                reports.append((report, prometheus))
-                
-                # Save individual JSON
-                json_path = f"prometheus_{prometheus.repo_name}.json"
-                prometheus.save_report(report, json_path)
-                
-            except Exception as e:
-                safe_print(f"  ERROR: {e}")
-                continue
-        
-        if reports:
-            # Print summary
-            safe_print("\n" + "="*70)
-            safe_print("PROMETHEUS COMPARISON REPORT")
-            safe_print("="*70)
-            
-            for report, prometheus in reports:
-                name = report.github.full_name if report.github.full_name else prometheus.repo_name
-                stars = f" ⭐{report.github.stars:,}" if report.github.stars else ""
-                safe_print(f"\n  {name}{stars}: {report.quadrant} (C:{report.complexity_score:.0f} R:{report.resilience_score:.0f})")
-            
-            # Generate comparison HTML
-            html_path = args.html or "prometheus_comparison.html"
-            all_reports = [r[0] for r in reports]
-            generate_quadrant_html(reports[0][0], html_path, repo_name="Comparison", comparison_reports=all_reports)
-            safe_print(f"\n  HTML: {html_path}")
-        
-        # Cleanup
-        if not args.keep:
-            for prometheus in prometheus_instances:
-                prometheus.cleanup()
-        
-        return
-    
-    # Single repo mode
-    prometheus = Prometheus(args.paths[0], library_mode=args.library)
+    prometheus = Prometheus(args.path, library_mode=args.library)
     
     try:
         report = prometheus.analyze()
-        
-        # Fetch GitHub metadata
-        if is_github_url(args.paths[0]):
-            safe_print("[META] Fetching GitHub metadata...")
-            report.github = fetch_github_metadata(args.paths[0])
-            if report.github.stars:
-                safe_print(f"       ⭐ {report.github.stars:,} stars | {report.github.language} | {report.github.description[:60] if report.github.description else ''}...")
         
         # Save JSON FIRST (before any emoji printing that might fail on Windows)
         json_path = args.output or f"prometheus_{prometheus.repo_name}.json"

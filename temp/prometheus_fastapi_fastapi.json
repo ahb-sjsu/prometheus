@@ -1,0 +1,257 @@
+{
+  "codebase_path": "C:\\Users\\abptl\\AppData\\Local\\Temp\\prometheus_fastapi_fastapi_9318e4p6\\fastapi_fastapi",
+  "timestamp": "2025-12-31T21:56:53.193732",
+  "quadrant": "GLASS HOUSE",
+  "fitness_verdict": "🏠 GLASS HOUSE: Low complexity, low resilience. Simple but fragile.\n\nRecommended Action: Add defensive patterns: error handling, timeouts, retries. Complexity will increase but reliability will improve.",
+  "scores": {
+    "complexity_risk": "LOW",
+    "complexity_score": 77.34882829770982,
+    "resilience_score": 12.335685647924077,
+    "shield_rating": "PAPER"
+  },
+  "priorities": [
+    {
+      "priority": 1,
+      "category": "Timeouts",
+      "action": "Missing timeouts are the #1 cause of cascading failures",
+      "first_steps": [
+        "Audit all HTTP client instantiations",
+        "Add connect_timeout and read_timeout to each",
+        "Default: 5s connect, 30s read (adjust per use case)"
+      ]
+    },
+    {
+      "priority": 3,
+      "category": "Observability",
+      "action": "You cannot fix what you cannot see",
+      "first_steps": [
+        "Add structured logging (structlog, pino)",
+        "Log at function entry/exit for critical paths",
+        "Include correlation IDs for request tracing"
+      ]
+    }
+  ],
+  "complexity_analysis": {
+    "risk_level": "LOW",
+    "verdict": "Complexity appears well-matched to task requirements. The codebase follows the principle that simplicity enables reliability.",
+    "recommendations": [],
+    "hotspots": [
+      {
+        "file": "fastapi\\openapi\\utils.py",
+        "issues": [
+          "High cyclomatic complexity: 12.8",
+          "Poor maintainability index: 19.7",
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "HIGH"
+      },
+      {
+        "file": "fastapi\\encoders.py",
+        "issues": [
+          "High cyclomatic complexity: 10.2",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "fastapi\\routing.py",
+        "issues": [
+          "Poor maintainability index: 19.9",
+          "Deep nesting: 8 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "scripts\\contributors.py",
+        "issues": [
+          "Poor maintainability index: 37.8",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "scripts\\docs.py",
+        "issues": [
+          "Poor maintainability index: 36.7",
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "scripts\\notify_translations.py",
+        "issues": [
+          "Poor maintainability index: 32.4",
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "scripts\\people.py",
+        "issues": [
+          "Poor maintainability index: 31.3",
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "fastapi\\dependencies\\utils.py",
+        "issues": [
+          "Poor maintainability index: 2.7",
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "fastapi\\_compat\\shared.py",
+        "issues": [
+          "Poor maintainability index: 39.2",
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "fastapi\\_compat\\v2.py",
+        "issues": [
+          "Poor maintainability index: 29.3",
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 90615,
+      "avg_cyclomatic": 1.9232614539637762,
+      "maintainability": 77.32137872037757,
+      "entropy": 5.122274387843427
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "PAPER",
+    "overall_score": 12.335685647924077,
+    "category_scores": {
+      "error_handling": 50.92673293542657,
+      "timeouts": 0,
+      "retries": 0.0,
+      "circuit_breakers": 0.0,
+      "observability": 11.87258744428181
+    },
+    "vulnerabilities": [
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\contributors.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\notify_translations.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\people.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\sponsors.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\playwright\\cookie_param_models\\image01.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\playwright\\header_param_models\\image01.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\playwright\\query_param_models\\image01.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\playwright\\request_form_models\\image01.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\playwright\\sql_databases\\image01.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "scripts\\playwright\\sql_databases\\image02.py"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Observability",
+        "message": "Insufficient logging/metrics makes debugging production issues nearly impossible.",
+        "libraries": [
+          "structlog (Python)",
+          "pino (JS)",
+          "OpenTelemetry (all languages)"
+        ]
+      },
+      {
+        "priority": "MEDIUM",
+        "category": "Circuit Breakers",
+        "message": "Protect against cascading failures by adding circuit breakers to external dependencies.",
+        "libraries": [
+          "pybreaker (Python)",
+          "opossum (JS)",
+          "resilience4j (Java)",
+          "sony/gobreaker (Go)"
+        ]
+      },
+      {
+        "priority": "LOW",
+        "category": "Bulkheads",
+        "message": "Consider thread pool isolation and connection pool limits to prevent resource exhaustion.",
+        "libraries": [
+          "concurrent.futures (Python)",
+          "generic-pool (JS)",
+          "HikariCP (Java)"
+        ]
+      }
+    ],
+    "too_small_to_score": false,
+    "total_loc": 90641
+  }
+}

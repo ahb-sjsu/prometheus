@@ -23,12 +23,15 @@ import gzip
 import math
 import hashlib
 import subprocess
+import logging
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 from collections import defaultdict
 import ast
 import re
+
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -185,7 +188,8 @@ class Extractor:
         """Extract all metrics for a single file."""
         try:
             content = filepath.read_text(encoding='utf-8', errors='ignore')
-        except Exception:
+        except (OSError, UnicodeDecodeError) as e:
+            logger.debug(f"Could not read {filepath}: {e}")
             return None
             
         metrics = FileMetrics(
@@ -348,8 +352,10 @@ class Extractor:
                 lengths = [f.nloc for f in analysis.function_list]
                 metrics.avg_function_length = sum(lengths) / len(lengths)
                 
-        except Exception:
-            pass
+        except ImportError:
+            logger.debug("lizard not installed - skipping complexity analysis")
+        except Exception as e:
+            logger.debug(f"lizard analysis failed: {e}")
     
     def _calculate_entropy(self, content: str) -> float:
         """Calculate Shannon entropy of token distribution."""
@@ -411,8 +417,8 @@ class Extractor:
                     self.task_metrics.num_assertions += len(re.findall(
                         r'\b(assert|expect|should|Assert\.|assertEquals)', content
                     ))
-                except Exception:
-                    pass
+                except (OSError, UnicodeDecodeError) as e:
+                    logger.debug(f"Could not read test file {filepath}: {e}")
         
         # Estimate API endpoints (REST patterns)
         for filepath in self.codebase_path.rglob('*.py'):
@@ -423,8 +429,8 @@ class Extractor:
                 self.task_metrics.api_endpoints += len(re.findall(
                     r'@(app|router)\.(get|post|put|delete|patch)\(', content
                 ))
-            except Exception:
-                pass
+            except (OSError, UnicodeDecodeError) as e:
+                logger.debug(f"Could not read {filepath}: {e}")
         
         # Estimate function points (simplified COCOMO-style)
         # FP ≈ (test_cases * 0.5) + (endpoints * 2) + (distinct_imports * 0.1)
