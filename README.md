@@ -193,13 +193,43 @@ python olympus.py -f repos.txt  # Hubris runs automatically
 
 ## Installation
 
-### Minimal (Prometheus only)
+### From PyPI (Recommended)
+
 ```bash
-pip install radon lizard
+# Basic installation
+pip install prometheus-analyzer
+
+# With security scanning (bandit)
+pip install prometheus-analyzer[security]
+
+# Full suite with all optional dependencies
+pip install prometheus-analyzer[full]
 ```
 
-### Full Suite
+After installation, use the commands:
 ```bash
+prometheus pallets/flask
+olympus -f repos.txt -o comparison.html
+hubris pallets/flask --html hubris_report.html
+```
+
+### From Source
+
+```bash
+git clone https://github.com/yourusername/prometheus.git
+cd prometheus
+pip install -e .
+```
+
+### Manual Installation (Legacy)
+
+If installing manually without the package:
+
+```bash
+# Minimal (Prometheus only)
+pip install radon lizard
+
+# Full Suite
 pip install radon lizard bandit
 ```
 
