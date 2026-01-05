@@ -33,10 +33,9 @@ Date: January 2026
 import json
 import hashlib
 import argparse
-from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional, Any
+from dataclasses import dataclass
+from typing import List, Dict, Tuple
 from enum import Enum
-from collections import defaultdict
 import numpy as np
 from scipy import stats
 import random
@@ -369,7 +368,7 @@ REASONING: [one sentence]
         
         # Sanity check: print outcome distributions
         counts = self.get_outcome_counts(scenario_id)
-        print(f"\n    Outcome distributions (sanity check):")
+        print("\n    Outcome distributions (sanity check):")
         for setting, data in counts.items():
             a_dist = f"+:{data['alice']['PLUS']}, -:{data['alice']['MINUS']}"
             b_dist = f"+:{data['bob']['PLUS']}, -:{data['bob']['MINUS']}"
@@ -378,7 +377,7 @@ REASONING: [one sentence]
         # Warn if we're not seeing both outcomes
         total_minus = sum(d['alice']['MINUS'] + d['bob']['MINUS'] for d in counts.values())
         if total_minus == 0:
-            print(f"    ⚠️  WARNING: No MINUS outcomes observed! Check parsing.")
+            print("    ⚠️  WARNING: No MINUS outcomes observed! Check parsing.")
         
         # Statistical test
         # Under classical assumption, |S| ≤ 2
@@ -425,7 +424,7 @@ REASONING: [one sentence]
         }
         
         print(f"    S = {S:.3f} (95% CI: [{ci_low:.3f}, {ci_high:.3f}])")
-        print(f"    Classical bound: 2.0 | Quantum bound: 2.83")
+        print("    Classical bound: 2.0 | Quantum bound: 2.83")
         print(f"    Violates classical: {violates_classical}")
         
         return result
@@ -608,7 +607,7 @@ CONFIDENCE: [0.0-1.0]
         # Check for Hardy violation
         violation = self.check_hardy_violation(probs)
         
-        print(f"\n    Hardy Probabilities:")
+        print("\n    Hardy Probabilities:")
         print(f"      P(A₀=+, B₀=+) = {probs['P_A0+_B0+']:.3f}  (want > 0)")
         print(f"      P(A₀=+, B₁=-) = {probs['P_A0+_B1-']:.3f}  (want ≈ 0)")
         print(f"      P(A₁=-, B₀=+) = {probs['P_A1-_B0+']:.3f}  (want ≈ 0)")
@@ -838,9 +837,9 @@ def run_contextuality_experiment(evaluator: LLMEvaluator,
     print("=" * 70)
     print("QUANTUM CONTEXTUALITY TEST FOR MORAL REASONING")
     print("=" * 70)
-    print(f"\nTesting for CHSH and Hardy violations...")
-    print(f"Classical bound: |S| ≤ 2")
-    print(f"Quantum bound:   |S| ≤ 2√2 ≈ 2.83")
+    print("\nTesting for CHSH and Hardy violations...")
+    print("Classical bound: |S| ≤ 2")
+    print("Quantum bound:   |S| ≤ 2√2 ≈ 2.83")
     
     results = {
         "experiment": "Quantum Contextuality Test",
@@ -886,7 +885,7 @@ def run_contextuality_experiment(evaluator: LLMEvaluator,
     n_signaling_violations = sum(1 for r in results["signaling_tests"] 
                                   if not r["no_signaling_satisfied"])
     
-    print(f"\n  CHSH Tests:")
+    print("\n  CHSH Tests:")
     print(f"    Scenarios tested: {len(results['chsh_results'])}")
     print(f"    Classical violations (|S| > 2): {n_chsh_violations}")
     print(f"    Signaling violations (invalid): {n_signaling_violations}")
@@ -895,7 +894,7 @@ def run_contextuality_experiment(evaluator: LLMEvaluator,
     max_scenario = [r["scenario_id"] for r in results["chsh_results"] if r["S"] == max_S][0]
     print(f"    Maximum S observed: {max_S:.3f} (in '{max_scenario}')")
     
-    print(f"\n  Hardy Test:")
+    print("\n  Hardy Test:")
     hardy = results["hardy_results"]
     print(f"    Hardy violation: {hardy['violation_check']['hardy_violation']}")
     

@@ -36,14 +36,11 @@ Based on: NASQND Experimental Protocols v1, Protocol 2
 """
 
 import json
-import random
-import time
 import hashlib
 import argparse
 from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional, Any
+from typing import List, Dict, Any
 from enum import Enum
-from collections import defaultdict
 import numpy as np
 from scipy import stats
 
@@ -501,7 +498,7 @@ REASONING: [one sentence explaining your final judgment]
         
         print(f"    Wilson W = {W:.3f}, χ² = {chi2:.2f}, p = {p_value:.4f}")
         if path_dependent:
-            print(f"    *** PATH DEPENDENCE DETECTED ***")
+            print("    *** PATH DEPENDENCE DETECTED ***")
         
         return analysis
     
@@ -511,7 +508,7 @@ REASONING: [one sentence explaining your final judgment]
         print("\n" + "=" * 70)
         print("PROTOCOL 2: HOLONOMY PATH DEPENDENCE")
         print("=" * 70)
-        print(f"\nTesting non-Abelian structure through path dependence")
+        print("\nTesting non-Abelian structure through path dependence")
         print(f"Trials per path: {n_per_path}")
         print(f"Total scenarios: {len(self.scenarios)}")
         

@@ -1210,7 +1210,7 @@ def clone_github_repo(url: str) -> tuple[str, str, str]:
             error_msg = result.stderr.strip()
             raise RuntimeError(f"Git clone failed: {error_msg}")
         
-        print(f"        Done!")
+        print("        Done!")
         return str(clone_path), repo_name, temp_dir
         
     except subprocess.TimeoutExpired:

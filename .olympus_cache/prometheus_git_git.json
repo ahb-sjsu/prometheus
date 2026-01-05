@@ -1,0 +1,192 @@
+{
+  "codebase_path": "C:\\source\\prometheus\\.olympus_cache\\git_git",
+  "timestamp": "2026-01-05T15:04:19.294425",
+  "quadrant": "GLASS HOUSE",
+  "fitness_verdict": "\ud83c\udfe0 GLASS HOUSE: Low complexity, low resilience. Simple but fragile.\n\nRecommended Action: Add defensive patterns: error handling, timeouts, retries. Complexity will increase but reliability will improve.",
+  "scores": {
+    "complexity_risk": "LOW",
+    "complexity_score": 55.35532853888567,
+    "resilience_score": 9.07591545085184,
+    "shield_rating": "PAPER"
+  },
+  "priorities": [
+    {
+      "priority": 1,
+      "category": "Timeouts",
+      "action": "Missing timeouts are the #1 cause of cascading failures",
+      "first_steps": [
+        "Audit all HTTP client instantiations",
+        "Add connect_timeout and read_timeout to each",
+        "Default: 5s connect, 30s read (adjust per use case)"
+      ]
+    },
+    {
+      "priority": 2,
+      "category": "Error Handling",
+      "action": "Unhandled exceptions crash processes and lose context",
+      "first_steps": [
+        "Wrap external calls in try/except",
+        "Create domain-specific exception classes",
+        "Log errors with context before re-raising"
+      ]
+    },
+    {
+      "priority": 3,
+      "category": "Observability",
+      "action": "You cannot fix what you cannot see",
+      "first_steps": [
+        "Add structured logging (structlog, pino)",
+        "Log at function entry/exit for critical paths",
+        "Include correlation IDs for request tracing"
+      ]
+    }
+  ],
+  "complexity_analysis": {
+    "risk_level": "LOW",
+    "verdict": "Complexity appears well-matched to task requirements. The codebase follows the principle that simplicity enables reliability.",
+    "recommendations": [
+      "WARNING: 162862 lines per function point suggests over-engineering. Industry standard is ~50."
+    ],
+    "hotspots": [
+      {
+        "file": "git-p4.py",
+        "issues": [
+          "Deep nesting: 10 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "t\\unit-tests\\clar\\generate.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 374583,
+      "avg_cyclomatic": 0.0,
+      "maintainability": 0.0,
+      "entropy": 6.470514714199978
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "PAPER",
+    "overall_score": 9.07591545085184,
+    "category_scores": {
+      "error_handling": 31.781035962211288,
+      "timeouts": 0.017977528089887642,
+      "retries": 0.0,
+      "circuit_breakers": 0.0,
+      "observability": 7.507747188510303
+    },
+    "vulnerabilities": [
+      {
+        "type": "bare_except",
+        "line": 64,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 4596,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 311,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 1918,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 3118,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "git-p4.py"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Error Handling",
+        "message": "Add try/catch blocks around I/O operations, network calls, and parsing logic.",
+        "libraries": [
+          "Custom exceptions for domain errors"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Retry Logic",
+        "message": "Transient failures are common. Implement retry with exponential backoff for external service calls.",
+        "libraries": [
+          "tenacity (Python)",
+          "async-retry (JS)",
+          "resilience4j (Java)",
+          "cenkalti/backoff (Go)"
+        ]
+      },
+      {
+        "priority": "HIGH",
+        "category": "Observability",
+        "message": "Insufficient logging/metrics makes debugging production issues nearly impossible.",
+        "libraries": [
+          "structlog (Python)",
+          "pino (JS)",
+          "OpenTelemetry (all languages)"
+        ]
+      },
+      {
+        "priority": "MEDIUM",
+        "category": "Circuit Breakers",
+        "message": "Protect against cascading failures by adding circuit breakers to external dependencies.",
+        "libraries": [
+          "pybreaker (Python)",
+          "opossum (JS)",
+          "resilience4j (Java)",
+          "sony/gobreaker (Go)"
+        ]
+      },
+      {
+        "priority": "LOW",
+        "category": "Bulkheads",
+        "message": "Consider thread pool isolation and connection pool limits to prevent resource exhaustion.",
+        "libraries": [
+          "concurrent.futures (Python)",
+          "generic-pool (JS)",
+          "HikariCP (Java)"
+        ]
+      }
+    ],
+    "too_small_to_score": false,
+    "total_loc": 656447
+  },
+  "hubris": {
+    "theater_ratio": "Infinity",
+    "quadrant": "CARGO_CULT",
+    "patterns_detected": 24,
+    "patterns_correct": 0,
+    "high_severity_issues": 16
+  }
+}

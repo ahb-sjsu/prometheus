@@ -1,125 +1,11 @@
-"""
-Prometheus UI - Shared UI components for Prometheus code analysis tools.
-
-Copyright (c) 2025 Andrew H. Bond <andrew.bond@sjsu.edu>
-All rights reserved.
-
-This software is provided for educational and research purposes.
-Unauthorized copying, modification, or distribution is prohibited.
-
-Contains:
-- CSS styles (bivariate palette, dark theme)
-- HTML component generators (quadrant chart, tables, legends)
-- GitHub avatar URL resolution
-"""
-
-# =============================================================================
-# COPYRIGHT
-# =============================================================================
-
-COPYRIGHT_NOTICE = (
-    "Copyright © 2025 Andrew H. Bond <andrew.bond@sjsu.edu> • All rights reserved"
-)
-COPYRIGHT_HTML = '<p style="text-align: center; color: #64748b; font-size: 0.75rem; margin-top: 1rem;">Copyright © 2025 Andrew H. Bond &lt;andrew.bond@sjsu.edu&gt; • All rights reserved</p>'
-
-# =============================================================================
-# COLOR PALETTE - Custom bivariate pastel (muted)
-# =============================================================================
-
-QUADRANT_COLORS = {
-    "BUNKER": "#e8c8a0",  # Stronger tan (underground)
-    "FORTRESS": "#a8a8b8",  # Steel blue-grey (fortified)
-    "GLASS HOUSE": "#b0c8e8",  # Original pastel blue (fragile)
-    "DEATHTRAP": "#e8b0b0",  # Original pastel red (danger)
-}
-
-# For quadrant label text (slightly more saturated for readability)
-QUADRANT_TEXT_COLORS = {
-    "BUNKER": "#c4a484",  # Brown
-    "FORTRESS": "#888888",  # Grey
-    "GLASS HOUSE": "#88a8c8",  # Blue
-    "DEATHTRAP": "#d88888",  # Red
-}
-
-# Fallback colors for repo dots (Tableau 10)
-FALLBACK_COLORS = [
-    "#4e79a7",
-    "#f28e2b",
-    "#e15759",
-    "#76b7b2",
-    "#59a14f",
-    "#edc948",
-    "#b07aa1",
-    "#ff9da7",
-]
-
-
-# =============================================================================
-# GITHUB AVATAR RESOLUTION
-# =============================================================================
-
-KNOWN_REPOS = {
-    "flask": "pallets",
-    "django": "django",
-    "fastapi": "tiangolo",
-    "requests": "psf",
-    "numpy": "numpy",
-    "pandas": "pandas-dev",
-    "react": "facebook",
-    "vue": "vuejs",
-    "tensorflow": "tensorflow",
-    "pytorch": "pytorch",
-    "kubernetes": "kubernetes",
-    "docker": "docker",
-    "redis": "redis",
-    "postgres": "postgres",
-    "node": "nodejs",
-    "express": "expressjs",
-    "spring-boot": "spring-projects",
-    "rails": "rails",
-    "laravel": "laravel",
-    "gin": "gin-gonic",
-    "echo": "labstack",
-    "actix": "actix",
-    "rocket": "rwf2",
-    "prometheus": "ahb-sjsu",  # our tool
-}
-
-
-def get_github_avatar_url(repo_name: str) -> str:
-    """Get GitHub avatar URL for a repo owner."""
-    # Handle owner/repo format
-    if "/" in repo_name:
-        owner = repo_name.split("/")[0]
-        return f"https://github.com/{owner}.png?size=80"
-
-    # Handle owner_repo format (from prometheus output)
-    if "_" in repo_name:
-        parts = repo_name.split("_")
-        # Try first part as owner
-        owner = parts[0]
-        # Also check if second part is a known repo
-        if len(parts) > 1 and parts[1].lower() in KNOWN_REPOS:
-            owner = KNOWN_REPOS[parts[1].lower()]
-        return f"https://github.com/{owner}.png?size=80"
-
-    # Check known repos
-    repo_lower = repo_name.lower()
-    if repo_lower in KNOWN_REPOS:
-        owner = KNOWN_REPOS[repo_lower]
-        return f"https://github.com/{owner}.png?size=80"
-
-    return f"https://github.com/{repo_name}.png?size=80"
-
-
-# =============================================================================
-# CSS STYLES
-# =============================================================================
-
-
-def get_base_css() -> str:
-    """Base CSS for dark theme."""
-    return """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olympus - Repository Comparison</title>
+    <style>
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -152,12 +38,8 @@ def get_base_css() -> str:
             font-size: 1.1rem;
             margin-bottom: 1rem;
         }
-    """
-
-
-def get_quadrant_css() -> str:
-    """CSS for the bivariate quadrant chart."""
-    return """
+    
+        
         /* Quadrant wrapper and labels */
         .quadrant-wrapper {
             display: flex;
@@ -625,12 +507,8 @@ def get_quadrant_css() -> str:
             font-size: 0.7rem;
             font-weight: 600;
         }
-    """
-
-
-def get_table_css() -> str:
-    """CSS for data tables."""
-    return """
+    
+        
         table {
             width: 100%;
             border-collapse: collapse;
@@ -665,69 +543,179 @@ def get_table_css() -> str:
             font-weight: 600;
             color: white;
         }
-    """
-
-
-# =============================================================================
-# HTML COMPONENT GENERATORS
-# =============================================================================
-
-
-def generate_bivariate_grid_html() -> str:
-    """Generate the 16x16 bivariate gradient grid (256 cells)."""
-    cells = []
-    for i in range(1, 257):
-        cells.append(f'<div class="cell-{i}"></div>')
-    return '<div class="bivariate-grid">\n' + "".join(cells) + "\n</div>"
-
-
-def generate_repo_dot_html(
-    name: str,
-    x_pct: float,
-    y_pct: float,
-    avatar_url: str,
-    fallback_color: str,
-    quadrant: str,
-    complexity: float,
-    resilience: float,
-    theater: float = 1.0,
-) -> str:
-    """Generate HTML for a single repo dot on the quadrant."""
-    short_name = name.split("/")[-1][:10]
-    theater_str = f"&#10;Theater: {theater:.2f}" if theater != 1.0 else ""
-    # Use bottom positioning: 0% = bottom of chart, 100% = top
-    # y_pct represents complexity where low values = high complexity = should be at TOP
-    # So we need to invert: bottom = 100 - y_pct
-    bottom_pct = 100 - y_pct
-    return f"""
-        <div class="repo-dot" style="left: {x_pct}%; bottom: {bottom_pct}%;"
-             title="{name}&#10;Quadrant: {quadrant}&#10;Complexity: {complexity:.0f}&#10;Resilience: {resilience:.0f}{theater_str}">
-            <img src="{avatar_url}" alt="{name}" 
-                 onerror="this.style.display='none'; this.parentElement.style.backgroundColor='{fallback_color}';">
-            <span class="dot-label">{short_name}</span>
+    
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        header .subtitle {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+        
+        /* Glossary tooltip styles */
+        .glossary {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+        
+        .glossary-toggle {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .glossary-toggle:hover {
+            background: #3f4f63;
+            color: #e2e8f0;
+        }
+        
+        .glossary-content {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0;
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        /* Invisible bridge between button and content */
+        .glossary-content::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+        }
+        
+        .glossary:hover .glossary-content,
+        .glossary-content:hover {
+            display: block;
+        }
+        
+        .glossary-item {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .glossary-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .glossary-term {
+            font-weight: 600;
+            color: #f59e0b;
+            font-size: 0.85rem;
+        }
+        
+        .glossary-def {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.8rem;
+            cursor: help;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ OLYMPUS</h1>
+            <p class="subtitle">Multi-Repository Fitness Comparison</p>
+            <p class="subtitle" style="font-size: 0.8rem; margin-top: 0.25rem;">
+                1 repositories • 2026-01-05
+            </p>
+        </header>
+        
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-value">1</div>
+                <div class="stat-label">Repositories</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">0</div>
+                <div class="stat-label" title="Low complexity, low resilience. Hidden technical debt - simple but fragile.">BUNKER</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">0</div>
+                <div class="stat-label" title="High complexity, low resilience. Visibly fragile - complex and brittle.">GLASS HOUSE</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">1</div>
+                <div class="stat-label" title="Low complexity, high resilience. Ideal state - simple and robust.">FORTRESS</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">0</div>
+                <div class="stat-label" title="High complexity, high resilience. Over-engineered - complex but robust.">DEATHTRAP</div>
+            </div>
         </div>
-    """
-
-
-def generate_legend_item_html(
-    name: str, avatar_url: str, fallback_color: str, quadrant: str
-) -> str:
-    """Generate HTML for a legend item."""
-    quadrant_color = QUADRANT_TEXT_COLORS.get(quadrant, "#64748b")
-    return f"""
-        <div class="legend-item">
-            <img class="legend-avatar" src="{avatar_url}" alt="{name}"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <span class="legend-dot-fallback" style="background-color: {fallback_color}; display: none;"></span>
-            <span class="legend-name">{name}</span>
-            <span class="legend-quadrant" style="color: {quadrant_color};">{quadrant}</span>
-        </div>
-    """
-
-
-def generate_quadrant_chart_html(dots_html: str, legend_html: str) -> str:
-    """Generate the complete quadrant chart with labels."""
-    return f"""
+        
+        <div class="card">
+            <h2>Fitness Quadrant</h2>
+            
         <div class="quadrant-wrapper">
             <!-- Top labels -->
             <div class="top-labels">
@@ -739,12 +727,21 @@ def generate_quadrant_chart_html(dots_html: str, legend_html: str) -> str:
                 <div class="side-label left">← Low Resilience</div>
                 
                 <div class="quadrant-chart">
-                    {generate_bivariate_grid_html()}
+                    <div class="bivariate-grid">
+<div class="cell-1"></div><div class="cell-2"></div><div class="cell-3"></div><div class="cell-4"></div><div class="cell-5"></div><div class="cell-6"></div><div class="cell-7"></div><div class="cell-8"></div><div class="cell-9"></div><div class="cell-10"></div><div class="cell-11"></div><div class="cell-12"></div><div class="cell-13"></div><div class="cell-14"></div><div class="cell-15"></div><div class="cell-16"></div><div class="cell-17"></div><div class="cell-18"></div><div class="cell-19"></div><div class="cell-20"></div><div class="cell-21"></div><div class="cell-22"></div><div class="cell-23"></div><div class="cell-24"></div><div class="cell-25"></div><div class="cell-26"></div><div class="cell-27"></div><div class="cell-28"></div><div class="cell-29"></div><div class="cell-30"></div><div class="cell-31"></div><div class="cell-32"></div><div class="cell-33"></div><div class="cell-34"></div><div class="cell-35"></div><div class="cell-36"></div><div class="cell-37"></div><div class="cell-38"></div><div class="cell-39"></div><div class="cell-40"></div><div class="cell-41"></div><div class="cell-42"></div><div class="cell-43"></div><div class="cell-44"></div><div class="cell-45"></div><div class="cell-46"></div><div class="cell-47"></div><div class="cell-48"></div><div class="cell-49"></div><div class="cell-50"></div><div class="cell-51"></div><div class="cell-52"></div><div class="cell-53"></div><div class="cell-54"></div><div class="cell-55"></div><div class="cell-56"></div><div class="cell-57"></div><div class="cell-58"></div><div class="cell-59"></div><div class="cell-60"></div><div class="cell-61"></div><div class="cell-62"></div><div class="cell-63"></div><div class="cell-64"></div><div class="cell-65"></div><div class="cell-66"></div><div class="cell-67"></div><div class="cell-68"></div><div class="cell-69"></div><div class="cell-70"></div><div class="cell-71"></div><div class="cell-72"></div><div class="cell-73"></div><div class="cell-74"></div><div class="cell-75"></div><div class="cell-76"></div><div class="cell-77"></div><div class="cell-78"></div><div class="cell-79"></div><div class="cell-80"></div><div class="cell-81"></div><div class="cell-82"></div><div class="cell-83"></div><div class="cell-84"></div><div class="cell-85"></div><div class="cell-86"></div><div class="cell-87"></div><div class="cell-88"></div><div class="cell-89"></div><div class="cell-90"></div><div class="cell-91"></div><div class="cell-92"></div><div class="cell-93"></div><div class="cell-94"></div><div class="cell-95"></div><div class="cell-96"></div><div class="cell-97"></div><div class="cell-98"></div><div class="cell-99"></div><div class="cell-100"></div><div class="cell-101"></div><div class="cell-102"></div><div class="cell-103"></div><div class="cell-104"></div><div class="cell-105"></div><div class="cell-106"></div><div class="cell-107"></div><div class="cell-108"></div><div class="cell-109"></div><div class="cell-110"></div><div class="cell-111"></div><div class="cell-112"></div><div class="cell-113"></div><div class="cell-114"></div><div class="cell-115"></div><div class="cell-116"></div><div class="cell-117"></div><div class="cell-118"></div><div class="cell-119"></div><div class="cell-120"></div><div class="cell-121"></div><div class="cell-122"></div><div class="cell-123"></div><div class="cell-124"></div><div class="cell-125"></div><div class="cell-126"></div><div class="cell-127"></div><div class="cell-128"></div><div class="cell-129"></div><div class="cell-130"></div><div class="cell-131"></div><div class="cell-132"></div><div class="cell-133"></div><div class="cell-134"></div><div class="cell-135"></div><div class="cell-136"></div><div class="cell-137"></div><div class="cell-138"></div><div class="cell-139"></div><div class="cell-140"></div><div class="cell-141"></div><div class="cell-142"></div><div class="cell-143"></div><div class="cell-144"></div><div class="cell-145"></div><div class="cell-146"></div><div class="cell-147"></div><div class="cell-148"></div><div class="cell-149"></div><div class="cell-150"></div><div class="cell-151"></div><div class="cell-152"></div><div class="cell-153"></div><div class="cell-154"></div><div class="cell-155"></div><div class="cell-156"></div><div class="cell-157"></div><div class="cell-158"></div><div class="cell-159"></div><div class="cell-160"></div><div class="cell-161"></div><div class="cell-162"></div><div class="cell-163"></div><div class="cell-164"></div><div class="cell-165"></div><div class="cell-166"></div><div class="cell-167"></div><div class="cell-168"></div><div class="cell-169"></div><div class="cell-170"></div><div class="cell-171"></div><div class="cell-172"></div><div class="cell-173"></div><div class="cell-174"></div><div class="cell-175"></div><div class="cell-176"></div><div class="cell-177"></div><div class="cell-178"></div><div class="cell-179"></div><div class="cell-180"></div><div class="cell-181"></div><div class="cell-182"></div><div class="cell-183"></div><div class="cell-184"></div><div class="cell-185"></div><div class="cell-186"></div><div class="cell-187"></div><div class="cell-188"></div><div class="cell-189"></div><div class="cell-190"></div><div class="cell-191"></div><div class="cell-192"></div><div class="cell-193"></div><div class="cell-194"></div><div class="cell-195"></div><div class="cell-196"></div><div class="cell-197"></div><div class="cell-198"></div><div class="cell-199"></div><div class="cell-200"></div><div class="cell-201"></div><div class="cell-202"></div><div class="cell-203"></div><div class="cell-204"></div><div class="cell-205"></div><div class="cell-206"></div><div class="cell-207"></div><div class="cell-208"></div><div class="cell-209"></div><div class="cell-210"></div><div class="cell-211"></div><div class="cell-212"></div><div class="cell-213"></div><div class="cell-214"></div><div class="cell-215"></div><div class="cell-216"></div><div class="cell-217"></div><div class="cell-218"></div><div class="cell-219"></div><div class="cell-220"></div><div class="cell-221"></div><div class="cell-222"></div><div class="cell-223"></div><div class="cell-224"></div><div class="cell-225"></div><div class="cell-226"></div><div class="cell-227"></div><div class="cell-228"></div><div class="cell-229"></div><div class="cell-230"></div><div class="cell-231"></div><div class="cell-232"></div><div class="cell-233"></div><div class="cell-234"></div><div class="cell-235"></div><div class="cell-236"></div><div class="cell-237"></div><div class="cell-238"></div><div class="cell-239"></div><div class="cell-240"></div><div class="cell-241"></div><div class="cell-242"></div><div class="cell-243"></div><div class="cell-244"></div><div class="cell-245"></div><div class="cell-246"></div><div class="cell-247"></div><div class="cell-248"></div><div class="cell-249"></div><div class="cell-250"></div><div class="cell-251"></div><div class="cell-252"></div><div class="cell-253"></div><div class="cell-254"></div><div class="cell-255"></div><div class="cell-256"></div>
+</div>
                     
                     <div class="axis-line axis-h"></div>
                     <div class="axis-line axis-v"></div>
                     
-                    {dots_html}
+                    
+        <div class="repo-dot" style="left: 56.99964969645082%; bottom: 53.84124584647931%;"
+             title="ahb-sjsu_prometheus&#10;Quadrant: FORTRESS&#10;Complexity: 45&#10;Resilience: 46&#10;Theater: 3.78">
+            <img src="https://github.com/anthropics.png?size=80" alt="ahb-sjsu_prometheus" 
+                 onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#4e79a7';">
+            <span class="dot-label">ahb-sjsu_p</span>
+        </div>
+    
                 </div>
                 
                 <div class="side-label right">High Resilience →</div>
@@ -762,38 +759,22 @@ def generate_quadrant_chart_html(dots_html: str, legend_html: str) -> str:
         </div>
         
         <div class="legend">
-            {legend_html}
+            
+        <div class="legend-item">
+            <img class="legend-avatar" src="https://github.com/anthropics.png?size=80" alt="ahb-sjsu_prometheus"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #4e79a7; display: none;"></span>
+            <span class="legend-name">ahb-sjsu_prometheus</span>
+            <span class="legend-quadrant" style="color: #888888;">FORTRESS</span>
         </div>
-    """
-
-
-def generate_comparison_table_html(repos: list) -> str:
-    """
-    Generate a comparison table for multiple repos.
-
-    repos: list of dicts with keys: name, health, quadrant, complexity, resilience, theater
-    """
-    rows = ""
-    for i, repo in enumerate(repos, 1):
-        health = repo.get("health", 0)
-        health_color = (
-            "#22c55e" if health >= 70 else "#f59e0b" if health >= 50 else "#ef4444"
-        )
-        quadrant_color = QUADRANT_TEXT_COLORS.get(repo.get("quadrant", ""), "#64748b")
-
-        rows += f"""
-        <tr>
-            <td>{i}</td>
-            <td style="font-weight: 500; color: #e2e8f0;">{repo.get('name', '')}</td>
-            <td><span class="badge" style="background: {health_color}">{health:.0f}</span></td>
-            <td style="color: {quadrant_color}; font-weight: 600;">{repo.get('quadrant', '')}</td>
-            <td>{repo.get('complexity', 0):.0f}</td>
-            <td>{repo.get('resilience', 0):.0f}</td>
-            <td>{repo.get('theater', 1.0):.2f}</td>
-        </tr>
-        """
-
-    return f"""
+    
+        </div>
+    
+        </div>
+        
+        <div class="card">
+            <h2>Rankings (by Overall Health)</h2>
+            
         <table>
             <thead>
                 <tr>
@@ -807,69 +788,60 @@ def generate_comparison_table_html(repos: list) -> str:
                 </tr>
             </thead>
             <tbody>
-                {rows}
+                
+        <tr>
+            <td>1</td>
+            <td style="font-weight: 500; color: #e2e8f0;">ahb-sjsu_prometheus</td>
+            <td><span class="badge" style="background: #ef4444">38</span></td>
+            <td style="color: #888888; font-weight: 600;">FORTRESS</td>
+            <td>45</td>
+            <td>46</td>
+            <td>3.78</td>
+        </tr>
+        
             </tbody>
         </table>
-    """
-
-
-def calculate_dot_position(complexity_score: float, resilience_score: float) -> tuple:
-    """
-    Calculate X/Y position for a repo dot.
-
-    Chart layout (matching quadrant definitions):
-        TOP-LEFT: DEATHTRAP (high complexity, low resilience)
-        TOP-RIGHT: FORTRESS (high complexity, high resilience)
-        BOTTOM-LEFT: GLASS HOUSE (low complexity, low resilience)
-        BOTTOM-RIGHT: BUNKER (low complexity, high resilience)
-
-    Input scores:
-    - complexity_score: Higher = LOWER complexity (simpler code = better)
-      Threshold: 50 (>= 50 = low complexity)
-    - resilience_score: Higher = MORE resilient (better error handling = better)
-      Threshold: 35 (>= 35 = high resilience)
-
-    Output position:
-    - x_pct: 0 = left (low resilience), 100 = right (high resilience)
-    - y_pct: 0 = top (high complexity = LOW complexity_score), 100 = bottom (low complexity = HIGH complexity_score)
-
-    The visual center (50%) must align with the classification thresholds.
-    """
-    # Thresholds from prometheus.py - must match!
-    COMPLEXITY_THRESHOLD = 50
-    RESILIENCE_THRESHOLD = 35
-
-    # X-axis: Resilience - scale so threshold (35) maps to visual center (50%)
-    # Score 0 -> ~8%, Score 35 -> 50%, Score 70 -> 92%
-    if resilience_score < 0:
-        x_pct = 50  # Unknown resilience -> center
-    elif resilience_score < RESILIENCE_THRESHOLD:
-        # Below threshold: map 0-35 to 8-50%
-        x_pct = 8 + (resilience_score / RESILIENCE_THRESHOLD) * 42
-    else:
-        # Above threshold: map 35-100 to 50-92%
-        x_pct = (
-            50
-            + ((resilience_score - RESILIENCE_THRESHOLD) / (100 - RESILIENCE_THRESHOLD))
-            * 42
-        )
-
-    # Y-axis: Complexity - threshold is 50, which naturally maps to 50%
-    # But Y is inverted: low score = high complexity = top
-    # Score 0 -> top (8%), Score 50 -> center (50%), Score 100 -> bottom (92%)
-    if complexity_score < COMPLEXITY_THRESHOLD:
-        # Below threshold (high complexity): map 0-50 to 8-50%
-        y_pct = 8 + (complexity_score / COMPLEXITY_THRESHOLD) * 42
-    else:
-        # Above threshold (low complexity): map 50-100 to 50-92%
-        y_pct = (
-            50
-            + ((complexity_score - COMPLEXITY_THRESHOLD) / (100 - COMPLEXITY_THRESHOLD))
-            * 42
-        )
-
-    # Clamp to safe bounds
-    x_pct = max(8, min(92, x_pct))
-    y_pct = max(8, min(92, y_pct))
-
-    return x_pct, y_pct
+    
+        </div>
+        
+        <footer>
+            <p>Olympus • "Complexity is the enemy of reliability"</p>
+            <p style="margin-top: 0.5rem;">Copyright © 2025 Andrew H. Bond &lt;andrew.bond@sjsu.edu&gt; • All rights reserved</p>
+        </footer>
+    </div>
+    
+    <div class="glossary">
+        <div class="glossary-content">
+            <div class="glossary-item">
+                <div class="glossary-term">🏰 FORTRESS</div>
+                <div class="glossary-def">Low complexity, high resilience. The ideal quadrant - simple, maintainable code with strong error handling and testing.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🏠 GLASS HOUSE</div>
+                <div class="glossary-def">High complexity, low resilience. Visibly fragile code - complex logic with poor error handling. High risk of cascading failures.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🏚️ BUNKER</div>
+                <div class="glossary-def">Low complexity, low resilience. Hidden technical debt - looks simple but lacks defensive coding. May fail silently.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">💀 DEATHTRAP</div>
+                <div class="glossary-def">High complexity, high resilience. Over-engineered code - robust but unnecessarily complex. Maintenance burden.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🎭 Theater Ratio</div>
+                <div class="glossary-def">Ratio of "resilience theater" (patterns that look protective but aren't) to genuine resilience. Lower is better. 1.0 = no theater detected.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">📊 Complexity Score</div>
+                <div class="glossary-def">Weighted measure of cyclomatic complexity, cognitive complexity, nesting depth, and function length. 0-100 scale, lower is simpler.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🛡️ Resilience Score</div>
+                <div class="glossary-def">Measure of error handling coverage, defensive patterns, and test coverage. 0-100 scale, higher is more robust.</div>
+            </div>
+        </div>
+        <button class="glossary-toggle">📖 Glossary</button>
+    </div>
+</body>
+</html>

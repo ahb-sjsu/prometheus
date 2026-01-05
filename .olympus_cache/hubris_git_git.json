@@ -1,0 +1,491 @@
+{
+  "codebase_path": ".olympus_cache\\git_git",
+  "timestamp": "2026-01-05T15:04:39.496030",
+  "patterns_detected": 24,
+  "patterns_correct": 0,
+  "patterns_partial": 6,
+  "patterns_cargo_cult": 18,
+  "theater_ratio": "Infinity",
+  "retry_issues": [
+    {
+      "file": "git-p4.py",
+      "line": 206,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 206,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 888,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 888,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 1316,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 1316,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 3427,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 3427,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 3740,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "git-p4.py",
+      "line": 3740,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    }
+  ],
+  "timeout_issues": [],
+  "circuit_breaker_issues": [],
+  "exception_issues": [
+    {
+      "file": "git-p4.py",
+      "line": 64,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "git-p4.py",
+      "line": 3118,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "git-p4.py",
+      "line": 64,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "git-p4.py",
+      "line": 913,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\blame_incremental.js",
+      "line": 602,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching all exceptions without specific handling",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 76,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Empty catch block - errors are silently ignored",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 79,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Empty catch block - errors are silently ignored",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 82,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Empty catch block - errors are silently ignored",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 85,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Empty catch block - errors are silently ignored",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 76,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching all exceptions without specific handling",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 79,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching all exceptions without specific handling",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 82,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching all exceptions without specific handling",
+      "exception_type": ""
+    },
+    {
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 85,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching all exceptions without specific handling",
+      "exception_type": ""
+    }
+  ],
+  "fallback_issues": [],
+  "patterns": [
+    {
+      "pattern_type": "retry",
+      "file": "git-p4.py",
+      "line": 206,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "git-p4.py",
+      "line": 888,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "git-p4.py",
+      "line": 1316,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "git-p4.py",
+      "line": 3427,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "git-p4.py",
+      "line": 3740,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 64,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 311,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 1918,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 3118,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 4596,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 273,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 2683,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 3181,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 64,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "git-p4.py",
+      "line": 913,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\blame_incremental.js",
+      "line": 602,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "catch_all"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 76,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "empty_catch"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 79,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "empty_catch"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 82,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "empty_catch"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 85,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "empty_catch"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 76,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "catch_all"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 79,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "catch_all"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 82,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "catch_all"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "gitweb\\static\\js\\lib\\common-lib.js",
+      "line": 85,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "catch_all"
+      }
+    }
+  ],
+  "resilience_libraries": [],
+  "library_count": 0,
+  "quadrant": "CARGO_CULT",
+  "verdict": "HIGH RISK: Many defensive patterns implemented incorrectly. This codebase has adopted resilience theater - patterns that look good but add failure modes rather than preventing them. The complexity likely makes the system LESS reliable.",
+  "risk_level": "CRITICAL",
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "category": "High Severity Issues",
+      "message": "16 high-severity issues found that likely cause production problems",
+      "actions": [
+        "git-p4.py:206 - Retry without backoff - will cause thundering herd on failure",
+        "git-p4.py:206 - Retry without maximum attempts - may retry forever",
+        "git-p4.py:888 - Retry without backoff - will cause thundering herd on failure",
+        "git-p4.py:888 - Retry without maximum attempts - may retry forever",
+        "git-p4.py:1316 - Retry without backoff - will cause thundering herd on failure"
+      ]
+    },
+    {
+      "priority": "HIGH",
+      "category": "Retry Without Backoff",
+      "message": "5 retry implementations without exponential backoff",
+      "actions": [
+        "Add exponential backoff: delay = base_delay * (2 ** attempt)",
+        "Add jitter: delay * (1 + random.uniform(-0.1, 0.1))",
+        "Consider using tenacity or backoff libraries"
+      ]
+    },
+    {
+      "priority": "HIGH",
+      "category": "Swallowed Exceptions",
+      "message": "6 locations where exceptions are silently ignored",
+      "actions": [
+        "At minimum, log the exception before ignoring",
+        "Consider whether the exception should propagate",
+        "Use specific exception types instead of bare except"
+      ]
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Consider Simplification",
+      "message": "Resilience patterns are adding complexity without benefit",
+      "actions": [
+        "Consider removing retry/circuit breaker patterns until properly implemented",
+        "Simple code that fails obviously is better than complex code that fails silently",
+        "Start with timeouts and logging, add other patterns only when needed"
+      ]
+    }
+  ],
+  "total_issues": 23,
+  "high_severity_count": 16,
+  "medium_severity_count": 7,
+  "low_severity_count": 0
+}

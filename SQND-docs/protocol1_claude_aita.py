@@ -25,7 +25,6 @@ import os
 import sys
 import time
 import random
-import hashlib
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Tuple, Optional, Any
@@ -702,7 +701,7 @@ class Protocol1Experiment:
         total_evals = len(self.scenarios) * len(self.conditions) * self.n_repetitions
         completed = 0
         
-        print(f"\nRunning Protocol 1 Experiment")
+        print("\nRunning Protocol 1 Experiment")
         print(f"  Scenarios: {len(self.scenarios)}")
         print(f"  Conditions: {self.conditions}")
         print(f"  Repetitions: {self.n_repetitions}")

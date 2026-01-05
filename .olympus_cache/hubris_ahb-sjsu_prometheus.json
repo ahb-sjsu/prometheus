@@ -1,0 +1,2892 @@
+{
+  "codebase_path": ".olympus_cache\\ahb-sjsu_prometheus",
+  "timestamp": "2026-01-05T15:04:00.950523",
+  "patterns_detected": 189,
+  "patterns_correct": 50,
+  "patterns_partial": 83,
+  "patterns_cargo_cult": 56,
+  "theater_ratio": 3.78,
+  "retry_issues": [
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 203,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 203,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 208,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 208,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 215,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 215,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 220,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 220,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 225,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 225,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 230,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "hubris_fp_filter.py",
+      "line": 230,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "lang_analyzers.py",
+      "line": 121,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "lang_analyzers.py",
+      "line": 121,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "SQND-docs\\protocol1_claude_aita.py",
+      "line": 792,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "SQND-docs\\protocol1_claude_aita.py",
+      "line": 792,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 258,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 258,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 320,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 353,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 353,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 488,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 488,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 489,
+      "issue_type": "no_backoff",
+      "severity": "HIGH",
+      "description": "Retry without backoff - will cause thundering herd on failure",
+      "code_snippet": "",
+      "fix_suggestion": "Add exponential backoff: time.sleep(base_delay * (2 ** attempt))"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 489,
+      "issue_type": "no_max",
+      "severity": "HIGH",
+      "description": "Retry without maximum attempts - may retry forever",
+      "code_snippet": "",
+      "fix_suggestion": "Add max_retries limit (typically 3-5 attempts)"
+    }
+  ],
+  "timeout_issues": [
+    {
+      "file": "benchmark.py",
+      "line": 255,
+      "issue_type": "too_long",
+      "severity": "MEDIUM",
+      "description": "Timeout of 600.0s is very long - consider shorter timeout with retry",
+      "timeout_value": 600.0,
+      "context": ""
+    },
+    {
+      "file": "hubris.py",
+      "line": 401,
+      "issue_type": "explicit_none",
+      "severity": "HIGH",
+      "description": "Explicit timeout=None disables timeout - can hang indefinitely",
+      "timeout_value": 0,
+      "context": ""
+    },
+    {
+      "file": "hubris.py",
+      "line": 420,
+      "issue_type": "explicit_none",
+      "severity": "HIGH",
+      "description": "Explicit timeout=None disables timeout - can hang indefinitely",
+      "timeout_value": 0,
+      "context": ""
+    },
+    {
+      "file": "sentinel.py",
+      "line": 205,
+      "issue_type": "too_long",
+      "severity": "MEDIUM",
+      "description": "Timeout of 300.0s is very long - consider shorter timeout with retry",
+      "timeout_value": 300.0,
+      "context": ""
+    },
+    {
+      "file": "sentinel.py",
+      "line": 248,
+      "issue_type": "too_long",
+      "severity": "MEDIUM",
+      "description": "Timeout of 300.0s is very long - consider shorter timeout with retry",
+      "timeout_value": 300.0,
+      "context": ""
+    },
+    {
+      "file": "sentinel.py",
+      "line": 290,
+      "issue_type": "too_long",
+      "severity": "MEDIUM",
+      "description": "Timeout of 600.0s is very long - consider shorter timeout with retry",
+      "timeout_value": 600.0,
+      "context": ""
+    },
+    {
+      "file": "sentinel.py",
+      "line": 335,
+      "issue_type": "too_long",
+      "severity": "MEDIUM",
+      "description": "Timeout of 300.0s is very long - consider shorter timeout with retry",
+      "timeout_value": 300.0,
+      "context": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 834,
+      "issue_type": "missing",
+      "severity": "HIGH",
+      "description": "Network call without timeout - can hang indefinitely",
+      "timeout_value": 0,
+      "context": "requests.post(\n            f\"{self.base_url}/api/generate\",\n            json={\n                \"mode"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 602,
+      "issue_type": "explicit_none",
+      "severity": "HIGH",
+      "description": "Explicit timeout=None disables timeout - can hang indefinitely",
+      "timeout_value": 0,
+      "context": ""
+    }
+  ],
+  "circuit_breaker_issues": [
+    {
+      "file": "hubris.py",
+      "line": 82,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "prometheus.py",
+      "line": 800,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "prometheus.py",
+      "line": 803,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "sentinel.py",
+      "line": 482,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "sentinel.py",
+      "line": 482,
+      "issue_type": "no_fallback",
+      "severity": "MEDIUM",
+      "description": "Circuit breaker without fallback - open circuit will just throw exceptions"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 68,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 240,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 240,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 241,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 72,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 72,
+      "issue_type": "no_fallback",
+      "severity": "MEDIUM",
+      "description": "Circuit breaker without fallback - open circuit will just throw exceptions"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 8,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 8,
+      "issue_type": "no_fallback",
+      "severity": "MEDIUM",
+      "description": "Circuit breaker without fallback - open circuit will just throw exceptions"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 70,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 70,
+      "issue_type": "no_fallback",
+      "severity": "MEDIUM",
+      "description": "Circuit breaker without fallback - open circuit will just throw exceptions"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 71,
+      "issue_type": "no_fallback",
+      "severity": "MEDIUM",
+      "description": "Circuit breaker without fallback - open circuit will just throw exceptions"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 72,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 72,
+      "issue_type": "no_fallback",
+      "severity": "MEDIUM",
+      "description": "Circuit breaker without fallback - open circuit will just throw exceptions"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 182,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 182,
+      "issue_type": "no_fallback",
+      "severity": "MEDIUM",
+      "description": "Circuit breaker without fallback - open circuit will just throw exceptions"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 653,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 653,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 653,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 656,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 656,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 656,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 657,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 657,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 657,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 658,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 658,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 658,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 698,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 698,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 698,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v1.py",
+      "line": 656,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v1.py",
+      "line": 659,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v2.py",
+      "line": 717,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v2.py",
+      "line": 720,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v3.py",
+      "line": 739,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v3.py",
+      "line": 742,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v4.py",
+      "line": 739,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\prometheus_v4.py",
+      "line": 742,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 68,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 240,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 240,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 240,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 68,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 71,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 240,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 240,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 241,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "issue_type": "invisible",
+      "severity": "HIGH",
+      "description": "Circuit breaker without metrics/logging - state changes are invisible to operators"
+    }
+  ],
+  "exception_issues": [
+    {
+      "file": "benchmark.py",
+      "line": 326,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "hubris.py",
+      "line": 19,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "hubris.py",
+      "line": 436,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "olympus.py",
+      "line": 29,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "prometheus.py",
+      "line": 182,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "shield_analyzer.py",
+      "line": 56,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 696,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 701,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 631,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 696,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 701,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 896,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 902,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 345,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 823,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 345,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 896,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 902,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 209,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 870,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 875,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 815,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 870,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 875,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 1004,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 944,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 1004,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "temp\\hubris_v1.py",
+      "line": 618,
+      "issue_type": "swallow",
+      "severity": "HIGH",
+      "description": "Exception swallowed silently - errors will be invisible",
+      "exception_type": ""
+    },
+    {
+      "file": "temp\\prometheus_v2.py",
+      "line": 182,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "temp\\prometheus_v3.py",
+      "line": 182,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "temp\\prometheus_v4.py",
+      "line": 182,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Catching Exception hides the specific error type and makes debugging harder",
+      "exception_type": ""
+    },
+    {
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 56,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    },
+    {
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 56,
+      "issue_type": "broad_catch",
+      "severity": "MEDIUM",
+      "description": "Bare except catches everything including KeyboardInterrupt and SystemExit",
+      "exception_type": ""
+    }
+  ],
+  "fallback_issues": [],
+  "patterns": [
+    {
+      "pattern_type": "timeout",
+      "file": "benchmark.py",
+      "line": 227,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 5.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "benchmark.py",
+      "line": 255,
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 600.0
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "benchmark.py",
+      "line": 289,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "benchmark.py",
+      "line": 326,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "entropy_analyzer.py",
+      "line": 322,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "entropy_analyzer.py",
+      "line": 357,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris.py",
+      "line": 177,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris.py",
+      "line": 178,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "retrying_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "hubris.py",
+      "line": 401,
+      "quality": "CARGO_CULT",
+      "details": {
+        "issue": "explicit_none"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "hubris.py",
+      "line": 420,
+      "quality": "CARGO_CULT",
+      "details": {
+        "issue": "explicit_none"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "hubris.py",
+      "line": 401,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "hubris.py",
+      "line": 420,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "hubris.py",
+      "line": 470,
+      "quality": "CORRECT",
+      "details": {
+        "library": "circuitbreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "hubris.py",
+      "line": 82,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "hubris.py",
+      "line": 464,
+      "quality": "CORRECT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "hubris.py",
+      "line": 471,
+      "quality": "CORRECT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "hubris.py",
+      "line": 471,
+      "quality": "CORRECT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "hubris.py",
+      "line": 471,
+      "quality": "CORRECT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "hubris.py",
+      "line": 19,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "hubris.py",
+      "line": 835,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "hubris.py",
+      "line": 436,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris_fp_filter.py",
+      "line": 203,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris_fp_filter.py",
+      "line": 208,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris_fp_filter.py",
+      "line": 215,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris_fp_filter.py",
+      "line": 220,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris_fp_filter.py",
+      "line": 225,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "hubris_fp_filter.py",
+      "line": 230,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "lang_analyzers.py",
+      "line": 121,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "olympus.py",
+      "line": 138,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "olympus.py",
+      "line": 556,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "olympus.py",
+      "line": 608,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "olympus.py",
+      "line": 655,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "olympus.py",
+      "line": 29,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "oracle.py",
+      "line": 290,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "prometheus.py",
+      "line": 786,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "prometheus.py",
+      "line": 768,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "prometheus.py",
+      "line": 96,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "prometheus.py",
+      "line": 165,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 10.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "prometheus.py",
+      "line": 805,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 30.0
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "prometheus.py",
+      "line": 800,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "prometheus.py",
+      "line": 803,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "prometheus.py",
+      "line": 182,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "prometheus.py",
+      "line": 836,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "prometheus.py",
+      "line": 1710,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "sentinel.py",
+      "line": 205,
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 300.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "sentinel.py",
+      "line": 248,
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 300.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "sentinel.py",
+      "line": 290,
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 600.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "sentinel.py",
+      "line": 335,
+      "quality": "PARTIAL",
+      "details": {
+        "timeout_value": 300.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "sentinel.py",
+      "line": 385,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "sentinel.py",
+      "line": 435,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "sentinel.py",
+      "line": 482,
+      "quality": "CARGO_CULT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 68,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 240,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 240,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 241,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "shield_analyzer.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "shield_analyzer.py",
+      "line": 56,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "SQND-docs\\protocol1_claude_aita.py",
+      "line": 792,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "for_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\protocol1_claude_aita.py",
+      "line": 613,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 656,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 659,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 90.0
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 696,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 701,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 631,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 696,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\protocol2_holonomy.py",
+      "line": 701,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 834,
+      "quality": "CARGO_CULT",
+      "details": {
+        "issue": "missing_timeout"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 834,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 842,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 60.0
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 896,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 902,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 345,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 823,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 345,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 896,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_fuzzer.py",
+      "line": 902,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 839,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 842,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 60.0
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 209,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 870,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 875,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 815,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 870,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\sqnd_phase_transition_v2.py",
+      "line": 875,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 968,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 971,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 60.0
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 1004,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 944,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "SQND-docs\\stratified_gauge_exploration.py",
+      "line": 1004,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\hubris_v1.py",
+      "line": 391,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\hubris_v1.py",
+      "line": 392,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "retrying_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\hubris_v1.py",
+      "line": 258,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\hubris_v1.py",
+      "line": 320,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\hubris_v1.py",
+      "line": 353,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\hubris_v1.py",
+      "line": 488,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\hubris_v1.py",
+      "line": 489,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "while_retry",
+        "library": false,
+        "manual": true
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\hubris_v1.py",
+      "line": 602,
+      "quality": "CARGO_CULT",
+      "details": {
+        "issue": "explicit_none"
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\hubris_v1.py",
+      "line": 602,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\hubris_v1.py",
+      "line": 1206,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 72,
+      "quality": "CARGO_CULT",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 641,
+      "quality": "CORRECT",
+      "details": {
+        "library": "circuitbreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 8,
+      "quality": "CARGO_CULT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 70,
+      "quality": "CARGO_CULT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 71,
+      "quality": "CARGO_CULT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 72,
+      "quality": "CARGO_CULT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 182,
+      "quality": "CARGO_CULT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 637,
+      "quality": "CORRECT",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 653,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 653,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 653,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 656,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 656,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 656,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 657,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 657,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 657,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 658,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 658,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 658,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 698,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 698,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\hubris_v1.py",
+      "line": 698,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\hubris_v1.py",
+      "line": 989,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\hubris_v1.py",
+      "line": 618,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "except_pass"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\prometheus_v1.py",
+      "line": 642,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v1.py",
+      "line": 624,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v1.py",
+      "line": 96,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v1.py",
+      "line": 661,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 30.0
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v1.py",
+      "line": 656,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v1.py",
+      "line": 659,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v1.py",
+      "line": 692,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\prometheus_v2.py",
+      "line": 703,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v2.py",
+      "line": 685,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v2.py",
+      "line": 96,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v2.py",
+      "line": 165,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 10.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v2.py",
+      "line": 722,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 30.0
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v2.py",
+      "line": 717,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v2.py",
+      "line": 720,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v2.py",
+      "line": 182,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v2.py",
+      "line": 753,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v2.py",
+      "line": 1597,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\prometheus_v3.py",
+      "line": 725,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v3.py",
+      "line": 707,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v3.py",
+      "line": 96,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v3.py",
+      "line": 165,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 10.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v3.py",
+      "line": 744,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 30.0
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v3.py",
+      "line": 739,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v3.py",
+      "line": 742,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v3.py",
+      "line": 182,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v3.py",
+      "line": 775,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v3.py",
+      "line": 1619,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "retry",
+      "file": "temp\\prometheus_v4.py",
+      "line": 725,
+      "quality": "CORRECT",
+      "details": {
+        "pattern": "tenacity_decorator",
+        "library": true
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v4.py",
+      "line": 707,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": null
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v4.py",
+      "line": 96,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 120.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v4.py",
+      "line": 165,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 10.0
+      }
+    },
+    {
+      "pattern_type": "timeout",
+      "file": "temp\\prometheus_v4.py",
+      "line": 744,
+      "quality": "CORRECT",
+      "details": {
+        "timeout_value": 30.0
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v4.py",
+      "line": 739,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\prometheus_v4.py",
+      "line": 742,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "pybreaker"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v4.py",
+      "line": 182,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v4.py",
+      "line": 775,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\prometheus_v4.py",
+      "line": 1649,
+      "quality": "PARTIAL",
+      "details": {
+        "pattern": "broad_except"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 68,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 240,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 240,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 240,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\shield_analyzer_v1.py",
+      "line": 56,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 68,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 71,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 240,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 240,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 241,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "circuit_breaker",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 242,
+      "quality": "PARTIAL",
+      "details": {
+        "library": "custom_cb"
+      }
+    },
+    {
+      "pattern_type": "exception_handling",
+      "file": "temp\\shield_analyzer_v2.py",
+      "line": 56,
+      "quality": "CARGO_CULT",
+      "details": {
+        "pattern": "bare_except"
+      }
+    }
+  ],
+  "resilience_libraries": [
+    "pybreaker",
+    "tenacity"
+  ],
+  "library_count": 2,
+  "quadrant": "CARGO_CULT",
+  "verdict": "HIGH RISK: Many defensive patterns implemented incorrectly. This codebase has adopted resilience theater - patterns that look good but add failure modes rather than preventing them. The complexity likely makes the system LESS reliable.",
+  "risk_level": "CRITICAL",
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "category": "High Severity Issues",
+      "message": "104 high-severity issues found that likely cause production problems",
+      "actions": [
+        "hubris_fp_filter.py:203 - Retry without backoff - will cause thundering herd on failure",
+        "hubris_fp_filter.py:203 - Retry without maximum attempts - may retry forever",
+        "hubris_fp_filter.py:208 - Retry without backoff - will cause thundering herd on failure",
+        "hubris_fp_filter.py:208 - Retry without maximum attempts - may retry forever",
+        "hubris_fp_filter.py:215 - Retry without backoff - will cause thundering herd on failure"
+      ]
+    },
+    {
+      "priority": "HIGH",
+      "category": "Retry Without Backoff",
+      "message": "13 retry implementations without exponential backoff",
+      "actions": [
+        "Add exponential backoff: delay = base_delay * (2 ** attempt)",
+        "Add jitter: delay * (1 + random.uniform(-0.1, 0.1))",
+        "Consider using tenacity or backoff libraries"
+      ]
+    },
+    {
+      "priority": "HIGH",
+      "category": "Missing Timeouts",
+      "message": "1 network calls without timeout configuration",
+      "actions": [
+        "Add timeout to all HTTP clients: requests.get(url, timeout=(5, 30))",
+        "Use connect_timeout and read_timeout separately",
+        "Default suggestion: 5s connect, 30s read"
+      ]
+    },
+    {
+      "priority": "HIGH",
+      "category": "Invisible Circuit Breakers",
+      "message": "64 circuit breakers without metrics or logging",
+      "actions": [
+        "Add state change callbacks: on_state_change=lambda: metrics.emit(...)",
+        "Log circuit breaker state transitions",
+        "Expose circuit breaker state as a metric"
+      ]
+    },
+    {
+      "priority": "HIGH",
+      "category": "Swallowed Exceptions",
+      "message": "11 locations where exceptions are silently ignored",
+      "actions": [
+        "At minimum, log the exception before ignoring",
+        "Consider whether the exception should propagate",
+        "Use specific exception types instead of bare except"
+      ]
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Consider Simplification",
+      "message": "Resilience patterns are adding complexity without benefit",
+      "actions": [
+        "Consider removing retry/circuit breaker patterns until properly implemented",
+        "Simple code that fails obviously is better than complex code that fails silently",
+        "Start with timeouts and logging, add other patterns only when needed"
+      ]
+    }
+  ],
+  "total_issues": 138,
+  "high_severity_count": 104,
+  "medium_severity_count": 34,
+  "low_severity_count": 0
+}

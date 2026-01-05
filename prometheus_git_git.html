@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prometheus: git/git</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #f97316, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .repo-name {
+            font-size: 1.5rem;
+            color: #e2e8f0;
+            font-weight: 300;
+            margin-bottom: 0.25rem;
+        }
+        
+        .subtitle { color: #94a3b8; margin-bottom: 2rem; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .quadrant-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, 
+                rgba(239, 68, 68, 0.15) 0%, 
+                rgba(239, 68, 68, 0.15) 50%,
+                rgba(234, 179, 8, 0.15) 50%,
+                rgba(234, 179, 8, 0.15) 100%
+            );
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .quadrant-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            right: 0;
+            bottom: 50%;
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.15) 0%,
+                rgba(34, 197, 94, 0.15) 100%
+            );
+        }
+        
+        .quadrant-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            right: 0;
+            bottom: 0;
+            background: rgba(34, 197, 94, 0.15);
+        }
+        
+        .axis {
+            position: absolute;
+            background: rgba(148, 163, 184, 0.3);
+        }
+        
+        .axis-x { left: 0; right: 0; top: 50%; height: 2px; }
+        .axis-y { top: 0; bottom: 0; left: 50%; width: 2px; }
+        
+        .quadrant-label {
+            position: absolute;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .label-bunker { bottom: 10%; right: 10%; color: #22c55e; }
+        .label-fortress { top: 10%; right: 10%; color: #3b82f6; }
+        .label-glass { bottom: 10%; left: 10%; color: #eab308; }
+        .label-death { top: 10%; left: 10%; color: #ef4444; }
+        
+        .position-dot {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #eab308;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #eab308, 0 0 40px #eab30866;
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        
+        .label-top { top: 5px; left: 50%; transform: translateX(-50%); }
+        .label-bottom { bottom: 5px; left: 50%; transform: translateX(-50%); }
+        .label-left { left: 5px; top: 50%; transform: translateY(-50%) rotate(-90deg); transform-origin: left center; }
+        .label-right { right: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); transform-origin: right center; }
+        
+        .verdict {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .verdict-quadrant {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .verdict-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #eab308;
+            margin-bottom: 0.5rem;
+        }
+        
+        .verdict-desc {
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+        
+        .scores {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .score {
+            text-align: center;
+        }
+        
+        .score-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .score-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #f8fafc;
+        }
+        
+        .priority {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #64748b;
+        }
+        
+        .priority-0 { border-color: #ef4444; }
+        .priority-1 { border-color: #f97316; }
+        .priority-2 { border-color: #eab308; }
+        .priority-3 { border-color: #3b82f6; }
+        .priority-4, .priority-5 { border-color: #64748b; }
+        
+        .priority-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .priority-badge {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #f8fafc;
+        }
+        
+        .priority p {
+            color: #cbd5e1;
+            margin-bottom: 0.75rem;
+        }
+        
+        .steps {
+            margin-left: 1.25rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .steps li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .formula {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .formula-text {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 20px currentColor;
+            transform: translate(-50%, 50%);
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .point:hover { transform: translate(-50%, 50%) scale(1.3); }
+        .point-label {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: white;
+            white-space: nowrap;
+            background: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .legend {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .legend-name { color: #e2e8f0; }
+        .legend-quadrant { font-size: 0.7rem; }
+        
+        .repo-meta {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .repo-description {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .repo-name a {
+            color: #e2e8f0;
+            text-decoration: none;
+        }
+        .repo-name a:hover {
+            color: #7dd3fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Prometheus</h1>
+        <p class="repo-name">git/git</p>
+        
+        
+        <p class="subtitle">Combined Fitness Analysis • 2026-01-05</p>
+        
+        
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Fitness Quadrant</h2>
+                <div class="quadrant-container">
+                    <div class="axis axis-x"></div>
+                    <div class="axis axis-y"></div>
+                    
+                    <span class="quadrant-label label-bunker">🏰 Bunker</span>
+                    <span class="quadrant-label label-fortress">🏯 Fortress</span>
+                    <span class="quadrant-label label-glass">🏠 Glass House</span>
+                    <span class="quadrant-label label-death">💀 Deathtrap</span>
+                    
+                    <span class="axis-label label-top">High Resilience</span>
+                    <span class="axis-label label-bottom">Low Resilience</span>
+                    <span class="axis-label label-left">High Complexity</span>
+                    <span class="axis-label label-right">Low Complexity</span>
+                    
+                    <div class="position-dot" style="left: 55.35532853888567%; bottom: 9.07591545085184%;"></div>
+                </div>
+                
+            </div>
+            
+            <div class="card verdict">
+                
+                <div class="verdict-quadrant">
+                    🏠
+                </div>
+                <div class="verdict-name">GLASS HOUSE</div>
+                <div class="verdict-desc">Low complexity, low resilience. Simple but fragile.</div>
+                
+                <div class="scores">
+                    <div class="score">
+                        <div class="score-value" style="color: #eab308">
+                            LOW
+                        </div>
+                        <div class="score-label">Complexity Risk</div>
+                    </div>
+                    <div class="score">
+                        <div class="score-value" style="color: #ef4444">
+                            PAPER
+                        </div>
+                        <div class="score-label">Shield Rating</div>
+                    </div>
+                </div>
+                
+                <div class="scores">
+                    <div class="score">
+                        <div class="score-value">0.0</div>
+                        <div class="score-label">Avg Cyclomatic</div>
+                    </div>
+                    <div class="score">
+                        <div class="score-value">9</div>
+                        <div class="score-label">Resilience Score</div>
+                    </div>
+                </div>
+                
+                <div class="formula">
+                    <div class="formula-text">
+                        Fitness = f(1/Complexity, Resilience)
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Priority Actions</h2>
+            
+        <div class="priority priority-1">
+            <div class="priority-header">
+                <span class="priority-badge">Timeouts</span>
+            </div>
+            <p>Missing timeouts are the #1 cause of cascading failures</p>
+            <ul class="steps"><li>Audit all HTTP client instantiations</li><li>Add connect_timeout and read_timeout to each</li><li>Default: 5s connect, 30s read (adjust per use case)</li></ul>
+        </div>
+        
+        <div class="priority priority-2">
+            <div class="priority-header">
+                <span class="priority-badge">Error Handling</span>
+            </div>
+            <p>Unhandled exceptions crash processes and lose context</p>
+            <ul class="steps"><li>Wrap external calls in try/except</li><li>Create domain-specific exception classes</li><li>Log errors with context before re-raising</li></ul>
+        </div>
+        
+        <div class="priority priority-3">
+            <div class="priority-header">
+                <span class="priority-badge">Observability</span>
+            </div>
+            <p>You cannot fix what you cannot see</p>
+            <ul class="steps"><li>Add structured logging (structlog, pino)</li><li>Log at function entry/exit for critical paths</li><li>Include correlation IDs for request tracing</li></ul>
+        </div>
+        
+        </div>
+        
+        <footer>
+            <p>Prometheus Fitness Analyzer</p>
+            <p>Complexity × Resilience = Reliability</p>
+        </footer>
+    </div>
+</body>
+</html>

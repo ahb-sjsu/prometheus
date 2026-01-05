@@ -1,0 +1,223 @@
+{
+  "codebase_path": "C:\\source\\prometheus\\.olympus_cache\\ahb-sjsu_prometheus",
+  "timestamp": "2026-01-05T15:03:58.033113",
+  "quadrant": "FORTRESS",
+  "fitness_verdict": "\ud83c\udfef FORTRESS: High complexity, high resilience. Defended but over-engineered.\n\nRecommended Action: Simplify where possible. The resilience may be compensating for accidental complexity.",
+  "scores": {
+    "complexity_risk": "MEDIUM",
+    "complexity_score": 45.427088278000824,
+    "resilience_score": 45.83279119688817,
+    "shield_rating": "BRONZE"
+  },
+  "priorities": [
+    {
+      "priority": 1,
+      "category": "Timeouts",
+      "action": "Missing timeouts are the #1 cause of cascading failures",
+      "first_steps": [
+        "Audit all HTTP client instantiations",
+        "Add connect_timeout and read_timeout to each",
+        "Default: 5s connect, 30s read (adjust per use case)"
+      ]
+    },
+    {
+      "priority": 5,
+      "category": "Over-Engineering",
+      "action": "5847 LOC per feature is excessive",
+      "first_steps": [
+        "Look for abstraction layers that add no value",
+        "Remove speculative generality (YAGNI)",
+        "Inline trivial wrapper functions"
+      ]
+    }
+  ],
+  "complexity_analysis": {
+    "risk_level": "MEDIUM",
+    "verdict": "Complexity is within acceptable bounds but trending toward excess. Monitor during future development and address hotspots proactively.",
+    "recommendations": [
+      "WARNING: 5847 lines per function point suggests over-engineering. Industry standard is ~50.",
+      "NOTE: High token entropy may indicate inconsistent naming or overly complex logic.",
+      "NOTE: High compression ratio indicates redundant code. Look for copy-paste patterns to abstract."
+    ],
+    "hotspots": [
+      {
+        "file": "benchmark.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "entropy_analyzer.py",
+        "issues": [
+          "Deep nesting: 5 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "hubris.py",
+        "issues": [
+          "Deep nesting: 8 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "olympus.py",
+        "issues": [
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "oracle.py",
+        "issues": [
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "prometheus.py",
+        "issues": [
+          "Deep nesting: 6 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "scent_analyzer.py",
+        "issues": [
+          "Deep nesting: 9 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "sentinel.py",
+        "issues": [
+          "Deep nesting: 7 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "shield_analyzer.py",
+        "issues": [
+          "Deep nesting: 9 levels"
+        ],
+        "severity": "MEDIUM"
+      },
+      {
+        "file": "SQND-docs\\contextuality_experiment.py",
+        "issues": [
+          "Deep nesting: 8 levels"
+        ],
+        "severity": "MEDIUM"
+      }
+    ],
+    "metrics": {
+      "total_loc": 23388,
+      "avg_cyclomatic": 0.0,
+      "maintainability": 0.0,
+      "entropy": 8.367743173099358
+    }
+  },
+  "resilience_analysis": {
+    "shield_rating": "BRONZE",
+    "overall_score": 45.83279119688817,
+    "category_scores": {
+      "error_handling": 45.98501094139883,
+      "timeouts": 20.769230769230774,
+      "retries": 60.769230769230774,
+      "circuit_breakers": 45.0,
+      "observability": 68.26923076923077
+    },
+    "vulnerabilities": [
+      {
+        "type": "bare_except",
+        "line": 701,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\protocol2_holonomy.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 696,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\protocol2_holonomy.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 902,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\sqnd_fuzzer.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 896,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\sqnd_fuzzer.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 209,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\sqnd_phase_transition_v2.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 875,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\sqnd_phase_transition_v2.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 870,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\sqnd_phase_transition_v2.py"
+      },
+      {
+        "type": "bare_except",
+        "line": 1004,
+        "severity": "MEDIUM",
+        "message": "Bare except catches all exceptions including KeyboardInterrupt",
+        "file": "SQND-docs\\stratified_gauge_exploration.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "1 network calls may lack timeout configuration",
+        "file": "hubris.py"
+      },
+      {
+        "type": "missing_timeout",
+        "severity": "HIGH",
+        "message": "2 network calls may lack timeout configuration",
+        "file": "prometheus.py"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "category": "Timeouts",
+        "message": "Network calls without timeouts can hang indefinitely. Add timeout configs to all HTTP clients and database connections.",
+        "libraries": [
+          "httpx (Python)",
+          "axios with timeout (JS)",
+          "OkHttp timeouts (Java)"
+        ]
+      }
+    ],
+    "too_small_to_score": false,
+    "total_loc": 23388
+  },
+  "hubris": {
+    "theater_ratio": 3.78,
+    "quadrant": "CARGO_CULT",
+    "patterns_detected": 189,
+    "patterns_correct": 50,
+    "high_severity_issues": 104
+  }
+}
