@@ -1,0 +1,81 @@
+======================================================================
+PROTOCOL 1: BOND-TYPE ROTATION - ANALYSIS REPORT
+======================================================================
+
+SAMPLE DESCRIPTION
+----------------------------------------
+  Control     : n = 42
+  Weak        : n = 37
+  Strong      : n = 64
+  Total       : N = 143
+
+PRIMARY ANALYSIS: CONDITION EFFECT ON Δθ
+----------------------------------------
+  One-way ANOVA: F = 62.891, p = 0.0000
+  Significant at α = 0.05: True
+
+EFFECT SIZES BY CONDITION
+----------------------------------------
+  Control:
+    Mean Δθ = 0.0000 (SD = 0.1858)
+    t(41) = 0.000, p = 1.0000
+    Cohen's d = 0.000
+  Weak:
+    Mean Δθ = 0.5179 (SD = 0.5020)
+    t(36) = 6.275, p = 0.0000
+    Cohen's d = 1.032
+  Strong:
+    Mean Δθ = 0.9727 (SD = 0.5096)
+    t(63) = 15.268, p = 0.0000
+    Cohen's d = 1.909
+
+PAIRWISE COMPARISONS
+----------------------------------------
+  control vs weak:
+    t = -6.223, p = 0.0000, d = -1.368
+  control vs strong:
+    t = -11.847, p = 0.0000, d = -2.536
+  weak vs strong:
+    t = -4.345, p = 0.0000, d = -0.899
+
+ROTATION VS. DIFFUSION ANALYSIS
+----------------------------------------
+  Control:
+    Rotation (mean shift): t = 0.000, p = 1.0000
+    Diffusion (var change): F = 0.000, p = 1.0000
+  Weak:
+    Rotation (mean shift): t = 6.275, p = 0.0000
+    Diffusion (var change): F = 49.358, p = 0.0000
+  Strong:
+    Rotation (mean shift): t = 15.268, p = 0.0000
+    Diffusion (var change): F = 49.199, p = 0.0000
+
+MODEL CONSISTENCY CHECK
+----------------------------------------
+  Salience (η) consistency: mean = 0.2506, max = 2.0000
+  Model valid (consistency < 0.3): True
+
+FALSIFICATION CRITERIA ASSESSMENT
+----------------------------------------
+  no_interaction: NOT FALSIFIED
+  no_systematic_rotation: NOT FALSIFIED
+  control_comparable: NOT FALSIFIED
+  salience_inconsistent: NOT FALSIFIED
+
+  OVERALL: Theory SUPPORTED
+
+THEORETICAL INTERPRETATION
+----------------------------------------
+  The data are consistent with NA-SQND predictions:
+  - Threshold crossing induces systematic bond-type rotation
+  - Rotation magnitude increases with threshold strength
+  - Changes are rotation (mean shift), not diffusion (variance increase)
+
+  Comparison to theoretical predictions:
+    control: predicted θ = 0.0000, observed Δθ = 0.0000
+    weak: predicted θ = 0.5236, observed Δθ = 0.5179
+    strong: predicted θ = 1.0472, observed Δθ = 0.9727
+
+======================================================================
+END OF REPORT
+======================================================================

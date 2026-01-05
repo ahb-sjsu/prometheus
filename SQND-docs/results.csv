@@ -1,0 +1,151 @@
+scenario_id,condition,bond_type,confidence,reasoning,model,prompt_tokens,completion_tokens
+10uwunk,control,O,0.8722605925682511,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uwunk,weak,L,0.9045794188643369,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10uwunk,strong,O,0.7232655043412184,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v2vra,control,L,0.9432314657551386,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10v2vra,weak,O,0.8477023125749843,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v2vra,strong,O,0.8094798451666716,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ui2ji,control,O,0.7878325098407913,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ui2ji,weak,L,0.7286846651873151,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ui2ji,strong,O,0.7089279828680638,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10upxdd,control,O,0.7627784897071498,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10upxdd,weak,O,0.8321131348916655,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10upxdd,strong,C,0.9262774882183369,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10uugoi,control,O,0.8753102373246284,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uugoi,weak,C,0.7988191557986625,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10uugoi,strong,O,0.797878967695174,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ul5b9,control,L,0.8250308144550081,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ul5b9,weak,C,0.9397544955744784,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10ul5b9,strong,L,0.700627774501366,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10v3w62,control,O,0.72760402920308,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v3w62,weak,O,0.9102279095297006,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v3w62,strong,O,0.949052874363198,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v41jx,control,O,0.7910193302942338,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v41jx,weak,L,0.7930038141104188,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10v41jx,strong,O,0.9353607255405186,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj4d9,control,O,0.7128107209964825,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj4d9,weak,O,0.9486300883099892,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj4d9,strong,O,0.7684991260950177,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10usuqe,control,O,0.7216801102982471,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10usuqe,weak,O,0.8327392719755117,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10usuqe,strong,L,0.8975569313708524,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10v3fh8,control,L,0.9054314805206908,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10v3fh8,weak,O,0.9069903533398007,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v3fh8,strong,O,0.8087469619637863,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ux1bx,control,O,0.9073593006560431,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ux1bx,weak,L,0.8115524945674626,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ux1bx,strong,O,0.8779175918160936,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ulsrp,control,O,0.7651421008843701,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ulsrp,weak,O,0.7455654703540361,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ulsrp,strong,L,0.8632631167667129,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ux79o,control,O,0.7647739090216598,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ux79o,weak,O,0.9288127074187614,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ux79o,strong,C,0.8612447081566847,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10ukdih,control,O,0.9149010405488265,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ukdih,weak,O,0.7448478527983771,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ukdih,strong,C,0.7263815204208042,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10uqfvz,control,O,0.9472081095211803,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uqfvz,weak,O,0.7570493127218998,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uqfvz,strong,O,0.7976053140593296,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uxee0,control,O,0.8941105494282184,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uxee0,weak,O,0.7571125261759236,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uxee0,strong,O,0.7459518230975875,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10un335,control,O,0.807936123974873,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10un335,weak,O,0.9498046042007917,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10un335,strong,C,0.8923314484470184,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10ukzpr,control,O,0.781427295362679,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ukzpr,weak,L,0.926227108480038,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ukzpr,strong,O,0.893556986943668,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ung90,control,L,0.7526542013363731,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ung90,weak,O,0.7116600047866305,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ung90,strong,O,0.7539509328538991,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v1l3c,control,O,0.8322144984110897,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v1l3c,weak,O,0.9316847467128561,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v1l3c,strong,N,0.7533259172891846,The other party cannot demand anything from the poster here.,simulated-na-sqnd,500,100
+10u8muo,control,O,0.7999002465127986,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10u8muo,weak,O,0.7636967149807938,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10u8muo,strong,O,0.7958771063251695,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uiqc7,control,L,0.8940236841048682,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10uiqc7,weak,O,0.7019202118222228,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uiqc7,strong,O,0.9428259353823317,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10urxf5,control,O,0.8904466908174746,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10urxf5,weak,C,0.7603800187001594,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10urxf5,strong,L,0.8206178553249605,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10up4gf,control,O,0.8521503870711821,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10up4gf,weak,O,0.8410671008225012,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10up4gf,strong,C,0.8298789863935881,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10u91vb,control,O,0.8193097264185307,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10u91vb,weak,O,0.7012128854246832,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10u91vb,strong,O,0.8970442028254728,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uag1t,control,O,0.9280671528037504,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uag1t,weak,O,0.8705583865370056,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uag1t,strong,C,0.746198627042155,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10ubvgp,control,O,0.9374143398440093,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ubvgp,weak,O,0.9091343207596874,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ubvgp,strong,O,0.7952946755745205,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uhg3s,control,O,0.8794062121434263,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uhg3s,weak,O,0.9460136750441928,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uhg3s,strong,O,0.8312242942242282,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uqw4f,control,O,0.9106938802687933,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uqw4f,weak,O,0.7819357861723628,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uqw4f,strong,O,0.7079388813960286,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ufsch,control,O,0.8115555401974778,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ufsch,weak,O,0.8471497710377305,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ufsch,strong,L,0.8736792334554262,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10usgbf,control,O,0.7654020527239344,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10usgbf,weak,L,0.923020550217001,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10usgbf,strong,O,0.8128301273793347,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ubcp5,control,L,0.7225992684687008,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ubcp5,weak,O,0.7699162893075349,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ubcp5,strong,L,0.8637519915720073,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ujnk8,control,O,0.7849211174669382,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ujnk8,weak,O,0.9495860469733202,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ujnk8,strong,O,0.7199322115569886,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uu2i8,control,O,0.9148591954438392,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uu2i8,weak,L,0.9067371267343943,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10uu2i8,strong,O,0.7478440044772514,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ur722,control,O,0.8280334159302185,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ur722,weak,O,0.7438626153369242,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ur722,strong,C,0.9269624230855765,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10un8lv,control,L,0.8005406599298943,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10un8lv,weak,O,0.8927872873571365,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10un8lv,strong,O,0.8367833389139063,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uczru,control,O,0.8898571661333691,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uczru,weak,L,0.7261986789725021,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10uczru,strong,C,0.7411135678546736,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10up25i,control,O,0.8048540003261898,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10up25i,weak,O,0.8269652057495837,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10up25i,strong,O,0.9341623807301676,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uco3c,control,O,0.8301513775591908,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uco3c,weak,O,0.7587920490181863,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uco3c,strong,O,0.9174251460468428,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj3o1,control,O,0.7431184594270207,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj3o1,weak,C,0.7811996167368316,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10uj3o1,strong,O,0.9030758633951419,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj07i,control,O,0.7879174643964714,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj07i,weak,O,0.924868768394562,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uj07i,strong,C,0.8036785759531857,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10unudp,control,O,0.9242799593768904,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10unudp,weak,O,0.9205153234670342,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10unudp,strong,O,0.8384379078187179,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10un17c,control,O,0.812397917442639,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10un17c,weak,O,0.8632144127291386,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10un17c,strong,O,0.7905541047866731,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v0goc,control,O,0.714202986062831,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v0goc,weak,L,0.7807943285594702,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10v0goc,strong,N,0.7409353507038534,The other party cannot demand anything from the poster here.,simulated-na-sqnd,500,100
+10utyes,control,O,0.7839491368226396,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10utyes,weak,O,0.7741126692452656,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10utyes,strong,O,0.8941096645424375,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v15sq,control,L,0.7076546972284044,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10v15sq,weak,O,0.7550354937248196,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10v15sq,strong,L,0.832959183863881,"Given the circumstances, the poster is free to act as they did.",simulated-na-sqnd,500,100
+10ura66,control,O,0.7649242582265168,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ura66,weak,O,0.8591525961368474,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10ura66,strong,O,0.9391298590925208,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uolan,control,O,0.8382510933793805,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uolan,weak,O,0.7223149763696225,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uolan,strong,O,0.8663011479641214,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uugdm,control,O,0.7833460408973755,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100
+10uugdm,weak,C,0.8835305599934136,The other party has a legitimate claim arising from the situation.,simulated-na-sqnd,500,100
+10uugdm,strong,O,0.7486019303066459,The poster has a clear duty based on the relationship described.,simulated-na-sqnd,500,100

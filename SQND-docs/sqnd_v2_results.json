@@ -1,0 +1,212 @@
+{
+  "phase_transition": {
+    "test": "Phase Transition",
+    "levels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "p_liberty": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.55,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "confidence_by_level": [
+      0.8000000000000002,
+      0.8100000000000002,
+      0.8000000000000002,
+      0.8000000000000002,
+      0.8000000000000002,
+      0.8000000000000002,
+      0.8000000000000002,
+      0.7550000000000001,
+      0.8999999999999998,
+      0.8999999999999998,
+      0.8999999999999998
+    ],
+    "T_c": 6.037948574967573,
+    "transition_width": 2.648860737992047,
+    "is_sharp": "False",
+    "confidence_dip": 0.03624999999999989,
+    "supports_discrete_model": "False"
+  },
+  "hysteresis": {
+    "test": "Hysteresis",
+    "T_c_release": 3.5,
+    "T_c_bind": 2.5,
+    "hysteresis_gap": 1.0,
+    "has_hysteresis": true
+  },
+  "correlative_symmetry": {
+    "test": "Correlative Symmetry",
+    "results": [
+      {
+        "scenario": "debt",
+        "expected": "O\u2194C",
+        "observed": "O\u2194C",
+        "symmetry_rate": 1.0,
+        "correct": true
+      },
+      {
+        "scenario": "promise",
+        "expected": "O\u2194C",
+        "observed": "O\u2194C",
+        "symmetry_rate": 1.0,
+        "correct": true
+      },
+      {
+        "scenario": "no_duty",
+        "expected": "L\u2194N",
+        "observed": "L\u2194N",
+        "symmetry_rate": 1.0,
+        "correct": true
+      },
+      {
+        "scenario": "released",
+        "expected": "L\u2194N",
+        "observed": "L\u2194N",
+        "symmetry_rate": 1.0,
+        "correct": true
+      },
+      {
+        "scenario": "professional",
+        "expected": "O\u2194C",
+        "observed": "O\u2194C",
+        "symmetry_rate": 1.0,
+        "correct": true
+      }
+    ],
+    "overall_symmetry_rate": 1.0,
+    "correct_predictions": 5,
+    "total_scenarios": 5,
+    "supports_hohfeldian": "True"
+  },
+  "path_dependence": {
+    "test": "Path Dependence",
+    "results": [
+      {
+        "pair": "trust_harm",
+        "AB_obligation": 0.0,
+        "BA_obligation": 0.0,
+        "difference": 0.0,
+        "chi2": 0,
+        "p_value": 1.0,
+        "path_dependent": false
+      },
+      {
+        "pair": "apology_damage",
+        "AB_obligation": 1.0,
+        "BA_obligation": 1.0,
+        "difference": 0.0,
+        "chi2": 0,
+        "p_value": 1.0,
+        "path_dependent": false
+      },
+      {
+        "pair": "emergency_betrayal",
+        "AB_obligation": 1.0,
+        "BA_obligation": 1.0,
+        "difference": 0.0,
+        "chi2": 0,
+        "p_value": 1.0,
+        "path_dependent": false
+      },
+      {
+        "pair": "forgiveness_pattern",
+        "AB_obligation": 1.0,
+        "BA_obligation": 1.0,
+        "difference": 0.0,
+        "chi2": 0,
+        "p_value": 1.0,
+        "path_dependent": false
+      }
+    ],
+    "n_path_dependent": 0,
+    "total_pairs": 4,
+    "supports_non_abelian": false
+  },
+  "critical_fluctuations": {
+    "test": "Critical Fluctuations",
+    "analysis": [
+      {
+        "distance": -3,
+        "p_obligation": 1.0,
+        "entropy": 0,
+        "mean_confidence": 0.8999999999999998,
+        "std_confidence": 2.220446049250313e-16,
+        "mean_reasoning_length": 823.9
+      },
+      {
+        "distance": -2,
+        "p_obligation": 1.0,
+        "entropy": 0,
+        "mean_confidence": 0.8000000000000002,
+        "std_confidence": 1.1102230246251565e-16,
+        "mean_reasoning_length": 854.6
+      },
+      {
+        "distance": -1,
+        "p_obligation": 1.0,
+        "entropy": 0,
+        "mean_confidence": 0.8000000000000002,
+        "std_confidence": 1.1102230246251565e-16,
+        "mean_reasoning_length": 821.75
+      },
+      {
+        "distance": 0,
+        "p_obligation": 0.0,
+        "entropy": 0,
+        "mean_confidence": 0.8000000000000002,
+        "std_confidence": 1.1102230246251565e-16,
+        "mean_reasoning_length": 852.95
+      },
+      {
+        "distance": 1,
+        "p_obligation": 0.0,
+        "entropy": 0,
+        "mean_confidence": 0.8999999999999998,
+        "std_confidence": 2.220446049250313e-16,
+        "mean_reasoning_length": 869.35
+      },
+      {
+        "distance": 2,
+        "p_obligation": 0.0,
+        "entropy": 0,
+        "mean_confidence": 0.8949999999999999,
+        "std_confidence": 0.021794494717703363,
+        "mean_reasoning_length": 874.8
+      },
+      {
+        "distance": 3,
+        "p_obligation": 0.0,
+        "entropy": 0,
+        "mean_confidence": 0.8999999999999998,
+        "std_confidence": 2.220446049250313e-16,
+        "mean_reasoning_length": 797.85
+      }
+    ],
+    "max_entropy_distance": -3,
+    "critical_fluctuations_detected": false
+  },
+  "metadata": {
+    "total_requests": 1000,
+    "total_tokens": 182736,
+    "estimated_cost": 3.2892479999999997
+  }
+}
