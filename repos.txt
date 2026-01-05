@@ -1,14 +1,9 @@
-# Well-maintained Python projects
-pallets/flask
-psf/requests
-encode/httpx
-pallets/click
-
-# Funny/satirical repos
-kelseyhightower/nocode
-EnterpriseQualityCoding/FizzBuzzEnterpriseEdition
-auchenberg/volkswagen
 mattdiamond/fuckitjs
-
-# Local (run from prometheus directory)
-.
+ESWAT/is-thirteen
+auchenberg/volkswagen
+theonion/fartscroll.js
+theonion/comcastify-js
+psf/requests
+pallets/click
+pallets/flask
+jazzband/tablib

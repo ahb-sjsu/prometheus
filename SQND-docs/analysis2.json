@@ -1,0 +1,48 @@
+{
+  "n_evaluations": 150,
+  "conditions": {
+    "control": {
+      "n": 50,
+      "theta": 0.0,
+      "theta_se": 0.0,
+      "theta_degrees": 0.0,
+      "distribution": {
+        "O": 42,
+        "L": 8
+      },
+      "mean_confidence": 0.8243389007506755
+    },
+    "weak": {
+      "n": 50,
+      "theta": 0.6435011087932845,
+      "theta_se": 0.1536579874001281,
+      "theta_degrees": 36.86989764584403,
+      "distribution": {
+        "O": 36,
+        "L": 9,
+        "C": 5
+      },
+      "mean_confidence": 0.8318646982939712
+    },
+    "strong": {
+      "n": 50,
+      "theta": 0.9764105267938344,
+      "theta_se": 0.14549666410451226,
+      "theta_degrees": 55.944202257432096,
+      "distribution": {
+        "O": 32,
+        "C": 9,
+        "L": 7,
+        "N": 2
+      },
+      "mean_confidence": 0.82580744239926
+    }
+  },
+  "comparisons": [
+    {
+      "comparison": "control vs weak",
+      "delta_theta": 0.6435011087932845,
+      "delta_theta_degrees": 36.86989764584403,
+      "chi2": Infinity,
+      "p_value": 0.0,
+      "significant": 
