@@ -906,7 +906,7 @@ def calculate_dot_position(complexity_score: float, resilience_score: float) -> 
     # X-axis: Resilience - scale so threshold (35) maps to visual center (50%)
     # Score 0 -> ~8%, Score 35 -> 50%, Score 70 -> 92%
     if resilience_score < 0:
-        x_pct = 50  # Unknown resilience -> center (on the boundary)
+        x_pct = 50  # Unknown resilience -> center
     elif resilience_score < RESILIENCE_THRESHOLD:
         # Below threshold: map 0-35 to 8-50%
         x_pct = 8 + (resilience_score / RESILIENCE_THRESHOLD) * 42

@@ -1144,9 +1144,8 @@ class Aegis:
         report.io_density = (total_io / total_loc * 100) if total_loc > 0 else 0
         report.has_io_boundaries = total_io > 0
         
-        # Minimum I/O threshold: at least 1 I/O operation per 5000 LOC to be considered I/O-bound
-        # This is intentionally permissive to avoid false NO_IO classifications
-        MIN_IO_DENSITY = 0.02  # 0.02 I/O ops per 100 LOC = 1 per 5000 LOC
+        # Minimum I/O threshold: at least 1 I/O operation per 500 LOC to be considered I/O-bound
+        MIN_IO_DENSITY = 0.5  # 0.5 I/O ops per 100 LOC = 1 per 200 LOC
         
         if report.io_density < MIN_IO_DENSITY and total_loc >= 2000:
             # Large codebase with minimal I/O - resilience patterns not applicable

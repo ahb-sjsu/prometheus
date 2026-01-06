@@ -11,21 +11,23 @@ Combines:
 
 Produces a 2D fitness map:
 
-                    HIGH RESILIENCE
-                          │
-         FORTRESS         │         BUNKER
-    (Over-engineered     │    (Ideal: Simple
-     but defended)       │     and defended)
-                         │
-    ─────────────────────┼─────────────────────
-                         │
-         DEATHTRAP       │         GLASS HOUSE
-    (Complex AND        │    (Simple but
-     undefended)        │     fragile)
-                         │
-                    LOW RESILIENCE
+    HIGH COMPLEXITY
+          │
+          │   DEATHTRAP        │        FORTRESS
+          │   (Complex AND     │   (Over-engineered
+          │    undefended)     │    but defended)
+          │                    │
+          ├────────────────────┼────────────────────
+          │                    │
+          │   GLASS HOUSE      │        BUNKER
+          │   (Simple but      │   (Ideal: Simple
+          │    fragile)        │    and defended)
+          │                    │
+    LOW COMPLEXITY ────────────┴──────────────────→
+                          LOW              HIGH
+                            RESILIENCE
 
-The goal: Move toward BUNKER quadrant.
+The goal: Move toward BUNKER quadrant (bottom-right).
 """
 
 import json
@@ -41,16 +43,6 @@ from urllib.parse import urlparse
 # Import our analyzers
 from entropy_analyzer import ComplexityFitnessPipeline
 from shield_analyzer import Aegis
-
-# =============================================================================
-# QUADRANT CLASSIFICATION THRESHOLDS
-# =============================================================================
-# These thresholds determine which quadrant a codebase falls into.
-# They are used by prometheus.py for classification and prometheus_ui.py for visualization.
-# Changing these values will affect both classification and chart positioning.
-
-COMPLEXITY_THRESHOLD = 50  # >= 50 = low complexity (good), < 50 = high complexity
-RESILIENCE_THRESHOLD = 35  # >= 35 = adequate resilience, < 35 = low resilience
 
 
 def clone_github_repo(url: str, target_dir: str = None) -> tuple[str, str]:
@@ -116,10 +108,10 @@ def clone_github_repo(url: str, target_dir: str = None) -> tuple[str, str]:
         print("        Done!")
         return str(clone_path), repo_name
 
-    except subprocess.TimeoutExpired as e:
-        raise RuntimeError("Git clone timed out after 120 seconds") from e
-    except FileNotFoundError as e:
-        raise RuntimeError("Git is not installed or not in PATH") from e
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("Git clone timed out after 120 seconds")
+    except FileNotFoundError:
+        raise RuntimeError("Git is not installed or not in PATH")
 
 
 def is_github_url(path: str) -> bool:
@@ -428,6 +420,14 @@ class Prometheus:
             "recommendations": resilience_result.recommendations,
             "too_small_to_score": getattr(resilience_result, "too_small_to_score", False),
             "total_loc": getattr(resilience_result, "total_loc", 0),
+            # I/O boundary analysis
+            "io_boundary_analysis": {
+                "total_io_operations": getattr(resilience_result, "total_io_operations", 0),
+                "io_density": getattr(resilience_result, "io_density", 0),
+                "has_io_boundaries": getattr(resilience_result, "has_io_boundaries", True),
+                "resilience_applicable": getattr(resilience_result, "resilience_applicable", True),
+                "io_boundary_reason": getattr(resilience_result, "io_boundary_reason", ""),
+            },
         }
 
         # Determine quadrant
@@ -441,40 +441,80 @@ class Prometheus:
     def _determine_quadrant(self, report: PrometheusReport, resilience_result):
         """Determine which quadrant the codebase falls into.
 
-        Industry-calibrated thresholds (defined at module level):
-        - COMPLEXITY_THRESHOLD (50): >= means low complexity (well-structured)
-        - RESILIENCE_THRESHOLD (35): >= means adequate resilience
+        Industry-calibrated thresholds:
+        - Complexity >= 50: Low complexity (well-structured)
+        - Resilience >= 35: Adequate resilience for frameworks
+        - Resilience >= 50: Good resilience for applications
         """
+        # Thresholds - calibrated to industry benchmarks
+        complexity_threshold = 50  # >= 50 = low complexity (good)
+        resilience_threshold = 35  # >= 35 = adequate resilience for frameworks
+
+        # Check if resilience patterns are applicable (code crosses I/O boundaries)
+        if not getattr(resilience_result, "resilience_applicable", True):
+            # Code doesn't cross I/O boundaries - resilience patterns not expected
+            total_loc = getattr(resilience_result, "total_loc", 0)
+            total_io = getattr(resilience_result, "total_io_operations", 0)
+            low_complexity = report.complexity_score >= complexity_threshold
+            
+            if low_complexity:
+                # Simple computational/library code
+                report.quadrant = "BUNKER"
+                report.quadrant_description = "Simple computational/library code (no I/O boundaries)."
+                report.fitness_verdict = (
+                    f"🏰 BUNKER (Library): Simple computational code.\n\n"
+                    f"Note: {total_io} I/O operations detected in {total_loc:,} LOC.\n"
+                    f"Resilience patterns (retries, timeouts, circuit breakers) aren't expected "
+                    f"for code that doesn't cross I/O boundaries. This is not a deficiency."
+                )
+            else:
+                # Complex computational code
+                report.quadrant = "FORTRESS"
+                report.quadrant_description = "Complex computational/library code (no I/O boundaries)."
+                report.fitness_verdict = (
+                    f"🏯 FORTRESS (Library): Complex computational code.\n\n"
+                    f"Note: {total_io} I/O operations detected in {total_loc:,} LOC.\n"
+                    f"Resilience patterns aren't expected for computational code. "
+                    f"Consider simplifying the algorithms or structure."
+                )
+
+            report.resilience_score = -1  # Mark as N/A
+            report.shield_rating = "NO_IO"
+            return
+
         # Check if codebase is too small to score resilience
         if getattr(resilience_result, "too_small_to_score", False):
-            # For tiny codebases, base quadrant only on complexity
-            # They get a special designation
-            low_complexity = report.complexity_score >= COMPLEXITY_THRESHOLD
+            # For tiny codebases, we can't determine resilience
+            # Classify based on complexity only, but mark as "MICRO" variant
             total_loc = getattr(resilience_result, "total_loc", 0)
+            low_complexity = report.complexity_score >= complexity_threshold
+            
+            # Use special micro-variants that don't imply resilience assessment
             if low_complexity:
-                quadrant = "BUNKER"  # Small and simple is fine
+                # Small and simple - not a concern
+                report.quadrant = "BUNKER"
+                report.quadrant_description = "Small, simple codebase (micro-project)."
                 report.fitness_verdict = (
                     f"🏰 BUNKER (Micro): Small, simple codebase.\n\n"
                     f"Note: Codebase has {total_loc:,} LOC - too small for resilience pattern analysis.\n"
                     f"This is not a problem - small codebases don't need complex resilience patterns."
                 )
             else:
-                quadrant = "GLASS_HOUSE"  # Small but complex is concerning
+                # Small but complex - concerning
+                report.quadrant = "GLASS HOUSE"
+                report.quadrant_description = "Small but complex codebase (micro-project)."
                 report.fitness_verdict = (
                     f"🏠 GLASS HOUSE (Micro): Small but complex codebase.\n\n"
                     f"Note: Codebase has {total_loc:,} LOC - too small for resilience pattern analysis.\n"
                     f"Consider simplifying the code structure."
                 )
 
-            q = self.QUADRANTS[quadrant]
-            report.quadrant = q["name"]
-            report.quadrant_description = q["description"]
-            report.resilience_score = -1  # Mark as not scored
+            report.resilience_score = -1  # Mark as not scored (will display as N/A)
             report.shield_rating = "TOO_SMALL"
             return
 
-        low_complexity = report.complexity_score >= COMPLEXITY_THRESHOLD
-        high_resilience = report.resilience_score >= RESILIENCE_THRESHOLD
+        low_complexity = report.complexity_score >= complexity_threshold
+        high_resilience = report.resilience_score >= resilience_threshold
 
         if low_complexity and high_resilience:
             quadrant = "BUNKER"
@@ -1095,6 +1135,31 @@ def dump_raw_data(report: PrometheusReport, output_path: str) -> str:
     return output_path
 
 
+def _build_comparison_item(r):
+    """Build HTML for a single comparison item in the quadrant report."""
+    from pathlib import Path
+    color = '#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'
+    name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
+    desc = r.github.description[:40] + '...' if r.github.description and len(r.github.description) > 40 else r.github.description or ''
+    quadrant_short = r.quadrant.split()[0]
+    resilience_display = "N/A" if r.resilience_score < 0 else f"{r.resilience_score:.0f}"
+    return f'''
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {color};">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #f8fafc;">{name}</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">{desc}</div>
+                        </div>
+                        <div style="text-align: center; min-width: 80px;">
+                            <div style="font-size: 1.25rem; font-weight: bold; color: {color};">{quadrant_short}</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">QUADRANT</div>
+                        </div>
+                        <div style="text-align: center; min-width: 60px;">
+                            <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{resilience_display}</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
+                        </div>
+                    </div>'''
+
+
 def generate_quadrant_html(
     report: PrometheusReport,
     output_path: str = None,
@@ -1255,44 +1320,7 @@ def generate_quadrant_html(
         </div>
         """
 
-    # Build comparison items HTML for multi-repo view
-    def _build_comparison_item(r):
-        """Build HTML for a single comparison item."""
-        item_color = (
-            "#22c55e"
-            if r.quadrant == "BUNKER"
-            else (
-                "#3b82f6"
-                if r.quadrant == "FORTRESS"
-                else "#eab308" if r.quadrant == "GLASS HOUSE" else "#ef4444"
-            )
-        )
-        name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
-        desc = (
-            r.github.description[:40] + "..."
-            if r.github.description and len(r.github.description) > 40
-            else r.github.description or ""
-        )
-        quadrant_short = r.quadrant.split()[0]
-        return f"""
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {item_color};">
-                        <div style="flex: 1;">
-                            <div style="font-weight: bold; color: #f8fafc;">{name}</div>
-                            <div style="font-size: 0.8rem; color: #94a3b8;">{desc}</div>
-                        </div>
-                        <div style="text-align: center; min-width: 80px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: {item_color};">{quadrant_short}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">QUADRANT</div>
-                        </div>
-                        <div style="text-align: center; min-width: 60px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{r.resilience_score:.0f}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
-                        </div>
-                    </div>"""
-
-    comparison_items_html = "".join(
-        _build_comparison_item(r) for r in sorted(reports_data, key=lambda x: -x.resilience_score)
-    )
+    comparison_items_html = "".join(_build_comparison_item(r) for r in sorted(reports_data, key=lambda x: -x.resilience_score))
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1666,11 +1694,11 @@ def generate_quadrant_html(
 
                 <div class="scores">
                     <div class="score">
-                        <div class="score-value">{report.avg_cyclomatic:.1f}</div>
+                        <div class="score-value">{f"{report.avg_cyclomatic:.1f}" if report.avg_cyclomatic > 0 else "N/A"}</div>
                         <div class="score-label">Avg Cyclomatic</div>
                     </div>
                     <div class="score">
-                        <div class="score-value">{report.resilience_score:.0f}</div>
+                        <div class="score-value">{"N/A" if report.resilience_score < 0 else f"{report.resilience_score:.0f}"}</div>
                         <div class="score-label">Resilience Score</div>
                     </div>
                 </div>
@@ -1686,6 +1714,11 @@ def generate_quadrant_html(
                 <h2 style="margin-bottom: 1rem;">Comparison Summary</h2>
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                     {comparison_items_html}
+                </div>
+                <div class="formula" style="margin-top: 1rem;">
+                    <div class="formula-text">
+                        Higher resilience = better defended
+                    </div>
                 </div>
                 ''' if len(reports_data) > 1 else ''}
             </div>
@@ -1778,24 +1811,8 @@ Examples:
         help="Run code smell analysis (NIH patterns, long functions, outdated code)",
     )
     parser.add_argument("--keep", action="store_true", help="Keep cloned repo after analysis")
-    parser.add_argument(
-        "--temp-dir",
-        help="Directory for temporary JSON files (default: current directory, use 'auto' for system temp)",
-    )
 
     args = parser.parse_args()
-
-    # Determine temp directory for JSON files
-    if args.temp_dir == "auto":
-        import tempfile as tf
-
-        temp_dir = Path(tf.gettempdir()) / "prometheus_output"
-        temp_dir.mkdir(exist_ok=True)
-    elif args.temp_dir:
-        temp_dir = Path(args.temp_dir)
-        temp_dir.mkdir(parents=True, exist_ok=True)
-    else:
-        temp_dir = Path.cwd()
 
     # Multi-repo comparison mode
     if len(args.paths) > 1 or args.compare:
@@ -1819,9 +1836,9 @@ Examples:
 
                 reports.append((report, prometheus))
 
-                # Save individual JSON to temp directory
-                json_path = temp_dir / f"prometheus_{prometheus.repo_name}.json"
-                prometheus.save_report(report, str(json_path))
+                # Save individual JSON
+                json_path = f"prometheus_{prometheus.repo_name}.json"
+                prometheus.save_report(report, json_path)
 
             except Exception as e:
                 safe_print(f"  ERROR: {e}")
@@ -1874,7 +1891,7 @@ Examples:
                 )
 
         # Save JSON FIRST (before any emoji printing that might fail on Windows)
-        json_path = args.output or str(temp_dir / f"prometheus_{prometheus.repo_name}.json")
+        json_path = args.output or f"prometheus_{prometheus.repo_name}.json"
         prometheus.save_report(report, json_path)
 
         safe_print("\n" + "=" * 70)
@@ -1912,7 +1929,7 @@ Examples:
                 sentinel = Sentinel(str(prometheus.codebase_path))
                 security_report = sentinel.analyze()
 
-                security_path = str(temp_dir / f"sentinel_{prometheus.repo_name}.json")
+                security_path = f"sentinel_{prometheus.repo_name}.json"
                 sentinel.save_report(security_report, security_path)
                 safe_print(f"  Security: {security_path}")
                 safe_print(f"\n  Security Score: {security_report.security_score:.0f}/100")
@@ -1933,7 +1950,7 @@ Examples:
                 scent = ScentAnalyzer(str(prometheus.codebase_path))
                 smell_report = scent.analyze()
 
-                smell_path = str(temp_dir / f"scent_{prometheus.repo_name}.json")
+                smell_path = f"scent_{prometheus.repo_name}.json"
                 scent.save_report(smell_report, smell_path)
                 safe_print(f"  Smells:   {smell_path}")
 

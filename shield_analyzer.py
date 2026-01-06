@@ -145,6 +145,34 @@ class HealthCheckMetrics:
 
 
 @dataclass
+class IOBoundaryMetrics:
+    """Detection of I/O boundary crossings - code that actually needs resilience patterns."""
+    
+    # Network I/O
+    http_calls: int = 0           # requests.get, http.Get, fetch, axios
+    socket_operations: int = 0     # socket.connect, net.Dial
+    grpc_calls: int = 0           # grpc client calls
+    
+    # Database I/O
+    database_queries: int = 0      # cursor.execute, .query(), SQL patterns
+    orm_operations: int = 0        # SQLAlchemy, Django ORM, GORM
+    
+    # File I/O
+    file_operations: int = 0       # open(), fs.readFile, File.open
+    
+    # External process
+    subprocess_calls: int = 0      # subprocess.run, exec, spawn
+    
+    # Message queues
+    queue_operations: int = 0      # kafka, rabbitmq, sqs
+    
+    # Computed
+    total_io_operations: int = 0
+    io_density: float = 0.0        # I/O operations per 100 LOC
+    has_io_boundaries: bool = False
+
+
+@dataclass
 class FileResilienceMetrics:
     """Resilience metrics for a single file."""
 
@@ -160,6 +188,7 @@ class FileResilienceMetrics:
     degradation: DegradationMetrics = field(default_factory=DegradationMetrics)
     observability: ObservabilityMetrics = field(default_factory=ObservabilityMetrics)
     health_checks: HealthCheckMetrics = field(default_factory=HealthCheckMetrics)
+    io_boundaries: IOBoundaryMetrics = field(default_factory=IOBoundaryMetrics)
 
     # Per-file score
     resilience_score: float = 0.0
@@ -188,9 +217,16 @@ class AegisReport:
     total_loc: int = 0
     too_small_to_score: bool = False
     too_small_reason: str = ""
+    
+    # I/O boundary analysis
+    total_io_operations: int = 0
+    io_density: float = 0.0              # I/O operations per 100 LOC
+    has_io_boundaries: bool = False       # Does code cross I/O boundaries?
+    io_boundary_reason: str = ""          # Explanation if no I/O detected
+    resilience_applicable: bool = True    # Should resilience score apply?
 
     # Risk assessment
-    shield_rating: str = ""  # ADAMANTINE, STEEL, BRONZE, WOOD, PAPER, TOO_SMALL
+    shield_rating: str = ""  # ADAMANTINE, STEEL, BRONZE, WOOD, PAPER, TOO_SMALL, NO_IO
     vulnerabilities: list = field(default_factory=list)
     recommendations: list = field(default_factory=list)
 
@@ -353,6 +389,93 @@ class PatternDetector:
             r'\b(requests\.(get|post|put|delete|patch|head|options)\s*\(|urllib\.request\.|httpx\.(get|post|put|delete|patch|head|options|Client)|aiohttp\.(get|post|ClientSession)|fetch\s*\(\s*["\']https?://|axios\.(get|post|put|delete)|http\.request\s*\(|new\s+HttpClient)\b'
         ),
         "db_call": re.compile(r"\b(cursor\.execute|\.raw\s*\(|connection\.execute)\s*\("),
+        
+        # =================================================================
+        # I/O BOUNDARY DETECTION - Code that crosses external boundaries
+        # =================================================================
+        
+        # Network/HTTP I/O (any language)
+        "io_http": re.compile(
+            r'\b('
+            r'requests\.(get|post|put|delete|patch|head|options|request|Session)|'  # Python requests
+            r'urllib\.(request|urlopen)|http\.client\.|httplib\.|'  # Python stdlib
+            r'httpx\.|aiohttp\.|ClientSession|'  # Python async
+            r'http\.(Get|Post|Put|Delete|NewRequest|Client)|net/http|'  # Go
+            r'fetch\s*\(|axios\.|XMLHttpRequest|http\.request|'  # JavaScript
+            r'HttpClient|WebClient|RestTemplate|OkHttp|'  # Java/.NET
+            r'reqwest::|hyper::|surf::|ureq::'  # Rust
+            r')\b'
+        ),
+        
+        # Socket/low-level network I/O
+        "io_socket": re.compile(
+            r'\b('
+            r'socket\.(socket|connect|bind|listen|accept)|'  # Python
+            r'net\.(Dial|Listen|Conn)|'  # Go
+            r'Socket\(|ServerSocket|DatagramSocket|'  # Java
+            r'TcpStream|UdpSocket|TcpListener|'  # Rust
+            r'net\.Socket|dgram\.'  # Node.js
+            r')\b'
+        ),
+        
+        # gRPC calls
+        "io_grpc": re.compile(
+            r'\b('
+            r'grpc\.(insecure_channel|secure_channel|Channel|Server)|'  # Python
+            r'grpc\.Dial|grpc\.NewServer|'  # Go
+            r'ManagedChannel|ManagedChannelBuilder|'  # Java
+            r'tonic::|grpcio::'  # Rust
+            r')\b'
+        ),
+        
+        # Database I/O
+        "io_database": re.compile(
+            r'\b('
+            r'cursor\.(execute|fetchall|fetchone)|\.executemany|'  # Python DB-API
+            r'sqlalchemy\.|SQLAlchemy|create_engine|sessionmaker|'  # SQLAlchemy
+            r'django\.db|models\.(objects|filter|get|create)|'  # Django ORM
+            r'psycopg2|pymysql|mysql\.connector|sqlite3\.connect|'  # Python drivers
+            r'sql\.(Open|Query|Exec|Prepare)|database/sql|'  # Go
+            r'gorm\.|GORM|xorm\.|'  # Go ORMs
+            r'JdbcTemplate|EntityManager|PreparedStatement|'  # Java
+            r'sqlx::|diesel::|rusqlite::|tokio_postgres::|'  # Rust
+            r'mongoose\.|sequelize\.|knex\.|prisma\.'  # Node.js
+            r')\b'
+        ),
+        
+        # File I/O
+        "io_file": re.compile(
+            r'\b('
+            r'open\s*\([^)]*["\'][rwa]|with\s+open\s*\(|'  # Python
+            r'os\.(Open|Create|ReadFile|WriteFile)|ioutil\.|'  # Go
+            r'fs\.(readFile|writeFile|readdir|open|createReadStream)|'  # Node.js
+            r'FileInputStream|FileOutputStream|BufferedReader|Files\.(read|write)|'  # Java
+            r'std::fs::|tokio::fs::|File::open|File::create'  # Rust
+            r')\b'
+        ),
+        
+        # Subprocess/external process I/O
+        "io_subprocess": re.compile(
+            r'\b('
+            r'subprocess\.(run|Popen|call|check_output)|os\.(system|popen)|'  # Python
+            r'exec\.(Command|Cmd)|os/exec|'  # Go
+            r'child_process\.(exec|spawn|fork)|'  # Node.js
+            r'Runtime\.exec|ProcessBuilder|'  # Java
+            r'std::process::|Command::new'  # Rust
+            r')\b'
+        ),
+        
+        # Message queue I/O
+        "io_queue": re.compile(
+            r'\b('
+            r'kafka\.|KafkaConsumer|KafkaProducer|confluent_kafka|'  # Kafka
+            r'pika\.|RabbitMQ|amqp\.|'  # RabbitMQ
+            r'boto3\..*sqs|SQS|'  # AWS SQS
+            r'pubsub\.|PubSub|'  # GCP Pub/Sub
+            r'redis\.(publish|subscribe|lpush|rpop|blpop)|'  # Redis queues
+            r'celery\.|Celery'  # Celery
+            r')\b'
+        ),
     }
 
 
@@ -572,6 +695,33 @@ class PythonResilienceAnalyzer(PatternDetector):
         metrics.health_checks.dependency_checks += len(
             self.PATTERNS["dependency_check"].findall(content)
         )
+        
+        # I/O Boundary Detection - Does this code cross external boundaries?
+        io = metrics.io_boundaries
+        
+        io.http_calls = len(self.PATTERNS["io_http"].findall(content))
+        io.socket_operations = len(self.PATTERNS["io_socket"].findall(content))
+        io.grpc_calls = len(self.PATTERNS["io_grpc"].findall(content))
+        io.database_queries = len(self.PATTERNS["io_database"].findall(content))
+        io.file_operations = len(self.PATTERNS["io_file"].findall(content))
+        io.subprocess_calls = len(self.PATTERNS["io_subprocess"].findall(content))
+        io.queue_operations = len(self.PATTERNS["io_queue"].findall(content))
+        
+        # Calculate totals
+        io.total_io_operations = (
+            io.http_calls + 
+            io.socket_operations + 
+            io.grpc_calls + 
+            io.database_queries + 
+            io.file_operations + 
+            io.subprocess_calls + 
+            io.queue_operations
+        )
+        
+        if metrics.lines_of_code > 0:
+            io.io_density = (io.total_io_operations / metrics.lines_of_code) * 100
+        
+        io.has_io_boundaries = io.total_io_operations > 0
 
 
 class GenericResilienceAnalyzer(PatternDetector):
@@ -984,18 +1134,44 @@ class Aegis:
         # Calculate total LOC
         total_loc = sum(fm.lines_of_code for fm in self.file_metrics)
         report.total_loc = total_loc
+        
+        # =================================================================
+        # I/O BOUNDARY CHECK
+        # Code that doesn't cross I/O boundaries doesn't need resilience patterns.
+        # =================================================================
+        total_io = sum(fm.io_boundaries.total_io_operations for fm in self.file_metrics)
+        report.total_io_operations = total_io
+        report.io_density = (total_io / total_loc * 100) if total_loc > 0 else 0
+        report.has_io_boundaries = total_io > 0
+        
+        # Minimum I/O threshold: at least 1 I/O operation per 5000 LOC to be considered I/O-bound
+        # This is intentionally permissive to avoid false NO_IO classifications
+        MIN_IO_DENSITY = 0.02  # 0.02 I/O ops per 100 LOC = 1 per 5000 LOC
+        
+        if report.io_density < MIN_IO_DENSITY and total_loc >= 2000:
+            # Large codebase with minimal I/O - resilience patterns not applicable
+            report.resilience_applicable = False
+            report.overall_resilience_score = -1  # Sentinel for N/A
+            report.shield_rating = "NO_IO"
+            report.io_boundary_reason = (
+                f"Codebase has minimal I/O boundary crossings ({total_io} operations in {total_loc:,} LOC). "
+                f"Resilience patterns (retries, circuit breakers, timeouts) apply to I/O-bound code. "
+                f"This appears to be primarily computational/library code where such patterns aren't expected."
+            )
+            # Still calculate category scores for informational purposes
+            report.resilience_applicable = False
 
         # MINIMUM SIZE CHECK
         # Codebases under 2000 LOC are too small to have meaningful resilience patterns.
         # We mark them as "TOO_SMALL" rather than giving a misleading low score.
-        min_loc_for_scoring = 2000
+        MIN_LOC_FOR_SCORING = 2000
 
-        if total_loc < min_loc_for_scoring:
+        if total_loc < MIN_LOC_FOR_SCORING:
             report.too_small_to_score = True
             report.overall_resilience_score = -1  # Sentinel value
             report.shield_rating = "TOO_SMALL"
             report.too_small_reason = (
-                f"Codebase has {total_loc:,} LOC (minimum {min_loc_for_scoring:,} required). "
+                f"Codebase has {total_loc:,} LOC (minimum {MIN_LOC_FOR_SCORING:,} required). "
                 f"Small codebases don't have enough patterns to analyze meaningfully."
             )
             # Still calculate category scores for informational purposes
