@@ -1,9 +1,69 @@
-mattdiamond/fuckitjs
-ESWAT/is-thirteen
-auchenberg/volkswagen
-theonion/fartscroll.js
-theonion/comcastify-js
-psf/requests
-pallets/click
-pallets/flask
-jazzband/tablib
+# repos.txt - Diverse test repositories for Prometheus benchmark
+# =============================================================================
+# EXPECTED: FORTRESS (High Resilience, Low Complexity)
+# Well-engineered, mature projects with proper error handling
+# =============================================================================
+pallets/flask              # Python web framework, clean design
+psf/requests               # Python HTTP library, excellent error handling
+expressjs/express          # Node.js web framework, mature
+sindresorhus/got           # Node.js HTTP client, great retry/timeout handling
+go-resty/resty             # Go HTTP client with retries built-in
+
+# =============================================================================
+# EXPECTED: BUNKER (High Resilience, High Complexity)
+# Large, complex systems with extensive defensive patterns
+# =============================================================================
+kubernetes/kubernetes      # Go - massive but resilient (WARNING: huge, slow)
+hashicorp/consul           # Go - distributed systems, circuit breakers
+Netflix/Hystrix            # Java - THE circuit breaker library
+resilience4j/resilience4j  # Java - modern resilience library
+grpc/grpc                  # C++ - complex but robust RPC framework
+
+# =============================================================================
+# EXPECTED: GLASS HOUSE (Low Resilience, Low Complexity)
+# Simple utilities, scripts, or early-stage projects
+# =============================================================================
+kelseyhightower/nocode     # The ultimate simple repo (empty!)
+jezen/is-thirteen          # JS - joke library, minimal
+sindresorhus/is            # JS - type checking, simple
+chalk/chalk                # JS - terminal colors, minimal error handling
+jorgebucaran/hyperapp      # JS - tiny framework
+
+# =============================================================================
+# EXPECTED: DEATHTRAP (Low Resilience, High Complexity)
+# Complex codebases with inadequate error handling
+# =============================================================================
+# (These are harder to find - most complex projects eventually add resilience)
+# Look for fast-growing startups or academic projects
+
+# =============================================================================
+# INTERESTING EDGE CASES
+# =============================================================================
+torvalds/linux             # C - kernel, unique patterns (WARNING: huge)
+git/git                    # C - version control, errno-based error handling
+redis/redis                # C - database, interesting resilience patterns
+antirez/kilo               # C - tiny editor, minimal but intentional
+sqlite/sqlite              # C - database, extremely defensive coding
+
+# =============================================================================
+# LANGUAGE VARIETY (for testing C/C++ support)
+# =============================================================================
+nlohmann/json              # C++ header-only JSON library
+gabime/spdlog              # C++ logging library
+fmtlib/fmt                 # C++ formatting library
+google/leveldb             # C++ database
+facebook/folly             # C++ utilities (complex)
+
+# =============================================================================
+# RUST (should return N/A - good for testing unsupported language handling)
+# =============================================================================
+rust-lang/rust             # Rust compiler itself
+tokio-rs/tokio             # Rust async runtime
+serde-rs/serde             # Rust serialization
+
+# =============================================================================
+# MIXED LANGUAGE (test language detection)
+# =============================================================================
+electron/electron          # C++/JS/TS mix
+vercel/next.js             # JS/TS
+microsoft/vscode           # TS primarily

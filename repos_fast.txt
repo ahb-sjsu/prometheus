@@ -1,0 +1,32 @@
+# repos_fast.txt - Fast, diverse test repos (avoiding huge repos)
+# Each repo is < 100MB, most < 20MB
+
+# FORTRESS candidates (High Resilience, Low Complexity)
+pallets/flask
+psf/requests
+sindresorhus/got
+go-resty/resty
+
+# BUNKER candidates (High Resilience, High Complexity) - smaller ones
+hashicorp/go-retryablehttp
+sony/gobreaker
+resilience4j/resilience4j
+Netflix/Hystrix
+
+# GLASS HOUSE candidates (Low Resilience, Low Complexity)
+chalk/chalk
+sindresorhus/is
+jorgebucaran/hyperapp
+lodash/lodash
+
+# C/C++ variety (testing new C support)
+antirez/kilo
+nlohmann/json
+gabime/spdlog
+fmtlib/fmt
+
+# Rust (should return N/A)
+serde-rs/serde
+
+# Edge cases
+redis/redis

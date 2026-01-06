@@ -13,6 +13,14 @@ Contains:
 - GitHub avatar URL resolution
 """
 
+# Import thresholds from prometheus to ensure consistency
+try:
+    from prometheus import COMPLEXITY_THRESHOLD, RESILIENCE_THRESHOLD
+except ImportError:
+    # Fallback if prometheus not available (shouldn't happen in normal use)
+    COMPLEXITY_THRESHOLD = 50
+    RESILIENCE_THRESHOLD = 35
+
 # =============================================================================
 # COPYRIGHT
 # =============================================================================
@@ -688,19 +696,34 @@ def generate_repo_dot_html(
     quadrant: str,
     complexity: float,
     resilience: float,
-    theater: float | None = 1.0,
+    theater: float | str | None = 1.0,
 ) -> str:
     """Generate HTML for a single repo dot on the quadrant."""
     import math
 
     short_name = name.split("/")[-1][:10]
+
+    # Normalize theater value
+    theater_val = theater
+    if isinstance(theater, str):
+        theater_lower = theater.lower()
+        if theater_lower in ("n/a", "na", "none", ""):
+            theater_val = None
+        elif theater_lower in ("inf", "infinity", "∞"):
+            theater_val = float("inf")
+        else:
+            try:
+                theater_val = float(theater)
+            except (ValueError, TypeError):
+                theater_val = None
+
     # Format theater for display
-    if theater is None:
+    if theater_val is None:
         theater_str = "&#10;Theater: N/A"
-    elif math.isinf(theater):
+    elif isinstance(theater_val, float) and math.isinf(theater_val):
         theater_str = "&#10;Theater: ∞"
-    elif theater != 1.0:
-        theater_str = f"&#10;Theater: {theater:.2f}"
+    elif theater_val != 1.0:
+        theater_str = f"&#10;Theater: {theater_val:.2f}"
     else:
         theater_str = ""
     # Use bottom positioning: 0% = bottom of chart, 100% = top
@@ -789,9 +812,22 @@ def generate_comparison_table_html(repos: list) -> str:
         health_color = "#22c55e" if health >= 70 else "#f59e0b" if health >= 50 else "#ef4444"
         quadrant_color = QUADRANT_TEXT_COLORS.get(repo.get("quadrant", ""), "#64748b")
 
-        # Format theater for display
+        # Format theater for display - handle strings, None, and infinity
         theater_val = repo.get("theater", 1.0)
-        if theater_val is None:
+
+        # Normalize string values
+        if isinstance(theater_val, str):
+            theater_lower = theater_val.lower()
+            if theater_lower in ("n/a", "na", "none", ""):
+                theater_str = "N/A"
+            elif theater_lower in ("inf", "infinity", "∞"):
+                theater_str = "∞"
+            else:
+                try:
+                    theater_str = f"{float(theater_val):.2f}"
+                except (ValueError, TypeError):
+                    theater_str = "N/A"
+        elif theater_val is None:
             theater_str = "N/A"
         elif isinstance(theater_val, float) and math.isinf(theater_val):
             theater_str = "∞"
@@ -852,30 +888,27 @@ def calculate_dot_position(complexity_score: float, resilience_score: float) -> 
 
     The visual center (50%) must align with the classification thresholds.
     """
-    # Thresholds from prometheus.py - must match!
-    complexity_threshold = 50
-    resilience_threshold = 35
-
-    # X-axis: Resilience - scale so threshold (35) maps to visual center (50%)
+    # Use module-level constants (imported from prometheus.py)
+    # X-axis: Resilience - scale so threshold maps to visual center (50%)
     # Score 0 -> ~8%, Score 35 -> 50%, Score 70 -> 92%
     if resilience_score < 0:
         x_pct = 50  # Unknown resilience -> center
-    elif resilience_score < resilience_threshold:
+    elif resilience_score < RESILIENCE_THRESHOLD:
         # Below threshold: map 0-35 to 8-50%
-        x_pct = 8 + (resilience_score / resilience_threshold) * 42
+        x_pct = 8 + (resilience_score / RESILIENCE_THRESHOLD) * 42
     else:
         # Above threshold: map 35-100 to 50-92%
-        x_pct = 50 + ((resilience_score - resilience_threshold) / (100 - resilience_threshold)) * 42
+        x_pct = 50 + ((resilience_score - RESILIENCE_THRESHOLD) / (100 - RESILIENCE_THRESHOLD)) * 42
 
     # Y-axis: Complexity - threshold is 50, which naturally maps to 50%
     # But Y is inverted: low score = high complexity = top
     # Score 0 -> top (8%), Score 50 -> center (50%), Score 100 -> bottom (92%)
-    if complexity_score < complexity_threshold:
+    if complexity_score < COMPLEXITY_THRESHOLD:
         # Below threshold (high complexity): map 0-50 to 8-50%
-        y_pct = 8 + (complexity_score / complexity_threshold) * 42
+        y_pct = 8 + (complexity_score / COMPLEXITY_THRESHOLD) * 42
     else:
         # Above threshold (low complexity): map 50-100 to 50-92%
-        y_pct = 50 + ((complexity_score - complexity_threshold) / (100 - complexity_threshold)) * 42
+        y_pct = 50 + ((complexity_score - COMPLEXITY_THRESHOLD) / (100 - COMPLEXITY_THRESHOLD)) * 42
 
     # Clamp to safe bounds
     x_pct = max(8, min(92, x_pct))

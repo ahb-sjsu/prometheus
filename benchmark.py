@@ -228,12 +228,16 @@ def check_security_tools() -> bool:
         return False
 
 
-def run_prometheus(repo: str, library_mode: bool = False, include_security: bool = False) -> dict | None:
+def run_prometheus(
+    repo: str, library_mode: bool = False, include_security: bool = False
+) -> dict | None:
     """Run prometheus on a repo and return the JSON results."""
     cmd = [
-        "python", "prometheus.py", repo,
-        "--smells",      # Code smell analysis
-        "--report",      # Generate detailed report
+        "python",
+        "prometheus.py",
+        repo,
+        "--smells",  # Code smell analysis
+        "--report",  # Generate detailed report
     ]
     if library_mode:
         cmd.append("--library")
@@ -251,8 +255,8 @@ def run_prometheus(repo: str, library_mode: bool = False, include_security: bool
             capture_output=True,
             text=True,
             timeout=600,  # 10 minute timeout
-            encoding='utf-8',
-            errors='replace'
+            encoding="utf-8",
+            errors="replace",
         )
 
         print(result.stdout)
@@ -265,18 +269,15 @@ def run_prometheus(repo: str, library_mode: bool = False, include_security: bool
         smell_path = f"scent_{repo_name}.json"
 
         if Path(json_path).exists():
-            with open(json_path, encoding='utf-8') as f:
+            with open(json_path, encoding="utf-8") as f:
                 prometheus_data = json.load(f)
 
             smell_data = {}
             if Path(smell_path).exists():
-                with open(smell_path, encoding='utf-8') as f:
+                with open(smell_path, encoding="utf-8") as f:
                     smell_data = json.load(f)
 
-            return {
-                "prometheus": prometheus_data,
-                "scent": smell_data
-            }
+            return {"prometheus": prometheus_data, "scent": smell_data}
         else:
             print(f"ERROR: {json_path} not found")
             return None
@@ -301,7 +302,7 @@ def parse_result(data: dict) -> ActualResult:
             freshness="ERROR",
             smell_score=0,
             success=False,
-            error="No data returned"
+            error="No data returned",
         )
 
     try:
@@ -319,7 +320,7 @@ def parse_result(data: dict) -> ActualResult:
             complexity_score=scores.get("complexity_score", p.get("complexity_score", 0)),
             freshness=s.get("freshness_rating", "UNKNOWN"),
             smell_score=s.get("overall_smell_score", 0),
-            success=True
+            success=True,
         )
     except Exception as e:
         return ActualResult(
@@ -331,7 +332,7 @@ def parse_result(data: dict) -> ActualResult:
             freshness="ERROR",
             smell_score=0,
             success=False,
-            error=str(e)
+            error=str(e),
         )
 
 
@@ -344,37 +345,59 @@ def check_prediction(pred: Prediction, actual: ActualResult) -> dict:
 
     # Partial credit for close matches
     quadrant_close = (
-        (pred.expected_quadrant == "BUNKER" and actual.quadrant in ["BUNKER", "FORTRESS"]) or
-        (pred.expected_quadrant == "FORTRESS" and actual.quadrant in ["FORTRESS", "BUNKER"]) or
-        (pred.expected_quadrant == "GLASS HOUSE" and actual.quadrant in ["GLASS HOUSE", "BUNKER"]) or
-        (pred.expected_quadrant == "BUNKER" and actual.quadrant in ["BUNKER", "GLASS HOUSE"])
+        (pred.expected_quadrant == "BUNKER" and actual.quadrant in ["BUNKER", "FORTRESS"])
+        or (pred.expected_quadrant == "FORTRESS" and actual.quadrant in ["FORTRESS", "BUNKER"])
+        or (
+            pred.expected_quadrant == "GLASS HOUSE" and actual.quadrant in ["GLASS HOUSE", "BUNKER"]
+        )
+        or (pred.expected_quadrant == "BUNKER" and actual.quadrant in ["BUNKER", "GLASS HOUSE"])
     )
 
     resilience_close = (
-        (pred.expected_resilience == "ADAMANTINE" and actual.resilience_rating in ["ADAMANTINE", "STEEL"]) or
-        (pred.expected_resilience == "STEEL" and actual.resilience_rating in ["STEEL", "ADAMANTINE", "BRONZE"]) or
-        (pred.expected_resilience == "BRONZE" and actual.resilience_rating in ["BRONZE", "STEEL", "WOOD"]) or
-        (pred.expected_resilience == "WOOD" and actual.resilience_rating in ["WOOD", "PAPER", "BRONZE"])
+        (
+            pred.expected_resilience == "ADAMANTINE"
+            and actual.resilience_rating in ["ADAMANTINE", "STEEL"]
+        )
+        or (
+            pred.expected_resilience == "STEEL"
+            and actual.resilience_rating in ["STEEL", "ADAMANTINE", "BRONZE"]
+        )
+        or (
+            pred.expected_resilience == "BRONZE"
+            and actual.resilience_rating in ["BRONZE", "STEEL", "WOOD"]
+        )
+        or (
+            pred.expected_resilience == "WOOD"
+            and actual.resilience_rating in ["WOOD", "PAPER", "BRONZE"]
+        )
     )
 
     freshness_close = (
-        (pred.expected_freshness == "FRESH" and actual.freshness in ["FRESH", "STALE"]) or
-        (pred.expected_freshness == "STALE" and actual.freshness in ["STALE", "FRESH", "MOLDY"]) or
-        (pred.expected_freshness == "MOLDY" and actual.freshness in ["MOLDY", "STALE", "ROTTEN"])
+        (pred.expected_freshness == "FRESH" and actual.freshness in ["FRESH", "STALE"])
+        or (pred.expected_freshness == "STALE" and actual.freshness in ["STALE", "FRESH", "MOLDY"])
+        or (pred.expected_freshness == "MOLDY" and actual.freshness in ["MOLDY", "STALE", "ROTTEN"])
     )
 
     # Calculate raw accuracy (0-100)
-    raw_score = sum([
-        quadrant_match * 2 + (quadrant_close and not quadrant_match) * 1,
-        resilience_match * 2 + (resilience_close and not resilience_match) * 1,
-        resilience_score_ok * 1,
-        freshness_match * 2 + (freshness_close and not freshness_match) * 1
-    ]) / 9 * 100  # Max 9 points
+    raw_score = (
+        sum(
+            [
+                quadrant_match * 2 + (quadrant_close and not quadrant_match) * 1,
+                resilience_match * 2 + (resilience_close and not resilience_match) * 1,
+                resilience_score_ok * 1,
+                freshness_match * 2 + (freshness_close and not freshness_match) * 1,
+            ]
+        )
+        / 9
+        * 100
+    )  # Max 9 points
 
     # Calculate confidence-weighted score
     # High confidence predictions that are wrong hurt more
     # Low confidence predictions that are right help less
-    avg_confidence = (pred.quadrant_confidence + pred.resilience_confidence + pred.freshness_confidence) / 3
+    avg_confidence = (
+        pred.quadrant_confidence + pred.resilience_confidence + pred.freshness_confidence
+    ) / 3
 
     # Weighted score: correct high-confidence = great, wrong high-confidence = bad
     if raw_score >= 70:
@@ -401,7 +424,7 @@ def check_prediction(pred: Prediction, actual: ActualResult) -> dict:
         "confidence_weighted_score": confidence_weighted,
         "avg_confidence": avg_confidence,
         "overall_score": confidence_weighted,  # Use weighted as overall
-        "too_small": too_small
+        "too_small": too_small,
     }
 
 
@@ -423,7 +446,9 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
 
     for pred, actual, check in results:
         if not actual.success:
-            lines.append(f"| `{pred.repo}` | {pred.language} | {pred.expected_quadrant} | ❌ ERROR | - | - | - | - |")
+            lines.append(
+                f"| `{pred.repo}` | {pred.language} | {pred.expected_quadrant} | ❌ ERROR | - | - | - | - |"
+            )
             continue
 
         success_count += 1
@@ -439,11 +464,15 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
             r_emoji = "⚪"  # Neutral - not scored
             r_display = "TOO_SMALL"
         else:
-            r_emoji = "✅" if check["resilience_match"] else "🟡" if check["resilience_close"] else "❌"
+            r_emoji = (
+                "✅" if check["resilience_match"] else "🟡" if check["resilience_close"] else "❌"
+            )
             r_display = f"{actual.resilience_rating} ({actual.resilience_score:.0f})"
 
         # Freshness emoji
-        f_emoji = "✅" if check["freshness_match"] else "🟡" if check.get("freshness_close") else "❌"
+        f_emoji = (
+            "✅" if check["freshness_match"] else "🟡" if check.get("freshness_close") else "❌"
+        )
 
         score = check["overall_score"]
         raw = check.get("raw_score", score)
@@ -471,16 +500,22 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
     lines.append("## Confidence Calibration\n")
     lines.append("How well did confidence levels predict accuracy?\n")
 
-    high_conf = [(p, a, c) for p, a, c in results if a.success and c.get("avg_confidence", 50) >= 70]
+    high_conf = [
+        (p, a, c) for p, a, c in results if a.success and c.get("avg_confidence", 50) >= 70
+    ]
     low_conf = [(p, a, c) for p, a, c in results if a.success and c.get("avg_confidence", 50) < 50]
 
     if high_conf:
         high_conf_accuracy = sum(c.get("raw_score", 0) for _, _, c in high_conf) / len(high_conf)
-        lines.append(f"- **High confidence (≥70%):** {len(high_conf)} predictions, {high_conf_accuracy:.0f}% accuracy")
+        lines.append(
+            f"- **High confidence (≥70%):** {len(high_conf)} predictions, {high_conf_accuracy:.0f}% accuracy"
+        )
 
     if low_conf:
         low_conf_accuracy = sum(c.get("raw_score", 0) for _, _, c in low_conf) / len(low_conf)
-        lines.append(f"- **Low confidence (<50%):** {len(low_conf)} predictions, {low_conf_accuracy:.0f}% accuracy")
+        lines.append(
+            f"- **Low confidence (<50%):** {len(low_conf)} predictions, {low_conf_accuracy:.0f}% accuracy"
+        )
 
     lines.append("")
 
@@ -490,7 +525,9 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
     for pred, actual, check in results:
         lines.append(f"### {pred.repo}")
         lines.append("")
-        lines.append(f"**Language:** {pred.language} | **Type:** {pred.type} | **Size:** {pred.size}")
+        lines.append(
+            f"**Language:** {pred.language} | **Type:** {pred.type} | **Size:** {pred.size}"
+        )
         lines.append(f"**Reason for prediction:** {pred.reason}")
         if pred.confidence_notes:
             lines.append(f"**Confidence notes:** {pred.confidence_notes}")
@@ -505,15 +542,25 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
         lines.append("|--------|-----------|------------|--------|-------|")
 
         q_match = "✅" if check["quadrant_match"] else "🟡" if check["quadrant_close"] else "❌"
-        lines.append(f"| Quadrant | {pred.expected_quadrant} | {pred.quadrant_confidence}% | {actual.quadrant} | {q_match} |")
+        lines.append(
+            f"| Quadrant | {pred.expected_quadrant} | {pred.quadrant_confidence}% | {actual.quadrant} | {q_match} |"
+        )
 
         r_match = "✅" if check["resilience_match"] else "🟡" if check["resilience_close"] else "❌"
-        lines.append(f"| Resilience | {pred.expected_resilience} (≥{pred.expected_resilience_min}) | {pred.resilience_confidence}% | {actual.resilience_rating} ({actual.resilience_score:.0f}) | {r_match} |")
+        lines.append(
+            f"| Resilience | {pred.expected_resilience} (≥{pred.expected_resilience_min}) | {pred.resilience_confidence}% | {actual.resilience_rating} ({actual.resilience_score:.0f}) | {r_match} |"
+        )
 
-        f_match = "✅" if check["freshness_match"] else "🟡" if check.get("freshness_close") else "❌"
-        lines.append(f"| Freshness | {pred.expected_freshness} | {pred.freshness_confidence}% | {actual.freshness} | {f_match} |")
+        f_match = (
+            "✅" if check["freshness_match"] else "🟡" if check.get("freshness_close") else "❌"
+        )
+        lines.append(
+            f"| Freshness | {pred.expected_freshness} | {pred.freshness_confidence}% | {actual.freshness} | {f_match} |"
+        )
 
-        lines.append(f"| Complexity | - | - | {actual.complexity_risk} ({actual.complexity_score:.0f}) | - |")
+        lines.append(
+            f"| Complexity | - | - | {actual.complexity_risk} ({actual.complexity_score:.0f}) | - |"
+        )
         lines.append(f"| Smell Score | - | - | {actual.smell_score:.0f}/100 | - |")
 
         # Show confidence-weighted calculation
@@ -521,7 +568,9 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
         weighted = check.get("confidence_weighted_score", raw)
         avg_conf = check.get("avg_confidence", 50)
         lines.append("")
-        lines.append(f"**Scores:** Raw: {raw:.0f}% | Confidence: {avg_conf:.0f}% | Weighted: {weighted:.0f}%")
+        lines.append(
+            f"**Scores:** Raw: {raw:.0f}% | Confidence: {avg_conf:.0f}% | Weighted: {weighted:.0f}%"
+        )
         lines.append("")
 
     # Analysis
@@ -533,17 +582,27 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
         lines.append("### ✅ Correct Predictions\n")
         for pred, actual, _check in correct:
             conf = pred.quadrant_confidence
-            lines.append(f"- **{pred.repo}**: Predicted {pred.expected_quadrant} ({conf}% conf), got {actual.quadrant}")
+            lines.append(
+                f"- **{pred.repo}**: Predicted {pred.expected_quadrant} ({conf}% conf), got {actual.quadrant}"
+            )
         lines.append("")
 
     # What we got wrong
-    wrong = [(p, a, c) for p, a, c in results if a.success and not c["quadrant_match"] and not c["quadrant_close"]]
+    wrong = [
+        (p, a, c)
+        for p, a, c in results
+        if a.success and not c["quadrant_match"] and not c["quadrant_close"]
+    ]
     if wrong:
         lines.append("### ❌ Incorrect Predictions\n")
         for pred, actual, _check in wrong:
             conf = pred.quadrant_confidence
-            lines.append(f"- **{pred.repo}**: Predicted {pred.expected_quadrant} ({conf}% conf), got {actual.quadrant}")
-            lines.append(f"  - Resilience: {actual.resilience_score:.0f}, Complexity: {actual.complexity_score:.0f}")
+            lines.append(
+                f"- **{pred.repo}**: Predicted {pred.expected_quadrant} ({conf}% conf), got {actual.quadrant}"
+            )
+            lines.append(
+                f"  - Resilience: {actual.resilience_score:.0f}, Complexity: {actual.complexity_score:.0f}"
+            )
         lines.append("")
 
     # Lessons learned
@@ -555,9 +614,13 @@ def generate_report(results: list[tuple[Prediction, ActualResult, dict]]) -> str
     for pred, actual, check in results:
         if actual.success:
             if pred.quadrant_confidence >= 80 and not check["quadrant_match"]:
-                lines.append(f"- **Overconfident on {pred.repo}**: {pred.quadrant_confidence}% confidence but wrong quadrant")
+                lines.append(
+                    f"- **Overconfident on {pred.repo}**: {pred.quadrant_confidence}% confidence but wrong quadrant"
+                )
             if pred.quadrant_confidence <= 40 and check["quadrant_match"]:
-                lines.append(f"- **Underconfident on {pred.repo}**: Only {pred.quadrant_confidence}% confidence but correct!")
+                lines.append(
+                    f"- **Underconfident on {pred.repo}**: Only {pred.quadrant_confidence}% confidence but correct!"
+                )
 
     lines.append("")
 
@@ -568,17 +631,23 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Prometheus Benchmark Runner")
-    parser.add_argument("--security", action="store_true",
-                        help="Include security analysis (requires bandit/semgrep)")
-    parser.add_argument("--repos", type=int, default=len(PREDICTIONS),
-                        help=f"Number of repos to test (default: all {len(PREDICTIONS)})")
-    parser.add_argument("--only", type=str,
-                        help="Test only specific repo (e.g., 'antirez/sds')")
+    parser.add_argument(
+        "--security",
+        action="store_true",
+        help="Include security analysis (requires bandit/semgrep)",
+    )
+    parser.add_argument(
+        "--repos",
+        type=int,
+        default=len(PREDICTIONS),
+        help=f"Number of repos to test (default: all {len(PREDICTIONS)})",
+    )
+    parser.add_argument("--only", type=str, help="Test only specific repo (e.g., 'antirez/sds')")
     args = parser.parse_args()
 
-    print("="*70)
+    print("=" * 70)
     print("PROMETHEUS BENCHMARK RUNNER")
-    print("="*70)
+    print("=" * 70)
 
     # Check for security tools
     has_security = False
@@ -598,7 +667,7 @@ def main():
             print(f"❌ Repo '{args.only}' not in predictions list")
             return
     else:
-        predictions = PREDICTIONS[:args.repos]
+        predictions = PREDICTIONS[: args.repos]
 
     print(f"\nTesting {len(predictions)} repositories...")
     print("This may take a while (cloning + analyzing each repo)\n")
@@ -625,20 +694,28 @@ def main():
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("BENCHMARK COMPLETE")
-    print("="*70)
+    print("=" * 70)
     print(f"\nReport saved to: {report_path}")
 
     # Print summary
     success_count = sum(1 for _, a, _ in results if a.success)
     correct_count = sum(1 for _, a, c in results if a.success and c["quadrant_match"])
-    close_count = sum(1 for _, a, c in results if a.success and c["quadrant_close"] and not c["quadrant_match"])
+    close_count = sum(
+        1 for _, a, c in results if a.success and c["quadrant_close"] and not c["quadrant_match"]
+    )
 
     print(f"\nResults: {success_count}/{len(PREDICTIONS)} repos analyzed successfully")
-    print(f"Predictions: {correct_count} exact, {close_count} close, {success_count - correct_count - close_count} wrong")
+    print(
+        f"Predictions: {correct_count} exact, {close_count} close, {success_count - correct_count - close_count} wrong"
+    )
 
-    avg_score = sum(c["overall_score"] for _, a, c in results if a.success) / success_count if success_count > 0 else 0
+    avg_score = (
+        sum(c["overall_score"] for _, a, c in results if a.success) / success_count
+        if success_count > 0
+        else 0
+    )
     print(f"Overall accuracy: {avg_score:.1f}%")
 
 

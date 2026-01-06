@@ -42,6 +42,16 @@ from urllib.parse import urlparse
 from entropy_analyzer import ComplexityFitnessPipeline
 from shield_analyzer import Aegis
 
+# =============================================================================
+# QUADRANT CLASSIFICATION THRESHOLDS
+# =============================================================================
+# These thresholds determine which quadrant a codebase falls into.
+# They are used by prometheus.py for classification and prometheus_ui.py for visualization.
+# Changing these values will affect both classification and chart positioning.
+
+COMPLEXITY_THRESHOLD = 50  # >= 50 = low complexity (good), < 50 = high complexity
+RESILIENCE_THRESHOLD = 35  # >= 35 = adequate resilience, < 35 = low resilience
+
 
 def clone_github_repo(url: str, target_dir: str = None) -> tuple[str, str]:
     """
@@ -431,20 +441,15 @@ class Prometheus:
     def _determine_quadrant(self, report: PrometheusReport, resilience_result):
         """Determine which quadrant the codebase falls into.
 
-        Industry-calibrated thresholds:
-        - Complexity >= 50: Low complexity (well-structured)
-        - Resilience >= 35: Adequate resilience for frameworks
-        - Resilience >= 50: Good resilience for applications
+        Industry-calibrated thresholds (defined at module level):
+        - COMPLEXITY_THRESHOLD (50): >= means low complexity (well-structured)
+        - RESILIENCE_THRESHOLD (35): >= means adequate resilience
         """
-        # Thresholds - calibrated to industry benchmarks
-        complexity_threshold = 50  # >= 50 = low complexity (good)
-        resilience_threshold = 35  # >= 35 = adequate resilience for frameworks
-
         # Check if codebase is too small to score resilience
         if getattr(resilience_result, "too_small_to_score", False):
             # For tiny codebases, base quadrant only on complexity
             # They get a special designation
-            low_complexity = report.complexity_score >= complexity_threshold
+            low_complexity = report.complexity_score >= COMPLEXITY_THRESHOLD
             total_loc = getattr(resilience_result, "total_loc", 0)
             if low_complexity:
                 quadrant = "BUNKER"  # Small and simple is fine
@@ -468,8 +473,8 @@ class Prometheus:
             report.shield_rating = "TOO_SMALL"
             return
 
-        low_complexity = report.complexity_score >= complexity_threshold
-        high_resilience = report.resilience_score >= resilience_threshold
+        low_complexity = report.complexity_score >= COMPLEXITY_THRESHOLD
+        high_resilience = report.resilience_score >= RESILIENCE_THRESHOLD
 
         if low_complexity and high_resilience:
             quadrant = "BUNKER"
@@ -1249,14 +1254,27 @@ def generate_quadrant_html(
             <ul class="steps">{steps_html}</ul>
         </div>
         """
+
     # Build comparison items HTML for multi-repo view
     def _build_comparison_item(r):
         """Build HTML for a single comparison item."""
-        item_color = '#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'
+        item_color = (
+            "#22c55e"
+            if r.quadrant == "BUNKER"
+            else (
+                "#3b82f6"
+                if r.quadrant == "FORTRESS"
+                else "#eab308" if r.quadrant == "GLASS HOUSE" else "#ef4444"
+            )
+        )
         name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
-        desc = r.github.description[:40] + '...' if r.github.description and len(r.github.description) > 40 else r.github.description or ''
+        desc = (
+            r.github.description[:40] + "..."
+            if r.github.description and len(r.github.description) > 40
+            else r.github.description or ""
+        )
         quadrant_short = r.quadrant.split()[0]
-        return f'''
+        return f"""
                     <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {item_color};">
                         <div style="flex: 1;">
                             <div style="font-weight: bold; color: #f8fafc;">{name}</div>
@@ -1270,9 +1288,11 @@ def generate_quadrant_html(
                             <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{r.resilience_score:.0f}</div>
                             <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
                         </div>
-                    </div>'''
+                    </div>"""
 
-    comparison_items_html = "".join(_build_comparison_item(r) for r in sorted(reports_data, key=lambda x: -x.resilience_score))
+    comparison_items_html = "".join(
+        _build_comparison_item(r) for r in sorted(reports_data, key=lambda x: -x.resilience_score)
+    )
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1766,8 +1786,9 @@ Examples:
     args = parser.parse_args()
 
     # Determine temp directory for JSON files
-    if args.temp_dir == 'auto':
+    if args.temp_dir == "auto":
         import tempfile as tf
+
         temp_dir = Path(tf.gettempdir()) / "prometheus_output"
         temp_dir.mkdir(exist_ok=True)
     elif args.temp_dir:

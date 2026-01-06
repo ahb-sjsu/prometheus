@@ -146,6 +146,10 @@ class HubrisReport:
     exception_issues: list = field(default_factory=list)
     fallback_issues: list = field(default_factory=list)
 
+    # Design pattern issues (NEW)
+    design_pattern_issues: list = field(default_factory=list)
+    design_patterns_detected: list = field(default_factory=list)  # Types of patterns found
+
     # All detected patterns
     patterns: list = field(default_factory=list)
 
@@ -166,6 +170,14 @@ class HubrisReport:
     high_severity_count: int = 0
     medium_severity_count: int = 0
     low_severity_count: int = 0
+
+    # Design pattern stats (NEW)
+    design_pattern_issue_count: int = 0
+    singleton_abuse_count: int = 0
+    god_class_count: int = 0
+    factory_abuse_count: int = 0
+    inheritance_abuse_count: int = 0
+    observer_leak_count: int = 0
 
     # Language analysis tracking
     languages_analyzed: list = field(default_factory=list)
@@ -1119,6 +1131,681 @@ class LibraryDetector:
 
 
 # =============================================================================
+# DESIGN PATTERN DETECTOR
+# =============================================================================
+
+
+@dataclass
+class DesignPatternIssue:
+    """A detected design pattern anti-pattern."""
+
+    pattern_type: str  # singleton_abuse, factory_overkill, god_class, etc.
+    severity: str  # HIGH, MEDIUM, LOW
+    file: str
+    line: int
+    description: str
+    recommendation: str
+    code_snippet: str = ""
+
+
+class DesignPatternDetector:
+    """
+    Detect misused design patterns that add complexity without benefit.
+
+    Categories:
+    - Singleton Abuse: Global mutable state, thread-unsafe singletons
+    - Factory Overkill: Over-abstracted factories, single-type factories
+    - God Objects: Classes with too many responsibilities
+    - Inheritance Abuse: Deep hierarchies, inheritance for code reuse
+    - Abstraction Astronauts: Over-engineered interfaces and abstractions
+    - Observer Leaks: Unsubscribed observers, circular dependencies
+    - Builder Bloat: Builders for simple objects
+    """
+
+    PATTERNS = {
+        "python": {
+            # Singleton patterns
+            "singleton_decorator": re.compile(
+                r"@singleton|def\s+__new__\s*\([^)]*cls[^)]*\).*?_instance", re.DOTALL
+            ),
+            "global_instance": re.compile(r"^[A-Z_][A-Z0-9_]*\s*=\s*\w+\(\)", re.MULTILINE),
+            "module_singleton": re.compile(r"_instance\s*=\s*None.*?def\s+get_instance", re.DOTALL),
+            # God class indicators (will check method count separately)
+            "god_class_methods": re.compile(r"^\s+def\s+(?!__)\w+\s*\(", re.MULTILINE),
+            "god_class_attrs": re.compile(r"self\.\w+\s*=", re.MULTILINE),
+            # Factory patterns
+            "abstract_factory": re.compile(
+                r"class\s+\w*(?:Abstract)?Factory|def\s+create_\w+\s*\("
+            ),
+            "factory_if_chain": re.compile(
+                r'(?:if|elif)\s+\w+\s*==\s*[\'"][^\'"]+[\'"]\s*:.*?return\s+\w+\(', re.DOTALL
+            ),
+            # Inheritance depth (class X(Y) where Y(Z) where Z(W)...)
+            "deep_inheritance": re.compile(r"class\s+\w+\s*\(\s*\w+\s*\)"),
+            # Over-abstraction
+            "abstract_everything": re.compile(r"from\s+abc\s+import.*ABC|@abstractmethod"),
+            "interface_explosion": re.compile(r"class\s+I[A-Z]\w*\s*\(.*?ABC\s*\)|Protocol\s*\)"),
+            # Builder pattern
+            "builder_pattern": re.compile(
+                r"class\s+\w*Builder|def\s+build\s*\(self\)|\.set_\w+\s*\("
+            ),
+            "fluent_builder": re.compile(r"return\s+self\s*$", re.MULTILINE),
+            # Observer pattern issues
+            "observer_subscribe": re.compile(
+                r"\.subscribe\s*\(|\.add_observer\s*\(|\.register\s*\("
+            ),
+            "observer_unsubscribe": re.compile(
+                r"\.unsubscribe\s*\(|\.remove_observer\s*\(|\.unregister\s*\("
+            ),
+            # Decorator abuse
+            "decorator_chain": re.compile(r"(?:@\w+\s*(?:\([^)]*\))?\s*\n){4,}"),
+            # Mixin abuse
+            "mixin_explosion": re.compile(r"class\s+\w+\s*\([^)]*,\s*[^)]*,\s*[^)]*,\s*[^)]*\)"),
+        },
+        "javascript": {
+            # Singleton patterns
+            "singleton_instance": re.compile(r"static\s+instance\s*[;=]|getInstance\s*\(\s*\)"),
+            "module_singleton": re.compile(r"let\s+instance\s*=\s*null|const\s+instance\s*="),
+            "global_singleton": re.compile(r"(?:window|global|globalThis)\.\w+\s*=\s*new\s+\w+"),
+            # God class/module
+            "god_class_methods": re.compile(r"^\s+(?:async\s+)?\w+\s*\([^)]*\)\s*{", re.MULTILINE),
+            "large_object": re.compile(r"(?:const|let|var)\s+\w+\s*=\s*\{[^}]{2000,}\}", re.DOTALL),
+            # Factory patterns
+            "factory_function": re.compile(r"function\s+create\w+|const\s+create\w+\s*="),
+            "factory_switch": re.compile(
+                r'switch\s*\([^)]+\)\s*\{(?:[^}]*case\s+[\'"][^\'"]+[\'"]:\s*return\s+new\s+\w+){3,}',
+                re.DOTALL,
+            ),
+            # Class hierarchy
+            "extends_chain": re.compile(r"class\s+\w+\s+extends\s+\w+"),
+            # Over-abstraction
+            "interface_explosion": re.compile(r"interface\s+I[A-Z]\w*\s*(?:extends|\{)"),
+            "abstract_class": re.compile(r"abstract\s+class"),
+            # Builder pattern
+            "builder_pattern": re.compile(r"class\s+\w*Builder|\.build\s*\(\s*\)"),
+            "method_chaining": re.compile(r"return\s+this\s*;?\s*$", re.MULTILINE),
+            # Observer/Event issues
+            "add_listener": re.compile(r'\.addEventListener\s*\(|\.on\s*\([\'"]'),
+            "remove_listener": re.compile(r'\.removeEventListener\s*\(|\.off\s*\([\'"]'),
+            # Callback hell / Promise issues
+            "callback_pyramid": re.compile(r"\)\s*=>\s*\{[^}]*\)\s*=>\s*\{[^}]*\)\s*=>\s*\{"),
+        },
+        "java": {
+            # Singleton patterns
+            "singleton_instance": re.compile(
+                r"private\s+static\s+\w+\s+instance|getInstance\s*\(\s*\)"
+            ),
+            "eager_singleton": re.compile(r"private\s+static\s+final\s+\w+\s+INSTANCE\s*=\s*new"),
+            "double_checked_locking": re.compile(
+                r"synchronized.*?if\s*\(\s*instance\s*==\s*null\s*\)", re.DOTALL
+            ),
+            # God class
+            "god_class_methods": re.compile(
+                r"^\s+(?:public|private|protected)\s+\w+\s+\w+\s*\(", re.MULTILINE
+            ),
+            # Factory patterns
+            "abstract_factory": re.compile(r"abstract\s+class\s+\w*Factory|interface\s+\w*Factory"),
+            "factory_method": re.compile(
+                r"(?:public|protected)\s+(?:static\s+)?\w+\s+create\w+\s*\("
+            ),
+            "factory_if_chain": re.compile(
+                r'if\s*\([^)]+\.equals\s*\([\'"][^\'"]+[\'"]\)\s*\)\s*\{?\s*return\s+new'
+            ),
+            # Inheritance
+            "extends_class": re.compile(r"class\s+\w+\s+extends\s+\w+"),
+            "implements_many": re.compile(r"implements\s+\w+\s*,\s*\w+\s*,\s*\w+\s*,\s*\w+"),
+            # Builder pattern
+            "builder_class": re.compile(r"class\s+\w*Builder|public\s+\w+\s+build\s*\(\s*\)"),
+            "fluent_setter": re.compile(
+                r"public\s+\w+\s+set\w+\s*\([^)]+\)\s*\{[^}]*return\s+this"
+            ),
+            # Over-abstraction
+            "interface_explosion": re.compile(r"interface\s+I[A-Z]\w*"),
+            "abstract_everything": re.compile(r"abstract\s+(?:class|void|int|String)"),
+            # Observer pattern
+            "add_listener": re.compile(r"\.addListener\s*\(|\.subscribe\s*\("),
+            "remove_listener": re.compile(r"\.removeListener\s*\(|\.unsubscribe\s*\("),
+        },
+        "go": {
+            # Singleton patterns (Go style)
+            "sync_once": re.compile(r"sync\.Once|\.Do\s*\("),
+            "global_var": re.compile(r"^var\s+[a-z]\w*\s+\*?\w+\s*$", re.MULTILINE),
+            "init_function": re.compile(r"^func\s+init\s*\(\s*\)", re.MULTILINE),
+            # God struct
+            "god_struct_fields": re.compile(
+                r"^\s+\w+\s+\w+", re.MULTILINE
+            ),  # Count fields in struct
+            # Interface abuse
+            "interface_explosion": re.compile(r"type\s+\w*er\s+interface"),
+            "empty_interface": re.compile(r"interface\s*\{\s*\}"),
+            # Embedding depth
+            "deep_embedding": re.compile(r"type\s+\w+\s+struct\s*\{[^}]*\w+\s*$", re.MULTILINE),
+            # Factory functions
+            "factory_new": re.compile(r"func\s+New\w+\s*\("),
+            # Channel misuse
+            "unbuffered_channel": re.compile(r"make\s*\(\s*chan\s+\w+\s*\)"),
+            "channel_leak": re.compile(r"go\s+func\s*\([^)]*\)\s*\{[^}]*<-", re.DOTALL),
+        },
+        "c": {
+            # Singleton via static
+            "static_instance": re.compile(r"static\s+\w+\s*\*?\s*\w*instance|static\s+\w+\s+g_\w+"),
+            "global_state": re.compile(r"^(?:static\s+)?\w+\s*\*?\s*g_\w+\s*[=;]", re.MULTILINE),
+            # God file (many functions)
+            "function_def": re.compile(r"^\w+\s+\w+\s*\([^)]*\)\s*\{", re.MULTILINE),
+            # Function pointer tables (poor man's polymorphism)
+            "vtable_pattern": re.compile(r"struct\s*\{[^}]*\(\s*\*\s*\w+\s*\)\s*\([^)]*\)[^}]*\}"),
+            # Macro abuse
+            "macro_function": re.compile(r"#define\s+\w+\s*\([^)]*\)\s+(?:\\\n|[^\n]){50,}"),
+            "macro_magic": re.compile(r"#define\s+(?:FOR_EACH|FOREACH|DECLARE_|DEFINE_|IMPL_)"),
+        },
+        "cpp": {
+            # Singleton patterns
+            "meyers_singleton": re.compile(
+                r"static\s+\w+&?\s+getInstance|static\s+\w+&\s+instance\s*\(\s*\)"
+            ),
+            "static_instance": re.compile(r"static\s+\w+\s*\*?\s*m?_?instance"),
+            # God class
+            "god_class_methods": re.compile(
+                r"^\s+(?:virtual\s+)?(?:\w+::)?\w+\s+\w+\s*\(", re.MULTILINE
+            ),
+            # Template abuse
+            "template_explosion": re.compile(r"template\s*<[^>]*<[^>]*<"),  # Nested templates
+            "sfinae_abuse": re.compile(r"std::enable_if|std::void_t|decltype\s*\([^)]*\.\.\.\)"),
+            # Inheritance
+            "multiple_inheritance": re.compile(
+                r"class\s+\w+\s*:\s*(?:public|private|protected)\s+\w+\s*,"
+            ),
+            "virtual_inheritance": re.compile(r"virtual\s+(?:public|private|protected)\s+\w+"),
+            "diamond_problem": re.compile(
+                r"class\s+\w+\s*:.*?virtual\s+(?:public|private|protected)"
+            ),
+            # Factory patterns
+            "abstract_factory": re.compile(
+                r"class\s+\w*(?:Abstract)?Factory|virtual\s+\w+\s*\*\s*create"
+            ),
+            "factory_method": re.compile(
+                r"(?:static|virtual)\s+\w+\s*\*\s*(?:create|make)\w*\s*\("
+            ),
+            # CRTP (Curiously Recurring Template Pattern)
+            "crtp_pattern": re.compile(
+                r"class\s+(\w+)\s*:\s*(?:public|private)\s+\w+\s*<\s*\1\s*>"
+            ),
+            # Smart pointer issues
+            "raw_new": re.compile(r"(?<!make_unique|make_shared)\s+new\s+\w+"),
+            "shared_ptr_cycle": re.compile(r"shared_ptr.*?shared_ptr.*?shared_ptr", re.DOTALL),
+        },
+    }
+
+    # Thresholds for detecting issues
+    THRESHOLDS = {
+        "god_class_methods": 20,  # Methods per class
+        "god_class_attrs": 15,  # Attributes per class
+        "inheritance_depth": 4,  # Max inheritance levels
+        "factory_types": 5,  # Types in factory if-chain
+        "decorator_chain": 4,  # Max stacked decorators
+        "interface_count": 10,  # Interfaces per module
+        "mixin_count": 4,  # Mixins per class
+        "builder_setters": 10,  # When builder is overkill
+        "file_functions": 30,  # Functions per file (C)
+    }
+
+    def detect(
+        self, content: str, filepath: str, language: str
+    ) -> tuple[list[DesignPatternIssue], list]:
+        """
+        Detect design pattern anti-patterns in code.
+
+        Returns:
+            (issues, patterns_found) - issues found and patterns detected
+        """
+        issues = []
+        patterns_found = []
+
+        lang_patterns = self.PATTERNS.get(language, {})
+        if not lang_patterns:
+            return issues, patterns_found
+
+        lines = content.split("\n")
+
+        # Check for singleton abuse
+        singleton_issues = self._check_singleton_abuse(
+            content, filepath, language, lang_patterns, lines
+        )
+        issues.extend(singleton_issues)
+        if singleton_issues:
+            patterns_found.append("singleton")
+
+        # Check for god classes
+        god_class_issues = self._check_god_class(content, filepath, language, lang_patterns, lines)
+        issues.extend(god_class_issues)
+        if god_class_issues:
+            patterns_found.append("god_class")
+
+        # Check for factory anti-patterns
+        factory_issues = self._check_factory_abuse(
+            content, filepath, language, lang_patterns, lines
+        )
+        issues.extend(factory_issues)
+        if factory_issues:
+            patterns_found.append("factory")
+
+        # Check for inheritance abuse
+        inheritance_issues = self._check_inheritance_abuse(
+            content, filepath, language, lang_patterns, lines
+        )
+        issues.extend(inheritance_issues)
+        if inheritance_issues:
+            patterns_found.append("inheritance")
+
+        # Check for over-abstraction
+        abstraction_issues = self._check_over_abstraction(
+            content, filepath, language, lang_patterns, lines
+        )
+        issues.extend(abstraction_issues)
+        if abstraction_issues:
+            patterns_found.append("abstraction")
+
+        # Check for observer pattern leaks
+        observer_issues = self._check_observer_leaks(
+            content, filepath, language, lang_patterns, lines
+        )
+        issues.extend(observer_issues)
+        if observer_issues:
+            patterns_found.append("observer")
+
+        # Check for builder bloat
+        builder_issues = self._check_builder_bloat(
+            content, filepath, language, lang_patterns, lines
+        )
+        issues.extend(builder_issues)
+        if builder_issues:
+            patterns_found.append("builder")
+
+        # Language-specific checks
+        if language == "cpp":
+            cpp_issues = self._check_cpp_specific(content, filepath, lang_patterns, lines)
+            issues.extend(cpp_issues)
+
+        return issues, patterns_found
+
+    def _find_line_number(self, content: str, match) -> int:
+        """Find line number for a regex match."""
+        return content[: match.start()].count("\n") + 1
+
+    def _check_singleton_abuse(
+        self, content: str, filepath: str, language: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """Check for singleton anti-patterns."""
+        issues = []
+
+        # Check for global mutable singletons
+        if language == "python":
+            if patterns.get("global_instance"):
+                for match in patterns["global_instance"].finditer(content):
+                    line_num = self._find_line_number(content, match)
+                    # Check if it's likely mutable (not CONSTANT_CASE without assignment to class)
+                    matched_text = match.group()
+                    if not re.match(r'^[A-Z_]+\s*=\s*(?:True|False|None|\d+|[\'"])', matched_text):
+                        issues.append(
+                            DesignPatternIssue(
+                                pattern_type="singleton_abuse",
+                                severity="MEDIUM",
+                                file=filepath,
+                                line=line_num,
+                                description="Global mutable singleton detected. Global state makes testing difficult and hides dependencies.",
+                                recommendation="Use dependency injection instead. Pass the instance as a parameter.",
+                                code_snippet=matched_text[:100],
+                            )
+                        )
+
+        elif language == "javascript":
+            if patterns.get("global_singleton"):
+                for match in patterns["global_singleton"].finditer(content):
+                    line_num = self._find_line_number(content, match)
+                    issues.append(
+                        DesignPatternIssue(
+                            pattern_type="singleton_abuse",
+                            severity="HIGH",
+                            file=filepath,
+                            line=line_num,
+                            description="Global singleton via window/global object. This pollutes global namespace and makes testing difficult.",
+                            recommendation="Use module pattern or dependency injection instead.",
+                            code_snippet=match.group()[:100],
+                        )
+                    )
+
+        elif language == "java":
+            # Check for thread-unsafe singleton
+            if patterns.get("singleton_instance") and not patterns.get("double_checked_locking"):
+                if patterns["singleton_instance"].search(content):
+                    if "synchronized" not in content and "volatile" not in content:
+                        for match in patterns["singleton_instance"].finditer(content):
+                            line_num = self._find_line_number(content, match)
+                            issues.append(
+                                DesignPatternIssue(
+                                    pattern_type="singleton_abuse",
+                                    severity="HIGH",
+                                    file=filepath,
+                                    line=line_num,
+                                    description="Thread-unsafe singleton pattern. getInstance() without synchronization can return multiple instances.",
+                                    recommendation="Use enum singleton, synchronized accessor, or dependency injection framework.",
+                                    code_snippet=match.group()[:100],
+                                )
+                            )
+
+        return issues
+
+    def _check_god_class(
+        self, content: str, filepath: str, language: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """Check for god classes with too many responsibilities."""
+        issues = []
+
+        method_pattern = patterns.get("god_class_methods")
+        if method_pattern:
+            method_matches = method_pattern.findall(content)
+            method_count = len(method_matches)
+
+            if method_count > self.THRESHOLDS["god_class_methods"]:
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="god_class",
+                        severity="HIGH",
+                        file=filepath,
+                        line=1,
+                        description=f'God class detected: {method_count} methods (threshold: {self.THRESHOLDS["god_class_methods"]}). This class has too many responsibilities.',
+                        recommendation="Apply Single Responsibility Principle. Split into smaller, focused classes.",
+                        code_snippet=f"{method_count} methods in file",
+                    )
+                )
+
+        # Check for too many attributes (Python)
+        if language == "python" and patterns.get("god_class_attrs"):
+            attr_matches = patterns["god_class_attrs"].findall(content)
+            attr_count = len(set(attr_matches))  # Unique attributes
+
+            if attr_count > self.THRESHOLDS["god_class_attrs"]:
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="god_class",
+                        severity="MEDIUM",
+                        file=filepath,
+                        line=1,
+                        description=f'Class has {attr_count} instance attributes (threshold: {self.THRESHOLDS["god_class_attrs"]}). This suggests too many responsibilities.',
+                        recommendation="Group related attributes into separate data classes or objects.",
+                        code_snippet=f"{attr_count} instance attributes",
+                    )
+                )
+
+        return issues
+
+    def _check_factory_abuse(
+        self, content: str, filepath: str, language: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """Check for factory pattern anti-patterns."""
+        issues = []
+
+        # Check for if-chain factories
+        factory_if_pattern = patterns.get("factory_if_chain")
+        if factory_if_pattern:
+            matches = list(factory_if_pattern.finditer(content))
+            if len(matches) >= 3:  # Multiple conditions = smell
+                for match in matches[:1]:  # Report once
+                    line_num = self._find_line_number(content, match)
+                    issues.append(
+                        DesignPatternIssue(
+                            pattern_type="factory_overkill",
+                            severity="MEDIUM",
+                            file=filepath,
+                            line=line_num,
+                            description="Factory with if/switch chain. Adding new types requires modifying the factory.",
+                            recommendation="Use registry pattern, reflection, or polymorphic factory method instead.",
+                            code_snippet=match.group()[:150],
+                        )
+                    )
+
+        # Check for AbstractFactoryFactory patterns
+        if "FactoryFactory" in content or "AbstractAbstract" in content:
+            issues.append(
+                DesignPatternIssue(
+                    pattern_type="factory_overkill",
+                    severity="HIGH",
+                    file=filepath,
+                    line=1,
+                    description="Over-abstracted factory pattern (FactoryFactory or similar). This is a sign of abstraction astronauting.",
+                    recommendation='Simplify the design. Ask: "Do I really need a factory for my factory?"',
+                    code_snippet="FactoryFactory pattern detected",
+                )
+            )
+
+        return issues
+
+    def _check_inheritance_abuse(
+        self, content: str, filepath: str, language: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """Check for inheritance hierarchy abuse."""
+        issues = []
+
+        # Check for multiple inheritance abuse (Python mixins)
+        if language == "python" and patterns.get("mixin_explosion"):
+            for match in patterns["mixin_explosion"].finditer(content):
+                line_num = self._find_line_number(content, match)
+                # Count parent classes
+                parents = match.group().count(",") + 1
+                if parents > self.THRESHOLDS["mixin_count"]:
+                    issues.append(
+                        DesignPatternIssue(
+                            pattern_type="inheritance_abuse",
+                            severity="MEDIUM",
+                            file=filepath,
+                            line=line_num,
+                            description=f"Class inherits from {parents} parents. Mixin explosion makes code hard to understand.",
+                            recommendation="Prefer composition over inheritance. Use delegation or protocols.",
+                            code_snippet=match.group()[:100],
+                        )
+                    )
+
+        # Check for deep inheritance in Java
+        if language == "java" and patterns.get("extends_class"):
+            extends_count = len(patterns["extends_class"].findall(content))
+            if extends_count > 3:  # Multiple extended classes in one file is a smell
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="inheritance_abuse",
+                        severity="LOW",
+                        file=filepath,
+                        line=1,
+                        description=f"File has {extends_count} class inheritance relationships. May indicate deep hierarchy.",
+                        recommendation="Favor composition over inheritance. Consider using interfaces.",
+                        code_snippet=f"{extends_count} extends clauses",
+                    )
+                )
+
+        # C++ multiple inheritance
+        if language == "cpp" and patterns.get("multiple_inheritance"):
+            for match in patterns["multiple_inheritance"].finditer(content):
+                line_num = self._find_line_number(content, match)
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="inheritance_abuse",
+                        severity="MEDIUM",
+                        file=filepath,
+                        line=line_num,
+                        description="Multiple inheritance detected. This can lead to diamond problem and complex method resolution.",
+                        recommendation="Use composition or interface inheritance instead.",
+                        code_snippet=match.group()[:100],
+                    )
+                )
+
+        return issues
+
+    def _check_over_abstraction(
+        self, content: str, filepath: str, language: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """Check for over-abstraction and interface explosion."""
+        issues = []
+
+        # Check for interface explosion
+        interface_pattern = patterns.get("interface_explosion")
+        if interface_pattern:
+            matches = list(interface_pattern.finditer(content))
+            if len(matches) > self.THRESHOLDS["interface_count"]:
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="over_abstraction",
+                        severity="MEDIUM",
+                        file=filepath,
+                        line=1,
+                        description=f"Interface explosion: {len(matches)} interfaces in one file. Over-abstraction makes code harder to navigate.",
+                        recommendation="Only create interfaces when you have multiple implementations or need to break dependencies.",
+                        code_snippet=f"{len(matches)} interfaces defined",
+                    )
+                )
+
+        # Check for abstract everything (Python)
+        if language == "python":
+            abstract_pattern = patterns.get("abstract_everything")
+            if abstract_pattern:
+                abstract_count = len(abstract_pattern.findall(content))
+                if abstract_count > 5:
+                    issues.append(
+                        DesignPatternIssue(
+                            pattern_type="over_abstraction",
+                            severity="LOW",
+                            file=filepath,
+                            line=1,
+                            description=f"Heavy use of ABC ({abstract_count} occurrences). Python favors duck typing over explicit interfaces.",
+                            recommendation="Consider using Protocol for structural subtyping or simple documentation.",
+                            code_snippet=f"{abstract_count} ABC/abstractmethod uses",
+                        )
+                    )
+
+        return issues
+
+    def _check_observer_leaks(
+        self, content: str, filepath: str, language: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """Check for observer pattern memory leak potential."""
+        issues = []
+
+        subscribe_pattern = patterns.get("observer_subscribe") or patterns.get("add_listener")
+        unsubscribe_pattern = patterns.get("observer_unsubscribe") or patterns.get(
+            "remove_listener"
+        )
+
+        if subscribe_pattern and unsubscribe_pattern:
+            subscribe_count = len(subscribe_pattern.findall(content))
+            unsubscribe_count = len(unsubscribe_pattern.findall(content))
+
+            if subscribe_count > 0 and unsubscribe_count == 0:
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="observer_leak",
+                        severity="HIGH",
+                        file=filepath,
+                        line=1,
+                        description=f"Observer pattern leak: {subscribe_count} subscriptions but no unsubscriptions. This causes memory leaks.",
+                        recommendation="Always unsubscribe in cleanup methods (componentWillUnmount, __del__, destructor, etc.)",
+                        code_snippet=f"{subscribe_count} subscribe, 0 unsubscribe",
+                    )
+                )
+            elif subscribe_count > unsubscribe_count * 2:
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="observer_leak",
+                        severity="MEDIUM",
+                        file=filepath,
+                        line=1,
+                        description=f"Potential observer leak: {subscribe_count} subscriptions vs {unsubscribe_count} unsubscriptions.",
+                        recommendation="Ensure every subscription has a corresponding cleanup.",
+                        code_snippet=f"{subscribe_count} subscribe, {unsubscribe_count} unsubscribe",
+                    )
+                )
+
+        return issues
+
+    def _check_builder_bloat(
+        self, content: str, filepath: str, language: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """Check for builder pattern overuse."""
+        issues = []
+
+        builder_pattern = patterns.get("builder_pattern")
+        (
+            patterns.get("fluent_builder")
+            or patterns.get("method_chaining")
+            or patterns.get("fluent_setter")
+        )
+
+        if builder_pattern and builder_pattern.search(content):
+            # Check if it's a simple object (few properties)
+            setter_count = 0
+            if language == "python":
+                setter_count = len(re.findall(r"def\s+set_\w+|def\s+with_\w+", content))
+            elif language in ("java", "javascript"):
+                setter_count = len(re.findall(r"(?:public|set)\w+\s*\(|\.set\w+\s*\(", content))
+
+            if 1 <= setter_count <= 3:
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="builder_bloat",
+                        severity="LOW",
+                        file=filepath,
+                        line=1,
+                        description=f"Builder pattern for simple object ({setter_count} setters). Builders are overkill for simple objects.",
+                        recommendation="Use constructor/factory with named arguments, or a data class.",
+                        code_snippet=f"Builder with {setter_count} setters",
+                    )
+                )
+
+        return issues
+
+    def _check_cpp_specific(
+        self, content: str, filepath: str, patterns: dict, lines: list
+    ) -> list[DesignPatternIssue]:
+        """C++ specific pattern checks."""
+        issues = []
+
+        # Check for raw new without smart pointers
+        if patterns.get("raw_new"):
+            raw_news = list(patterns["raw_new"].finditer(content))
+            smart_ptr_count = len(
+                re.findall(r"unique_ptr|shared_ptr|make_unique|make_shared", content)
+            )
+
+            if len(raw_news) > smart_ptr_count and len(raw_news) > 3:
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="memory_management",
+                        severity="HIGH",
+                        file=filepath,
+                        line=self._find_line_number(content, raw_news[0]) if raw_news else 1,
+                        description=f"Raw new without smart pointers ({len(raw_news)} raw new vs {smart_ptr_count} smart pointers). Memory leaks likely.",
+                        recommendation="Use std::unique_ptr or std::shared_ptr for automatic memory management.",
+                        code_snippet=raw_news[0].group()[:50] if raw_news else "",
+                    )
+                )
+
+        # Check for template metaprogramming abuse
+        if patterns.get("template_explosion"):
+            for match in patterns["template_explosion"].finditer(content):
+                line_num = self._find_line_number(content, match)
+                issues.append(
+                    DesignPatternIssue(
+                        pattern_type="template_abuse",
+                        severity="MEDIUM",
+                        file=filepath,
+                        line=line_num,
+                        description="Deeply nested templates. This increases compile times and error message complexity.",
+                        recommendation="Consider simplifying template hierarchy or using type erasure.",
+                        code_snippet=match.group()[:100],
+                    )
+                )
+
+        return issues
+
+
+# =============================================================================
 # MAIN ANALYZER
 # =============================================================================
 
@@ -1189,6 +1876,7 @@ class Hubris:
         self.cb_detector = CircuitBreakerDetector()
         self.exception_detector = ExceptionDetector()
         self.library_detector = LibraryDetector()
+        self.design_pattern_detector = DesignPatternDetector()
 
     def analyze(self) -> HubrisReport:
         """Run resilience theater analysis."""
@@ -1315,6 +2003,13 @@ class Hubris:
                     report.patterns.extend(patterns)
                     report.exception_issues.extend(issues)
 
+                    # Detect design pattern issues (NEW)
+                    dp_issues, dp_patterns = self.design_pattern_detector.detect(
+                        content, rel_path, language
+                    )
+                    report.design_pattern_issues.extend(dp_issues)
+                    report.design_patterns_detected.extend(dp_patterns)
+
                 except Exception as e:
                     print(f"  Warning: Could not analyze {filepath}: {e}")
 
@@ -1376,6 +2071,37 @@ class Hubris:
         report.low_severity_count = sum(
             1 for i in all_issues if getattr(i, "severity", "") == "LOW"
         )
+
+        # Design pattern statistics (NEW)
+        report.design_pattern_issue_count = len(report.design_pattern_issues)
+        report.design_patterns_detected = list(
+            set(report.design_patterns_detected)
+        )  # Unique patterns
+
+        # Count by type
+        for issue in report.design_pattern_issues:
+            if issue.pattern_type == "singleton_abuse":
+                report.singleton_abuse_count += 1
+            elif issue.pattern_type == "god_class":
+                report.god_class_count += 1
+            elif issue.pattern_type in ("factory_overkill", "factory_abuse"):
+                report.factory_abuse_count += 1
+            elif issue.pattern_type == "inheritance_abuse":
+                report.inheritance_abuse_count += 1
+            elif issue.pattern_type == "observer_leak":
+                report.observer_leak_count += 1
+
+        # Add design pattern issues to severity counts
+        report.high_severity_count += sum(
+            1 for i in report.design_pattern_issues if i.severity == "HIGH"
+        )
+        report.medium_severity_count += sum(
+            1 for i in report.design_pattern_issues if i.severity == "MEDIUM"
+        )
+        report.low_severity_count += sum(
+            1 for i in report.design_pattern_issues if i.severity == "LOW"
+        )
+        report.total_issues += report.design_pattern_issue_count
 
     def _determine_quadrant(self, report: HubrisReport):
         """Determine the quadrant and verdict."""
@@ -1526,7 +2252,11 @@ class Hubris:
             )
 
         # If cargo cult, suggest simplification
-        if report.quadrant == "CARGO_CULT" and report.theater_ratio > 1.5:
+        if (
+            report.quadrant == "CARGO_CULT"
+            and isinstance(report.theater_ratio, (int, float))
+            and report.theater_ratio > 1.5
+        ):
             recs.append(
                 {
                     "priority": "MEDIUM",
@@ -1536,6 +2266,77 @@ class Hubris:
                         "Consider removing retry/circuit breaker patterns until properly implemented",
                         "Simple code that fails obviously is better than complex code that fails silently",
                         "Start with timeouts and logging, add other patterns only when needed",
+                    ],
+                }
+            )
+
+        # Design pattern recommendations (NEW)
+        if report.singleton_abuse_count > 0:
+            recs.append(
+                {
+                    "priority": "MEDIUM",
+                    "category": "Singleton Abuse",
+                    "message": f"{report.singleton_abuse_count} singleton anti-patterns detected",
+                    "actions": [
+                        "Replace singletons with dependency injection",
+                        "Pass dependencies as constructor parameters",
+                        "Use a DI container if you have many dependencies",
+                    ],
+                }
+            )
+
+        if report.god_class_count > 0:
+            recs.append(
+                {
+                    "priority": "HIGH",
+                    "category": "God Classes",
+                    "message": f"{report.god_class_count} god classes with too many responsibilities",
+                    "actions": [
+                        "Apply Single Responsibility Principle (SRP)",
+                        "Extract related methods into separate classes",
+                        "Use composition to break up large classes",
+                    ],
+                }
+            )
+
+        if report.observer_leak_count > 0:
+            recs.append(
+                {
+                    "priority": "HIGH",
+                    "category": "Observer Pattern Leaks",
+                    "message": f"{report.observer_leak_count} potential memory leaks from unsubscribed observers",
+                    "actions": [
+                        "Always unsubscribe in cleanup/destructor methods",
+                        "Use WeakRef for observer references if possible",
+                        "Track subscriptions and clean up on component unmount",
+                    ],
+                }
+            )
+
+        if report.inheritance_abuse_count > 0:
+            recs.append(
+                {
+                    "priority": "MEDIUM",
+                    "category": "Inheritance Abuse",
+                    "message": f"{report.inheritance_abuse_count} cases of deep or multiple inheritance",
+                    "actions": [
+                        "Favor composition over inheritance",
+                        "Use interfaces/protocols instead of base classes",
+                        "Keep inheritance hierarchies shallow (max 3 levels)",
+                    ],
+                }
+            )
+
+        if report.factory_abuse_count > 0:
+            recs.append(
+                {
+                    "priority": "LOW",
+                    "category": "Factory Over-Engineering",
+                    "message": f"{report.factory_abuse_count} over-engineered factory patterns",
+                    "actions": [
+                        "Use simple constructors or factory functions",
+                        "Consider registry pattern for type-based factories",
+                        'Ask: "Do I really need this abstraction?"',
                     ],
                 }
             )
@@ -1652,10 +2453,13 @@ def generate_hubris_html(report: HubrisReport, output_path: str, repo_name: str 
         """
 
     # Theater ratio display
-    if report.theater_ratio == float("inf"):
+    if report.theater_ratio == "N/A":
+        theater_display = "N/A"
+        theater_desc = "Unsupported language - analysis not available"
+    elif isinstance(report.theater_ratio, float) and report.theater_ratio == float("inf"):
         theater_display = "∞"
         theater_desc = "All patterns are cargo cult"
-    else:
+    elif isinstance(report.theater_ratio, (int, float)):
         theater_display = f"{report.theater_ratio:.1f}"
         if report.theater_ratio <= 1.2:
             theater_desc = "Healthy - patterns are implemented correctly"
@@ -1665,6 +2469,9 @@ def generate_hubris_html(report: HubrisReport, output_path: str, repo_name: str 
             theater_desc = "Warning - many patterns incorrectly implemented"
         else:
             theater_desc = "Critical - resilience theater detected"
+    else:
+        theater_display = str(report.theater_ratio)
+        theater_desc = "Unknown"
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -2093,10 +2900,32 @@ Examples:
     print(f"\n{quadrant_emoji.get(report.quadrant, '⚪')} Quadrant: {report.quadrant}")
     print(f"Risk Level: {report.risk_level}")
 
-    print(f"\nTheater Ratio: {report.theater_ratio:.2f}")
+    # Handle N/A and infinity theater ratios
+    if report.theater_ratio == "N/A":
+        print("\nTheater Ratio: N/A (unsupported language)")
+    elif isinstance(report.theater_ratio, float) and report.theater_ratio == float("inf"):
+        print("\nTheater Ratio: ∞ (all patterns are cargo cult)")
+    elif isinstance(report.theater_ratio, (int, float)):
+        print(f"\nTheater Ratio: {report.theater_ratio:.2f}")
+    else:
+        print(f"\nTheater Ratio: {report.theater_ratio}")
     print(f"  Patterns detected: {report.patterns_detected}")
     print(f"  Correctly implemented: {report.patterns_correct}")
     print(f"  Cargo cult: {report.patterns_cargo_cult}")
+
+    # Design pattern issues (NEW)
+    if report.design_pattern_issue_count > 0:
+        print(f"\nDesign Pattern Issues: {report.design_pattern_issue_count}")
+        if report.singleton_abuse_count:
+            print(f"  Singleton abuse: {report.singleton_abuse_count}")
+        if report.god_class_count:
+            print(f"  God classes: {report.god_class_count}")
+        if report.observer_leak_count:
+            print(f"  Observer leaks: {report.observer_leak_count}")
+        if report.inheritance_abuse_count:
+            print(f"  Inheritance abuse: {report.inheritance_abuse_count}")
+        if report.factory_abuse_count:
+            print(f"  Factory over-engineering: {report.factory_abuse_count}")
 
     print(f"\n{report.verdict}")
 

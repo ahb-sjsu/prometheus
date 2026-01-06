@@ -64,8 +64,8 @@ class RepoSnapshot:
     resilience_score: float = 0.0
     shield_rating: str = ""
 
-    # From Hubris (if available) - None means N/A (unsupported language)
-    theater_ratio: float | None = 1.0
+    # From Hubris (if available)
+    theater_ratio: float = 1.0
     hubris_quadrant: str = ""
     patterns_detected: int = 0
     patterns_correct: int = 0
@@ -113,22 +113,7 @@ def load_prometheus_report(path: str) -> RepoSnapshot | None:
 
         # Load hubris/theater data if present
         hubris = data.get("hubris", {})
-        theater_ratio_raw = hubris.get("theater_ratio", 1.0)
-        # Ensure theater_ratio is a float (might be string from JSON)
-        # Special case: "N/A" means unsupported language
-        try:
-            if isinstance(theater_ratio_raw, str):
-                if theater_ratio_raw in ("N/A", "n/a", "NA"):
-                    theater_ratio = None  # Use None for N/A
-                elif theater_ratio_raw in ("∞", "inf", "infinity", "Infinity"):
-                    theater_ratio = float("inf")
-                else:
-                    theater_ratio = float(theater_ratio_raw)
-            else:
-                theater_ratio = float(theater_ratio_raw)
-        except (ValueError, TypeError):
-            theater_ratio = 1.0
-
+        theater_ratio = hubris.get("theater_ratio", 1.0)
         hubris_quadrant = hubris.get("quadrant", "")
         patterns_detected = hubris.get("patterns_detected", 0)
         patterns_correct = hubris.get("patterns_correct", 0)
@@ -156,23 +141,40 @@ def load_prometheus_report(path: str) -> RepoSnapshot | None:
 
 def calculate_overall_health(snapshot: RepoSnapshot) -> float:
     """Calculate a combined health score."""
+    import math
+
     complexity_component = snapshot.complexity_score * 0.3
     resilience_component = snapshot.resilience_score * 0.3
 
-    # Handle theater_ratio safely (might be inf, 0, negative, or None for N/A)
-    import math
-
+    # Handle various theater_ratio types
     theater_ratio = snapshot.theater_ratio
 
+    # Convert string values
+    if isinstance(theater_ratio, str):
+        theater_ratio_lower = theater_ratio.lower()
+        if theater_ratio_lower in ("n/a", "na", "none", ""):
+            theater_ratio = None
+        elif theater_ratio_lower in ("inf", "infinity", "∞"):
+            theater_ratio = float("inf")
+        else:
+            try:
+                theater_ratio = float(theater_ratio)
+            except (ValueError, TypeError):
+                theater_ratio = None
+
+    # Calculate theater component
     if theater_ratio is None:
-        # N/A - unsupported language, don't penalize but don't give full credit
-        theater_component = 20  # Neutral score
-    elif math.isinf(theater_ratio) or theater_ratio <= 0:
-        theater_component = 0  # All cargo cult or invalid = 0 theater health
-    elif theater_ratio >= 1:
-        theater_component = min(40, (1 / theater_ratio) * 40)
+        # N/A - neutral score (don't penalize unsupported languages)
+        theater_component = 20
+    elif isinstance(theater_ratio, float) and math.isinf(theater_ratio):
+        # Infinity - all cargo cult
+        theater_component = 0
+    elif theater_ratio <= 0:
+        # Invalid - treat as neutral
+        theater_component = 20
     else:
-        theater_component = 40  # Perfect ratio
+        # Normal ratio: lower is better (1/ratio gives higher score for lower ratios)
+        theater_component = min(40, (1 / theater_ratio) * 40)
 
     return complexity_component + resilience_component + theater_component
 
@@ -646,8 +648,9 @@ repos.txt format (one per line):
         try:
             with open(args.file, encoding="utf-8") as f:
                 for line in f:
-                    line = line.strip()
-                    if line and not line.startswith("#"):
+                    # Strip whitespace and remove inline comments
+                    line = line.split("#")[0].strip()
+                    if line:
                         repos.append(line)
         except Exception as e:
             print(f"Error reading file: {e}")
@@ -708,21 +711,7 @@ repos.txt format (one per line):
         ]:
             hub = hubris_data.get(key)
             if hub:
-                # Ensure theater_ratio is a float
-                tr_raw = hub.get("theater_ratio", 1.0)
-                try:
-                    if isinstance(tr_raw, str):
-                        if tr_raw in ("N/A", "n/a", "NA"):
-                            snapshot.theater_ratio = None
-                        elif tr_raw in ("∞", "inf", "infinity", "Infinity"):
-                            snapshot.theater_ratio = float("inf")
-                        else:
-                            snapshot.theater_ratio = float(tr_raw)
-                    else:
-                        snapshot.theater_ratio = float(tr_raw)
-                except (ValueError, TypeError):
-                    snapshot.theater_ratio = 1.0
-
+                snapshot.theater_ratio = hub.get("theater_ratio", 1.0)
                 snapshot.hubris_quadrant = hub.get("quadrant", "")
                 snapshot.patterns_detected = hub.get("patterns_detected", 0)
                 snapshot.patterns_correct = hub.get("patterns_correct", 0)
@@ -742,15 +731,30 @@ repos.txt format (one per line):
         q = snap.quadrant or "UNKNOWN"
         report.quadrant_counts[q] = report.quadrant_counts.get(q, 0) + 1
 
-    # Calculate average theater ratio (excluding infinity and N/A values)
+    # Calculate average theater ratio, excluding N/A and infinity values
     import math
 
-    finite_ratios = [
-        s.theater_ratio
-        for s in snapshots
-        if s.theater_ratio is not None and not math.isinf(s.theater_ratio)
-    ]
-    report.avg_theater_ratio = sum(finite_ratios) / len(finite_ratios) if finite_ratios else 0.0
+    valid_theater_ratios = []
+    for s in snapshots:
+        tr = s.theater_ratio
+        # Convert string values
+        if isinstance(tr, str):
+            tr_lower = tr.lower()
+            if tr_lower in ("n/a", "na", "none", "", "inf", "infinity", "∞"):
+                continue  # Skip N/A and infinity
+            try:
+                tr = float(tr)
+            except (ValueError, TypeError):
+                continue
+        # Skip None and infinity
+        if tr is None or (isinstance(tr, float) and math.isinf(tr)):
+            continue
+        if isinstance(tr, (int, float)) and tr > 0:
+            valid_theater_ratios.append(tr)
+
+    report.avg_theater_ratio = (
+        sum(valid_theater_ratios) / len(valid_theater_ratios) if valid_theater_ratios else 0.0
+    )
     report.cargo_cult_repos = [s.name for s in snapshots if s.hubris_quadrant == "CARGO_CULT"]
     report.healthiest = sorted(snapshots, key=lambda s: -s.overall_health)[:5]
     report.riskiest = sorted(snapshots, key=lambda s: s.overall_health)[:5]
@@ -759,14 +763,6 @@ repos.txt format (one per line):
     print(f"\n  HTML: {args.output}")
 
     if args.json:
-        # Helper to convert infinity/None to string for JSON
-        def safe_theater(val):
-            if val is None:
-                return "N/A"
-            if math.isinf(val):
-                return "∞"
-            return val
-
         with open(args.json, "w") as f:
             json.dump(
                 {
@@ -778,7 +774,7 @@ repos.txt format (one per line):
                             "hubris": s.hubris_quadrant,
                             "complexity": s.complexity_score,
                             "resilience": s.resilience_score,
-                            "theater": safe_theater(s.theater_ratio),
+                            "theater": s.theater_ratio,
                             "health": s.overall_health,
                         }
                         for s in snapshots
