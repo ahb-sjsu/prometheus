@@ -367,6 +367,9 @@ class Prometheus:
         hotspot_score = max(0, min(25, hotspot_score))
 
         # FINAL COMPLEXITY SCORE (0-100)
+        # Higher score = SIMPLER code (better maintainability)
+        # Lower score = MORE COMPLEX code (harder to maintain)
+        # This is counter-intuitive naming but consistent with the original design
         report.complexity_score = size_score + cyclo_score + maint_score + hotspot_score
 
         # Store breakdown for transparency
@@ -442,12 +445,14 @@ class Prometheus:
         """Determine which quadrant the codebase falls into.
 
         Industry-calibrated thresholds:
-        - Complexity >= 50: Low complexity (well-structured)
+        - Complexity >= 50: Low complexity (well-structured, simpler code)
+        - Complexity < 50: High complexity (needs work)
         - Resilience >= 35: Adequate resilience for frameworks
-        - Resilience >= 50: Good resilience for applications
+        
+        Note: Complexity score uses INVERTED semantics - higher = simpler
         """
         # Thresholds - calibrated to industry benchmarks
-        complexity_threshold = 50  # >= 50 = low complexity (good)
+        complexity_threshold = 50  # >= 50 = low complexity (simpler code)
         resilience_threshold = 35  # >= 35 = adequate resilience for frameworks
 
         # Check if resilience patterns are applicable (code crosses I/O boundaries)

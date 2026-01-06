@@ -707,15 +707,13 @@ def generate_repo_dot_html(
             except (ValueError, TypeError):
                 theater = None
     
-    # Format theater for display
+    # Format theater for display - always show it
     if theater is None:
         theater_str = "&#10;Theater: N/A"
     elif isinstance(theater, float) and math.isinf(theater):
         theater_str = "&#10;Theater: ∞"
-    elif theater != 1.0:
-        theater_str = f"&#10;Theater: {theater:.2f}"
     else:
-        theater_str = ""
+        theater_str = f"&#10;Theater: {theater:.2f}"
     
     # Format resilience for display (N/A for negative/unknown values)
     if resilience < 0:
@@ -723,12 +721,16 @@ def generate_repo_dot_html(
     else:
         resilience_str = f"{resilience:.0f}"
     
+    # Create a safe ID from the repo name
+    repo_id = name.replace("/", "_").replace("-", "_").replace(".", "_")
+    
     # Use bottom positioning: 0% = bottom of chart, 100% = top
     # y_pct represents complexity where low values = high complexity = should be at TOP
     # So we need to invert: bottom = 100 - y_pct
     bottom_pct = 100 - y_pct
     return f"""
         <div class="repo-dot" style="left: {x_pct}%; bottom: {bottom_pct}%;"
+             data-repo="{repo_id}"
              title="{name}&#10;Quadrant: {quadrant}&#10;Complexity: {complexity:.0f}&#10;Resilience: {resilience_str}{theater_str}">
             <img src="{avatar_url}" alt="{name}"
                  onerror="this.style.display='none'; this.parentElement.style.backgroundColor='{fallback_color}';">
@@ -785,7 +787,7 @@ def generate_quadrant_chart_html(dots_html: str, legend_html: str) -> str:
             </div>
 
             <div class="axis-title">
-                X: Resilience Score (left=low, right=high) • Y: Complexity Score (top=high, bottom=low)
+                X: Resilience Score (left=low, right=high) • Y: Complexity (top=complex, bottom=simple)
             </div>
         </div>
 
@@ -845,10 +847,14 @@ def generate_comparison_table_html(repos: list) -> str:
         else:
             resilience_str = f"{resilience_val:.0f}"
 
+        # Create a safe ID from the repo name
+        repo_name = repo.get('name', '')
+        repo_id = repo_name.replace("/", "_").replace("-", "_").replace(".", "_")
+
         rows += f"""
-        <tr>
+        <tr data-repo="{repo_id}">
             <td>{i}</td>
-            <td style="font-weight: 500; color: #e2e8f0;">{repo.get('name', '')}</td>
+            <td style="font-weight: 500; color: #e2e8f0;">{repo_name}</td>
             <td><span class="badge" style="background: {health_color}">{health:.0f}</span></td>
             <td style="color: {quadrant_color}; font-weight: 600;">{repo.get('quadrant', '')}</td>
             <td>{repo.get('complexity', 0):.0f}</td>
@@ -887,15 +893,15 @@ def calculate_dot_position(complexity_score: float, resilience_score: float) -> 
         BOTTOM-LEFT: GLASS HOUSE (low complexity, low resilience)
         BOTTOM-RIGHT: BUNKER (low complexity, high resilience)
 
-    Input scores:
-    - complexity_score: Higher = LOWER complexity (simpler code = better)
-      Threshold: 50 (>= 50 = low complexity)
-    - resilience_score: Higher = MORE resilient (better error handling = better)
+    Input scores (INVERTED semantics):
+    - complexity_score: Higher = SIMPLER code (lower complexity)
+      Threshold: 50 (>= 50 = low complexity = simpler)
+    - resilience_score: Higher = MORE resilient
       Threshold: 35 (>= 35 = high resilience)
 
     Output position:
     - x_pct: 0 = left (low resilience), 100 = right (high resilience)
-    - y_pct: 0 = top (high complexity = LOW complexity_score), 100 = bottom (low complexity = HIGH complexity_score)
+    - y_pct: 0 = top (high complexity = LOW score), 100 = bottom (low complexity = HIGH score)
 
     The visual center (50%) must align with the classification thresholds.
     """
@@ -914,8 +920,7 @@ def calculate_dot_position(complexity_score: float, resilience_score: float) -> 
         # Above threshold: map 35-100 to 50-92%
         x_pct = 50 + ((resilience_score - RESILIENCE_THRESHOLD) / (100 - RESILIENCE_THRESHOLD)) * 42
 
-    # Y-axis: Complexity - threshold is 50, which naturally maps to 50%
-    # But Y is inverted: low score = high complexity = top
+    # Y-axis: Complexity - inverted semantics (low score = high complexity = top)
     # Score 0 -> top (8%), Score 50 -> center (50%), Score 100 -> bottom (92%)
     if complexity_score < COMPLEXITY_THRESHOLD:
         # Below threshold (high complexity): map 0-50 to 8-50%

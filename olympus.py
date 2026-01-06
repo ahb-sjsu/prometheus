@@ -170,22 +170,30 @@ def load_prometheus_report(path: str) -> Optional[RepoSnapshot]:
 def calculate_overall_health(snapshot: RepoSnapshot) -> float:
     """Calculate a combined health score.
     
-    Formula: health = complexity×0.3 + resilience×0.3 + theater_component×0.4
+    Formula: health = simplicity×0.35 + resilience×0.35 + theater_bonus×0.30
     
-    - Complexity: 0-100, higher = simpler code
-    - Resilience: 0-100, higher = more resilient (-1 = unknown, treated as 0)
-    - Theater: 1/ratio scaled to 0-40 (lower theater = better)
+    NOTE: Complexity score semantics depend on when the JSON was generated:
+    - OLD format (before inversion): higher = simpler (score IS simplicity)
+    - NEW format (after inversion): higher = more complex (need to invert)
+    
+    For now, we assume OLD format since most cached JSONs use that.
+    The complexity score directly represents "simplicity" (higher = simpler = healthier).
+    
+    - Resilience: 0-100, higher = more resilient (-1 = unknown)
+    - Theater bonus: 0-30 points based on theater ratio
     """
     import math
     
-    complexity_component = snapshot.complexity_score * 0.3
+    # Complexity score from JSON - assume OLD format where higher = simpler
+    # This directly contributes to health (simpler code = healthier)
+    complexity_component = snapshot.complexity_score * 0.35
     
-    # Handle -1 (TOO_SMALL) resilience - treat as neutral (use complexity only for small codebases)
+    # Handle -1 (TOO_SMALL or NO_IO) resilience
     if snapshot.resilience_score < 0:
-        # For tiny codebases, double-weight complexity instead
-        resilience_component = snapshot.complexity_score * 0.3
+        # For unknown resilience, use neutral value (50)
+        resilience_component = 50 * 0.35
     else:
-        resilience_component = snapshot.resilience_score * 0.3
+        resilience_component = snapshot.resilience_score * 0.35
     
     # Convert theater_ratio to float if it's a string
     theater = snapshot.theater_ratio
@@ -193,22 +201,23 @@ def calculate_overall_health(snapshot: RepoSnapshot) -> float:
         if theater.lower() in ('inf', '∞', 'infinity'):
             theater = float('inf')
         elif theater.lower() in ('n/a', 'na', 'none', ''):
-            theater = 0  # Treat N/A as no theater data
+            theater = None  # Treat N/A as no theater data
         else:
             try:
                 theater = float(theater)
             except (ValueError, TypeError):
-                theater = 0
+                theater = None
     
-    # Calculate theater component
-    if theater is None or theater == 0:
-        theater_component = 40  # No theater data = full points
+    # Calculate theater component using bounded transform: 30 / (1 + theater)
+    # This gives: theater=0 -> 30, theater=1 -> 15, theater=2 -> 10, theater=∞ -> 0
+    if theater is None:
+        theater_component = 30  # No theater data = assume okay (full points)
     elif math.isinf(theater):
-        theater_component = 0  # Infinite theater = no genuine resilience
-    elif theater > 0:
-        theater_component = min(40, (1 / theater) * 40)
+        theater_component = 0  # Infinite theater = worst case
+    elif theater >= 0:
+        theater_component = 30 / (1 + theater)
     else:
-        theater_component = 40  # Invalid theater = assume okay
+        theater_component = 30  # Invalid theater = assume okay
     
     return complexity_component + resilience_component + theater_component
 
@@ -425,19 +434,19 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             </div>
             <div class="stat">
                 <div class="stat-value">{report.quadrant_counts.get('BUNKER', 0)}</div>
-                <div class="stat-label" title="Low complexity, high resilience. The ideal state - simple and well-defended.">BUNKER</div>
+                <div class="stat-label" title="Low complexity, high resilience. The ideal state - simple, maintainable code with strong error handling. Goal quadrant.">BUNKER</div>
             </div>
             <div class="stat">
                 <div class="stat-value">{report.quadrant_counts.get('GLASS HOUSE', 0)}</div>
-                <div class="stat-label" title="Low complexity, low resilience. Simple but fragile - lacks defensive coding.">GLASS HOUSE</div>
+                <div class="stat-label" title="Low complexity, low resilience. Simple but fragile - clean code that lacks defensive patterns. Add error handling.">GLASS HOUSE</div>
             </div>
             <div class="stat">
                 <div class="stat-value">{report.quadrant_counts.get('FORTRESS', 0)}</div>
-                <div class="stat-label" title="High complexity, high resilience. Over-engineered but defended - complex with good error handling.">FORTRESS</div>
+                <div class="stat-label" title="High complexity, high resilience. Over-engineered but defended - complex code with good error handling. Consider simplifying.">FORTRESS</div>
             </div>
             <div class="stat">
                 <div class="stat-value">{report.quadrant_counts.get('DEATHTRAP', 0)}</div>
-                <div class="stat-label" title="High complexity, low resilience. The worst state - complex and undefended.">DEATHTRAP</div>
+                <div class="stat-label" title="High complexity, low resilience. The worst state - complex code with poor error handling. High risk of cascading failures.">DEATHTRAP</div>
             </div>
         </div>
         
@@ -481,7 +490,7 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             </div>
             <div class="glossary-item">
                 <div class="glossary-term">📊 Complexity Score</div>
-                <div class="glossary-def">0-100 scale where HIGHER = SIMPLER code. Factors: code size, cyclomatic complexity, maintainability index, hotspot density. Score ≥50 = "low complexity".</div>
+                <div class="glossary-def">0-100 scale where HIGHER = SIMPLER code (inverted semantics). Factors: code size, cyclomatic complexity, maintainability index, hotspot density. Score ≥50 = "low complexity" (simpler, healthier code).</div>
             </div>
             <div class="glossary-item">
                 <div class="glossary-term">🛡️ Resilience Score</div>
@@ -489,7 +498,7 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             </div>
             <div class="glossary-item">
                 <div class="glossary-term">❤️ Overall Health</div>
-                <div class="glossary-def">Weighted composite: Complexity (30%) + Resilience (30%) + Theater penalty (40%). Formula: health = complexity×0.3 + resilience×0.3 + (1/theater)×40. Higher is better.</div>
+                <div class="glossary-def">Weighted composite: Simplicity (35%) + Resilience (35%) + Theater bonus (30%). Formula: health = complexity×0.35 + resilience×0.35 + 30/(1+theater). Range 0-100, higher is better. Note: "complexity" score uses inverted semantics (higher = simpler).</div>
             </div>
         </div>
         <button class="glossary-toggle" onclick="toggleGlossary()" aria-expanded="false" aria-controls="glossary-content">📖 Glossary</button>
@@ -531,7 +540,88 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             button.setAttribute('aria-expanded', 'false');
         }}
     }});
+    
+    // Interactive highlighting between table and chart
+    function highlightRepo(repoId, shouldScroll = false) {{
+        // Remove existing highlights
+        document.querySelectorAll('.repo-dot.highlighted, tr.highlighted').forEach(el => {{
+            el.classList.remove('highlighted');
+        }});
+        
+        // Add highlight to matching elements
+        const dot = document.querySelector(`.repo-dot[data-repo="${{repoId}}"]`);
+        const row = document.querySelector(`tr[data-repo="${{repoId}}"]`);
+        
+        if (dot) {{
+            dot.classList.add('highlighted');
+            if (shouldScroll) {{
+                dot.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
+            }}
+        }}
+        if (row) {{
+            row.classList.add('highlighted');
+            if (shouldScroll) {{
+                row.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
+            }}
+        }}
+    }}
+    
+    function clearHighlight() {{
+        document.querySelectorAll('.repo-dot.highlighted, tr.highlighted').forEach(el => {{
+            el.classList.remove('highlighted');
+        }});
+    }}
+    
+    // Add event listeners to table rows
+    document.querySelectorAll('tr[data-repo]').forEach(row => {{
+        row.addEventListener('mouseenter', function() {{
+            highlightRepo(this.dataset.repo, false);  // No scroll on hover
+        }});
+        row.addEventListener('mouseleave', clearHighlight);
+        row.addEventListener('click', function() {{
+            highlightRepo(this.dataset.repo, true);  // Scroll on click
+        }});
+    }});
+    
+    // Add event listeners to chart dots
+    document.querySelectorAll('.repo-dot[data-repo]').forEach(dot => {{
+        dot.addEventListener('mouseenter', function() {{
+            highlightRepo(this.dataset.repo, false);  // No scroll on hover
+        }});
+        dot.addEventListener('mouseleave', clearHighlight);
+        dot.addEventListener('click', function() {{
+            highlightRepo(this.dataset.repo, true);  // Scroll on click
+        }});
+    }});
     </script>
+    
+    <style>
+    /* Highlight styles */
+    .repo-dot.highlighted {{
+        transform: translate(-50%, -50%) scale(1.5);
+        z-index: 1000;
+        box-shadow: 0 0 20px rgba(255, 255, 0, 0.8), 0 0 40px rgba(255, 255, 0, 0.4);
+        border: 3px solid #ffd700 !important;
+    }}
+    
+    tr.highlighted {{
+        background: rgba(255, 215, 0, 0.2) !important;
+        box-shadow: inset 0 0 0 2px #ffd700;
+    }}
+    
+    tr[data-repo] {{
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }}
+    
+    tr[data-repo]:hover {{
+        background: rgba(255, 255, 255, 0.05);
+    }}
+    
+    .repo-dot {{
+        transition: transform 0.2s, box-shadow 0.2s;
+    }}
+    </style>
 </body>
 </html>'''
     
@@ -782,6 +872,21 @@ repos.txt format (one per line):
     
     if not snapshots:
         print("\nNo valid Prometheus reports found!")
+        return
+    
+    # Deduplicate repos by name (keep first occurrence)
+    seen_names = set()
+    unique_snapshots = []
+    for snapshot in snapshots:
+        if snapshot.name not in seen_names:
+            seen_names.add(snapshot.name)
+            unique_snapshots.append(snapshot)
+        else:
+            print(f"  Skipping duplicate: {snapshot.name}")
+    snapshots = unique_snapshots
+    
+    if not snapshots:
+        print("\nNo valid Prometheus reports after deduplication!")
         return
     
     # Build report
