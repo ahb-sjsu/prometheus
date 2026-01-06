@@ -10,18 +10,18 @@ Tests cover:
 - Recommendation generation
 """
 
-import pytest
-import tempfile
 import json
+import tempfile
 from pathlib import Path
 
-from oracle import (
-    ObservabilityInstrumentation,
-    DeploymentArtifacts,
-    OracleReport,
-    Oracle,
-)
+import pytest
 
+from oracle import (
+    DeploymentArtifacts,
+    ObservabilityInstrumentation,
+    Oracle,
+    OracleReport,
+)
 
 # =============================================================================
 # FIXTURES
@@ -96,9 +96,7 @@ CMD ["python", "src/app.py"]
     (github_dir / "ci.yml").write_text("name: CI\non: push")
 
     readme = Path(temp_codebase) / "README.md"
-    readme.write_text(
-        "# App\n\n## Installation\n\npip install .\n\n## Usage\n\npython app.py"
-    )
+    readme.write_text("# App\n\n## Installation\n\npip install .\n\n## Usage\n\npython app.py")
 
     (Path(temp_codebase) / "CONTRIBUTING.md").write_text("# Contributing")
     (Path(temp_codebase) / "CHANGELOG.md").write_text("# Changelog")
@@ -219,9 +217,7 @@ class TestObservabilityDetection:
         assert report.observability.structured_logging is True
 
     def test_detects_health_endpoint(self, temp_codebase):
-        (Path(temp_codebase) / "health.py").write_text(
-            "@app.route('/health')\ndef health(): pass"
-        )
+        (Path(temp_codebase) / "health.py").write_text("@app.route('/health')\ndef health(): pass")
         oracle = Oracle(temp_codebase)
         report = oracle.analyze()
         assert report.observability.health_endpoint is True
@@ -229,9 +225,7 @@ class TestObservabilityDetection:
 
 class TestDeploymentDetection:
     def test_detects_dockerfile(self, temp_codebase):
-        (Path(temp_codebase) / "Dockerfile").write_text(
-            "FROM python:3.11\nCMD python app.py"
-        )
+        (Path(temp_codebase) / "Dockerfile").write_text("FROM python:3.11\nCMD python app.py")
         oracle = Oracle(temp_codebase)
         report = oracle.analyze()
         assert report.deployment.dockerfile is True
@@ -282,9 +276,7 @@ class TestTestingDetection:
 
 class TestDependencyDetection:
     def test_detects_requirements(self, temp_codebase):
-        (Path(temp_codebase) / "requirements.txt").write_text(
-            "flask>=2.0\nrequests>=2.28"
-        )
+        (Path(temp_codebase) / "requirements.txt").write_text("flask>=2.0\nrequests>=2.28")
         oracle = Oracle(temp_codebase)
         report = oracle.analyze()
         assert report.dependencies.dependency_count == 2

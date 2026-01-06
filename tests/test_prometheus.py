@@ -3,18 +3,18 @@
 Tests for prometheus.py - Combined Complexity & Resilience Fitness Analyzer
 """
 
-import pytest
-import tempfile
 import json
+import tempfile
 from pathlib import Path
 
-from prometheus import (
-    is_github_url,
-    GitHubMetadata,
-    PrometheusReport,
-    Prometheus,
-)
+import pytest
 
+from prometheus import (
+    GitHubMetadata,
+    Prometheus,
+    PrometheusReport,
+    is_github_url,
+)
 
 # =============================================================================
 # FIXTURES
@@ -69,11 +69,11 @@ logger = logging.getLogger(__name__)
 
 class DataProcessor:
     """Process data with various strategies."""
-    
+
     def __init__(self, config: Dict):
         self.config = config
         self.cache = {}
-    
+
     def process(self, items: List[str]) -> List[str]:
         """Process items with multiple conditions."""
         results = []
@@ -98,7 +98,7 @@ class DataProcessor:
             else:
                 results.append(item)
         return results
-    
+
     def _transform(self, item: str) -> str:
         """Transform an item."""
         if not item:
@@ -266,9 +266,7 @@ class TestPrometheus:
 
         assert report is not None
         assert report.complexity_score >= 0
-        assert (
-            report.resilience_score >= 0 or report.resilience_score == -1
-        )  # -1 for too small
+        assert report.resilience_score >= 0 or report.resilience_score == -1  # -1 for too small
 
 
 # =============================================================================
@@ -288,7 +286,7 @@ class TestQuadrantDetermination:
 
     def test_quadrant_attributes(self):
         """Test that quadrants have required attributes."""
-        for name, quadrant in Prometheus.QUADRANTS.items():
+        for _name, quadrant in Prometheus.QUADRANTS.items():
             assert "name" in quadrant
             assert "description" in quadrant
             assert "emoji" in quadrant

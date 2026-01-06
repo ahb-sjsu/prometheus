@@ -29,25 +29,24 @@ if sys.platform == "win32":
     except AttributeError:
         pass  # Python < 3.7
 
-import json
 import argparse
-from pathlib import Path
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
 
 # Import shared UI components
 from prometheus_ui import (
     FALLBACK_COLORS,
-    get_github_avatar_url,
-    get_base_css,
-    get_quadrant_css,
-    get_table_css,
-    generate_repo_dot_html,
+    calculate_dot_position,
+    generate_comparison_table_html,
     generate_legend_item_html,
     generate_quadrant_chart_html,
-    generate_comparison_table_html,
-    calculate_dot_position,
+    generate_repo_dot_html,
+    get_base_css,
+    get_github_avatar_url,
+    get_quadrant_css,
+    get_table_css,
 )
 
 
@@ -65,8 +64,8 @@ class RepoSnapshot:
     resilience_score: float = 0.0
     shield_rating: str = ""
 
-    # From Hubris (if available)
-    theater_ratio: float = 1.0
+    # From Hubris (if available) - None means N/A (unsupported language)
+    theater_ratio: float | None = 1.0
     hubris_quadrant: str = ""
     patterns_detected: int = 0
     patterns_correct: int = 0
@@ -98,7 +97,7 @@ class OlympusReport:
     cargo_cult_repos: list = field(default_factory=list)
 
 
-def load_prometheus_report(path: str) -> Optional[RepoSnapshot]:
+def load_prometheus_report(path: str) -> RepoSnapshot | None:
     """Load a Prometheus JSON report."""
     try:
         with open(path, encoding="utf-8") as f:
@@ -116,9 +115,12 @@ def load_prometheus_report(path: str) -> Optional[RepoSnapshot]:
         hubris = data.get("hubris", {})
         theater_ratio_raw = hubris.get("theater_ratio", 1.0)
         # Ensure theater_ratio is a float (might be string from JSON)
+        # Special case: "N/A" means unsupported language
         try:
             if isinstance(theater_ratio_raw, str):
-                if theater_ratio_raw in ("∞", "inf", "infinity", "Infinity"):
+                if theater_ratio_raw in ("N/A", "n/a", "NA"):
+                    theater_ratio = None  # Use None for N/A
+                elif theater_ratio_raw in ("∞", "inf", "infinity", "Infinity"):
                     theater_ratio = float("inf")
                 else:
                     theater_ratio = float(theater_ratio_raw)
@@ -157,11 +159,15 @@ def calculate_overall_health(snapshot: RepoSnapshot) -> float:
     complexity_component = snapshot.complexity_score * 0.3
     resilience_component = snapshot.resilience_score * 0.3
 
-    # Handle theater_ratio safely (might be inf, 0, or negative)
+    # Handle theater_ratio safely (might be inf, 0, negative, or None for N/A)
     import math
 
     theater_ratio = snapshot.theater_ratio
-    if math.isinf(theater_ratio) or theater_ratio <= 0:
+
+    if theater_ratio is None:
+        # N/A - unsupported language, don't penalize but don't give full credit
+        theater_component = 20  # Neutral score
+    elif math.isinf(theater_ratio) or theater_ratio <= 0:
         theater_component = 0  # All cargo cult or invalid = 0 theater health
     elif theater_ratio >= 1:
         theater_component = min(40, (1 / theater_ratio) * 40)
@@ -179,9 +185,7 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
     legend_html = ""
 
     for i, repo in enumerate(report.repos):
-        x_pct, y_pct = calculate_dot_position(
-            repo.complexity_score, repo.resilience_score
-        )
+        x_pct, y_pct = calculate_dot_position(repo.complexity_score, repo.resilience_score)
         avatar_url = get_github_avatar_url(repo.name)
         fallback_color = FALLBACK_COLORS[i % len(FALLBACK_COLORS)]
 
@@ -234,12 +238,12 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
         {get_base_css()}
         {get_quadrant_css()}
         {get_table_css()}
-        
+
         header {{
             text-align: center;
             margin-bottom: 2rem;
         }}
-        
+
         header h1 {{
             font-size: 2.5rem;
             font-weight: 700;
@@ -247,12 +251,12 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }}
-        
+
         header .subtitle {{
             color: #94a3b8;
             margin-top: 0.5rem;
         }}
-        
+
         .stats-row {{
             display: flex;
             justify-content: center;
@@ -260,29 +264,29 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             margin-bottom: 2rem;
             flex-wrap: wrap;
         }}
-        
+
         .stat {{
             text-align: center;
         }}
-        
+
         .stat-value {{
             font-size: 1.5rem;
             font-weight: 700;
             color: #f59e0b;
         }}
-        
+
         .stat-label {{
             color: #64748b;
             font-size: 0.8rem;
         }}
-        
+
         footer {{
             text-align: center;
             margin-top: 2rem;
             color: #64748b;
             font-size: 0.75rem;
         }}
-        
+
         /* Glossary tooltip styles */
         .glossary {{
             position: fixed;
@@ -290,7 +294,7 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             right: 1rem;
             z-index: 1000;
         }}
-        
+
         .glossary-toggle {{
             background: #334155;
             border: 1px solid #475569;
@@ -300,12 +304,12 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             cursor: pointer;
             font-size: 0.85rem;
         }}
-        
+
         .glossary-toggle:hover {{
             background: #3f4f63;
             color: #e2e8f0;
         }}
-        
+
         .glossary-content {{
             display: none;
             position: absolute;
@@ -322,7 +326,7 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }}
-        
+
         /* Invisible bridge between button and content */
         .glossary-content::after {{
             content: '';
@@ -332,37 +336,37 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             right: 0;
             height: 10px;
         }}
-        
+
         .glossary:hover .glossary-content,
         .glossary-content:hover {{
             display: block;
         }}
-        
+
         .glossary-item {{
             margin-bottom: 0.75rem;
             padding-bottom: 0.75rem;
             border-bottom: 1px solid #334155;
         }}
-        
+
         .glossary-item:last-child {{
             margin-bottom: 0;
             padding-bottom: 0;
             border-bottom: none;
         }}
-        
+
         .glossary-term {{
             font-weight: 600;
             color: #f59e0b;
             font-size: 0.85rem;
         }}
-        
+
         .glossary-def {{
             color: #94a3b8;
             font-size: 0.8rem;
             margin-top: 0.25rem;
             line-height: 1.4;
         }}
-        
+
         .stat-label {{
             color: #64748b;
             font-size: 0.8rem;
@@ -379,7 +383,7 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
                 {len(report.repos)} repositories • {report.timestamp[:10]}
             </p>
         </header>
-        
+
         <div class="stats-row">
             <div class="stat">
                 <div class="stat-value">{len(report.repos)}</div>
@@ -402,23 +406,23 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
                 <div class="stat-label" title="High complexity, high resilience. Over-engineered - complex but robust.">DEATHTRAP</div>
             </div>
         </div>
-        
+
         <div class="card">
             <h2>Fitness Quadrant</h2>
             {quadrant_html}
         </div>
-        
+
         <div class="card">
             <h2>Rankings (by Overall Health)</h2>
             {table_html}
         </div>
-        
+
         <footer>
             <p>Olympus • "Complexity is the enemy of reliability"</p>
             <p style="margin-top: 0.5rem;">Copyright © 2025 Andrew H. Bond &lt;andrew.bond@sjsu.edu&gt; • All rights reserved</p>
         </footer>
     </div>
-    
+
     <div class="glossary">
         <div class="glossary-content">
             <div class="glossary-item">
@@ -461,7 +465,7 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
     return output_path
 
 
-def clone_and_analyze(repo: str, work_dir: Path) -> Optional[str]:
+def clone_and_analyze(repo: str, work_dir: Path) -> str | None:
     """Clone a repo and run full prometheus+hubris analysis. Returns JSON report path or None."""
     import subprocess
 
@@ -574,9 +578,9 @@ def clone_and_analyze(repo: str, work_dir: Path) -> Optional[str]:
             print("OK")
             # Merge hubris data into prometheus JSON
             try:
-                with open(json_path, "r", encoding="utf-8") as f:
+                with open(json_path, encoding="utf-8") as f:
                     prom_data = json.load(f)
-                with open(hubris_json, "r", encoding="utf-8") as f:
+                with open(hubris_json, encoding="utf-8") as f:
                     hubris_data = json.load(f)
 
                 prom_data["hubris"] = {
@@ -623,20 +627,13 @@ repos.txt format (one per line):
   https://github.com/django/django.git
 """,
     )
-    parser.add_argument(
-        "repos", nargs="*", help="Repos (owner/repo) or JSON report files"
-    )
-    parser.add_argument(
-        "-f", "--file", help="File containing list of repos (one per line)"
-    )
+    parser.add_argument("repos", nargs="*", help="Repos (owner/repo) or JSON report files")
+    parser.add_argument("-f", "--file", help="File containing list of repos (one per line)")
     parser.add_argument(
         "-o", "--output", default="olympus_comparison.html", help="Output HTML path"
     )
     parser.add_argument(
-        "-w",
-        "--work-dir",
-        default=".olympus_cache",
-        help="Working directory for clones",
+        "-w", "--work-dir", default=".olympus_cache", help="Working directory for clones"
     )
     parser.add_argument("--json", help="Also output JSON report")
 
@@ -715,7 +712,9 @@ repos.txt format (one per line):
                 tr_raw = hub.get("theater_ratio", 1.0)
                 try:
                     if isinstance(tr_raw, str):
-                        if tr_raw in ("∞", "inf", "infinity", "Infinity"):
+                        if tr_raw in ("N/A", "n/a", "NA"):
+                            snapshot.theater_ratio = None
+                        elif tr_raw in ("∞", "inf", "infinity", "Infinity"):
                             snapshot.theater_ratio = float("inf")
                         else:
                             snapshot.theater_ratio = float(tr_raw)
@@ -743,18 +742,16 @@ repos.txt format (one per line):
         q = snap.quadrant or "UNKNOWN"
         report.quadrant_counts[q] = report.quadrant_counts.get(q, 0) + 1
 
-    # Calculate average theater ratio (excluding infinity values)
+    # Calculate average theater ratio (excluding infinity and N/A values)
     import math
 
     finite_ratios = [
-        s.theater_ratio for s in snapshots if not math.isinf(s.theater_ratio)
+        s.theater_ratio
+        for s in snapshots
+        if s.theater_ratio is not None and not math.isinf(s.theater_ratio)
     ]
-    report.avg_theater_ratio = (
-        sum(finite_ratios) / len(finite_ratios) if finite_ratios else 0.0
-    )
-    report.cargo_cult_repos = [
-        s.name for s in snapshots if s.hubris_quadrant == "CARGO_CULT"
-    ]
+    report.avg_theater_ratio = sum(finite_ratios) / len(finite_ratios) if finite_ratios else 0.0
+    report.cargo_cult_repos = [s.name for s in snapshots if s.hubris_quadrant == "CARGO_CULT"]
     report.healthiest = sorted(snapshots, key=lambda s: -s.overall_health)[:5]
     report.riskiest = sorted(snapshots, key=lambda s: s.overall_health)[:5]
 
@@ -762,9 +759,13 @@ repos.txt format (one per line):
     print(f"\n  HTML: {args.output}")
 
     if args.json:
-        # Helper to convert infinity to string for JSON
+        # Helper to convert infinity/None to string for JSON
         def safe_theater(val):
-            return "∞" if math.isinf(val) else val
+            if val is None:
+                return "N/A"
+            if math.isinf(val):
+                return "∞"
+            return val
 
         with open(args.json, "w") as f:
             json.dump(

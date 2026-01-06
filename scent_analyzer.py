@@ -29,12 +29,11 @@ Detects code quality issues that aren't bugs but indicate maintainability proble
    - Misleading names
 """
 
-import re
-import logging
-from pathlib import Path
-from dataclasses import dataclass, field
-from typing import Optional
 import json
+import logging
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -146,12 +145,8 @@ class ScentAnalyzer:
             "custom_list": re.compile(
                 r"class\s+(My|Custom)(List|Array|Queue|Stack|Set|Dict|Map|HashMap)\b"
             ),
-            "custom_http": re.compile(
-                r"socket\..*connect|urllib\.request\.urlopen(?!.*timeout)"
-            ),
-            "custom_json": re.compile(
-                r'\.split\s*\(\s*["\'][:,{}]\s*["\']'
-            ),  # manual JSON parsing
+            "custom_http": re.compile(r"socket\..*connect|urllib\.request\.urlopen(?!.*timeout)"),
+            "custom_json": re.compile(r'\.split\s*\(\s*["\'][:,{}]\s*["\']'),  # manual JSON parsing
             "print_logging": re.compile(
                 r"print\s*\([^)]*\b(error|debug|info|warn)\b", re.IGNORECASE
             ),
@@ -160,15 +155,9 @@ class ScentAnalyzer:
             ),
         },
         "javascript": {
-            "custom_string": re.compile(
-                r"function\s+(my|custom)?(Split|Join|Trim|Replace)\s*\("
-            ),
-            "custom_array": re.compile(
-                r"class\s+(My|Custom)(Array|List|Queue|Stack|Set|Map)\b"
-            ),
-            "custom_http": re.compile(
-                r'new\s+XMLHttpRequest|\.open\s*\(\s*["\'](?:GET|POST)'
-            ),
+            "custom_string": re.compile(r"function\s+(my|custom)?(Split|Join|Trim|Replace)\s*\("),
+            "custom_array": re.compile(r"class\s+(My|Custom)(Array|List|Queue|Stack|Set|Map)\b"),
+            "custom_http": re.compile(r'new\s+XMLHttpRequest|\.open\s*\(\s*["\'](?:GET|POST)'),
             "console_logging": re.compile(
                 r"console\.(log|warn|error)\s*\([^)]*\b(error|debug|info)\b"
             ),
@@ -201,9 +190,7 @@ class ScentAnalyzer:
             r"^\s*(#|//)\s*(if|for|while|def|function|class|return|import)\b",
             re.MULTILINE,
         ),
-        "todo_fixme": re.compile(
-            r"\b(TODO|FIXME|HACK|XXX|TEMP|TEMPORARY)\b", re.IGNORECASE
-        ),
+        "todo_fixme": re.compile(r"\b(TODO|FIXME|HACK|XXX|TEMP|TEMPORARY)\b", re.IGNORECASE),
         "global_var": re.compile(
             r"^[A-Z_][A-Z0-9_]*\s*=\s*(?!.*\bfinal\b|.*\bconst\b)", re.MULTILINE
         ),
@@ -213,9 +200,7 @@ class ScentAnalyzer:
     # Deprecated patterns by language
     DEPRECATED_PATTERNS = {
         "python": {
-            "old_print": re.compile(
-                r'^\s*print\s+["\']', re.MULTILINE
-            ),  # Python 2 print
+            "old_print": re.compile(r'^\s*print\s+["\']', re.MULTILINE),  # Python 2 print
             "old_except": re.compile(r"except\s+\w+\s*,\s*\w+:"),  # Python 2 except
             "has_key": re.compile(r"\.has_key\s*\("),  # dict.has_key()
             "raw_input": re.compile(r"\braw_input\s*\("),
@@ -224,9 +209,7 @@ class ScentAnalyzer:
             "deprecated_import": re.compile(
                 r"from\s+__future__\s+import|import\s+(imp|optparse|asynchat)\b"
             ),
-            "format_percent": re.compile(
-                r"%\s*\(\s*\w+\s*\)"
-            ),  # old % formatting (debatable)
+            "format_percent": re.compile(r"%\s*\(\s*\w+\s*\)"),  # old % formatting (debatable)
         },
         "javascript": {
             "var_keyword": re.compile(r"\bvar\s+\w+\s*="),  # should use let/const
@@ -244,9 +227,7 @@ class ScentAnalyzer:
     }
 
     # Single char variables (excluding common loop vars)
-    SINGLE_CHAR_VAR = re.compile(
-        r"\b([a-z])\s*=\s*(?!.*\bfor\b|.*\bin\b)", re.MULTILINE
-    )
+    SINGLE_CHAR_VAR = re.compile(r"\b([a-z])\s*=\s*(?!.*\bfor\b|.*\bin\b)", re.MULTILINE)
 
     def __init__(self, codebase_path: str):
         self.codebase_path = Path(codebase_path)
@@ -326,7 +307,7 @@ class ScentAnalyzer:
         }
         return mapping.get(ext, "unknown")
 
-    def _analyze_file(self, filepath: Path) -> Optional[FileSmellMetrics]:
+    def _analyze_file(self, filepath: Path) -> FileSmellMetrics | None:
         """Analyze a single file."""
         try:
             content = filepath.read_text(encoding="utf-8", errors="ignore")
@@ -408,23 +389,17 @@ class ScentAnalyzer:
         smells.magic_numbers = len(self.SMELL_PATTERNS["magic_number"].findall(content))
 
         # Commented code
-        smells.commented_code = len(
-            self.SMELL_PATTERNS["commented_code"].findall(content)
-        )
+        smells.commented_code = len(self.SMELL_PATTERNS["commented_code"].findall(content))
 
         # Long parameter lists
-        param_lists = re.findall(
-            r"(?:def|function|fn|func)\s+\w+\s*\(([^)]+)\)", content
-        )
+        param_lists = re.findall(r"(?:def|function|fn|func)\s+\w+\s*\(([^)]+)\)", content)
         for params in param_lists:
             param_count = len([p for p in params.split(",") if p.strip()])
             if param_count > 5:
                 smells.long_parameter_lists += 1
 
         # Global variables (rough heuristic)
-        smells.global_variables = len(
-            self.SMELL_PATTERNS["global_var"].findall(content)
-        )
+        smells.global_variables = len(self.SMELL_PATTERNS["global_var"].findall(content))
 
         # TODO/FIXME etc - not a smell per se but indicates incomplete work
         smells.dead_code_hints = len(self.SMELL_PATTERNS["todo_fixme"].findall(content))
@@ -543,8 +518,7 @@ class ScentAnalyzer:
         for fm in self.file_metrics:
             if fm.smells.very_long_functions:
                 issue_counts["Very long functions"] = (
-                    issue_counts.get("Very long functions", 0)
-                    + fm.smells.very_long_functions
+                    issue_counts.get("Very long functions", 0) + fm.smells.very_long_functions
                 )
             if fm.smells.deep_nesting:
                 issue_counts["Deep nesting"] = (
@@ -650,9 +624,7 @@ def main():
         report.freshness_rating, "❓"
     )
     print(f"\n{emoji} Freshness: {report.freshness_rating}")
-    print(
-        f"Overall Smell Score: {report.overall_smell_score:.0f}/100 (lower is better)"
-    )
+    print(f"Overall Smell Score: {report.overall_smell_score:.0f}/100 (lower is better)")
 
     print("\nCategory Scores (lower is better):")
     for cat, score in [

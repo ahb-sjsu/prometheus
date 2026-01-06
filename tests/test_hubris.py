@@ -10,21 +10,21 @@ Tests cover:
 - Quadrant classification
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from hubris import (
-    RetryIssue,
-    TimeoutIssue,
-    PatternDetection,
-    HubrisReport,
-    RetryDetector,
-    TimeoutDetector,
     ExceptionDetector,
     Hubris,
+    HubrisReport,
+    PatternDetection,
+    RetryDetector,
+    RetryIssue,
+    TimeoutDetector,
+    TimeoutIssue,
 )
-
 
 # =============================================================================
 # FIXTURES
@@ -117,7 +117,7 @@ def process_all(items):
 class BadCircuitBreaker:
     OPEN = "OPEN"
     CLOSED = "CLOSED"
-    
+
     def __init__(self):
         self.state = self.CLOSED
         # No failure threshold!
@@ -466,9 +466,7 @@ def bad_handler():
         patterns, issues = detector.detect(code, "test.py", "python")
 
         # Should flag bare except
-        swallow_issues = [
-            i for i in issues if "swallow" in i.issue_type or "bare" in i.issue_type
-        ]
+        swallow_issues = [i for i in issues if "swallow" in i.issue_type or "bare" in i.issue_type]
         assert len(swallow_issues) >= 0
 
     def test_detects_broad_exception(self):
@@ -711,9 +709,7 @@ class TestSeverity:
         report = hubris.analyze()
 
         severity_sum = (
-            report.high_severity_count
-            + report.medium_severity_count
-            + report.low_severity_count
+            report.high_severity_count + report.medium_severity_count + report.low_severity_count
         )
         assert report.total_issues == severity_sum
 

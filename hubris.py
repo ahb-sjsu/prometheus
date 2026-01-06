@@ -5,7 +5,7 @@ Hubris - Resilience Theater Detector
 
 Named after the Greek concept of excessive pride that leads to downfall.
 
-Core thesis: "The complexity added by reliability patterns can introduce 
+Core thesis: "The complexity added by reliability patterns can introduce
 more failure modes than it prevents."
 
 This analyzer detects CARGO CULT resilience - patterns that look defensive
@@ -23,7 +23,7 @@ Resilience Theater Patterns:
 
 The Quadrant:
                     HIGH QUALITY
-                    (backoff, jitter, 
+                    (backoff, jitter,
                     metrics, tested)
                          │
        OVERENGINEERED    │    BATTLE-HARDENED
@@ -37,16 +37,15 @@ The Quadrant:
        easy to fix       │    implemented wrong
                          │
                     LOW QUALITY
-                    (naive retry, no 
+                    (naive retry, no
                     metrics, untested)
 """
 
-import re
 import json
-from pathlib import Path
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
-
+from pathlib import Path
 
 # =============================================================================
 # DATA MODELS
@@ -137,8 +136,8 @@ class HubrisReport:
     patterns_partial: int = 0
     patterns_cargo_cult: int = 0
 
-    # The key metric
-    theater_ratio: float = 0.0  # patterns_detected / patterns_correct
+    # The key metric - can be float, "N/A", or inf
+    theater_ratio: float | str = 0.0  # patterns_detected / patterns_correct
 
     # Categorized issues
     retry_issues: list = field(default_factory=list)
@@ -167,6 +166,12 @@ class HubrisReport:
     high_severity_count: int = 0
     medium_severity_count: int = 0
     low_severity_count: int = 0
+
+    # Language analysis tracking
+    languages_analyzed: list = field(default_factory=list)
+    languages_skipped: list = field(default_factory=list)
+    primary_language: str = ""
+    supported_language_ratio: float = 0.0  # % of code in supported languages
 
 
 # =============================================================================
@@ -212,9 +217,7 @@ class RetryDetector:
             "max_retries": re.compile(r"maxRetries|maxAttempts|MAX_RETRIES"),
         },
         "go": {
-            "retry_lib": re.compile(
-                r"cenkalti/backoff|avast/retry-go|hashicorp/go-retryablehttp"
-            ),
+            "retry_lib": re.compile(r"cenkalti/backoff|avast/retry-go|hashicorp/go-retryablehttp"),
             "for_retry": re.compile(r"for\s+\w+\s*:?=\s*0\s*;\s*\w+\s*<\s*\d+"),
             "exponential_backoff": re.compile(
                 r"ExponentialBackOff|backoff\.Exponential|math\.Pow\(2"
@@ -230,6 +233,51 @@ class RetryDetector:
             ),
             "jitter": re.compile(r"jitter|randomDelay|Random\(\)"),
         },
+        "c": {
+            # C retry patterns - typically manual loops with sleep
+            "for_retry": re.compile(
+                r"for\s*\([^;]*;\s*\w+\s*<\s*(?:max_retries|MAX_RETRIES|retry_count|retries|MAX_ATTEMPTS|attempts)\s*;"
+            ),
+            "while_retry": re.compile(
+                r"while\s*\(\s*(?:retries|retry_count|attempts|tries)\s*(?:<|<=|>|--|\+\+)"
+            ),
+            "retry_label": re.compile(r"\bretry\s*:|again\s*:"),  # goto retry; pattern
+            "goto_retry": re.compile(r"goto\s+(?:retry|again|repeat)\s*;"),
+            # Quality indicators for C
+            "exponential_backoff": re.compile(
+                r"<<\s*(?:retry|attempt|tries)|(?:delay|sleep|wait)\s*\*=?\s*2|pow\s*\(\s*2"
+            ),
+            "jitter": re.compile(r"rand\s*\(\s*\)|random\s*\(\s*\)|drand48|arc4random"),
+            "max_retries": re.compile(
+                r"(?:max_retries|MAX_RETRIES|retry_count|MAX_ATTEMPTS|max_attempts)\s*[=<>]|#define\s+MAX_RETRIES"
+            ),
+            "sleep_call": re.compile(r"\b(?:sleep|usleep|nanosleep|Sleep)\s*\("),
+        },
+        "cpp": {
+            # C++ retry patterns
+            "for_retry": re.compile(
+                r"for\s*\([^;]*;\s*\w+\s*<\s*(?:max_retries|kMaxRetries|maxRetries|retry_count)\s*;"
+            ),
+            "while_retry": re.compile(
+                r"while\s*\(\s*(?:retries|retry_count|attempts)\s*(?:<|<=|>|--|\+\+)"
+            ),
+            # Modern C++ quality indicators
+            "exponential_backoff": re.compile(
+                r"std::chrono|std::this_thread::sleep_for|backoff\s*\*=?\s*2"
+            ),
+            "jitter": re.compile(
+                r"std::uniform_int_distribution|std::uniform_real_distribution|std::random_device|std::mt19937"
+            ),
+            "max_retries": re.compile(
+                r"(?:max_retries|kMaxRetries|maxRetries)\s*[=<>]|constexpr.*max.*retry",
+                re.IGNORECASE,
+            ),
+            "sleep_call": re.compile(
+                r"std::this_thread::sleep_for|std::this_thread::sleep_until|Sleep\s*\("
+            ),
+            # C++ exception-based retry
+            "catch_retry": re.compile(r"catch\s*\([^)]*\)\s*\{[^}]*(?:retry|continue|goto)"),
+        },
     }
 
     def detect(
@@ -239,9 +287,7 @@ class RetryDetector:
         patterns = []
         issues = []
 
-        lang_patterns = self.RETRY_PATTERNS.get(
-            language, self.RETRY_PATTERNS.get("python", {})
-        )
+        lang_patterns = self.RETRY_PATTERNS.get(language, self.RETRY_PATTERNS.get("python", {}))
 
         # Check for library-based retries
         for pattern_name, pattern in lang_patterns.items():
@@ -294,11 +340,7 @@ class RetryDetector:
                             file=filepath,
                             line=line_num,
                             quality=quality,
-                            details={
-                                "pattern": pattern_name,
-                                "library": False,
-                                "manual": True,
-                            },
+                            details={"pattern": pattern_name, "library": False, "manual": True},
                         )
                     )
 
@@ -316,15 +358,9 @@ class RetryDetector:
         has_backoff = bool(
             lang_patterns.get("exponential_backoff", re.compile(r"$^")).search(context)
         )
-        has_jitter = bool(
-            lang_patterns.get("jitter", re.compile(r"$^")).search(context)
-        )
-        has_max = bool(
-            lang_patterns.get("max_retries", re.compile(r"$^")).search(context)
-        )
-        has_sleep = bool(
-            lang_patterns.get("sleep_call", re.compile(r"sleep")).search(context)
-        )
+        has_jitter = bool(lang_patterns.get("jitter", re.compile(r"$^")).search(context))
+        has_max = bool(lang_patterns.get("max_retries", re.compile(r"$^")).search(context))
+        has_sleep = bool(lang_patterns.get("sleep_call", re.compile(r"sleep")).search(context))
 
         # Check for broad exception catching
         broad_exception = bool(
@@ -352,15 +388,9 @@ class RetryDetector:
         has_backoff = bool(
             lang_patterns.get("exponential_backoff", re.compile(r"$^")).search(context)
         )
-        has_jitter = bool(
-            lang_patterns.get("jitter", re.compile(r"$^")).search(context)
-        )
-        has_max = bool(
-            lang_patterns.get("max_retries", re.compile(r"$^")).search(context)
-        )
-        has_sleep = bool(
-            lang_patterns.get("sleep_call", re.compile(r"sleep")).search(context)
-        )
+        has_jitter = bool(lang_patterns.get("jitter", re.compile(r"$^")).search(context))
+        has_max = bool(lang_patterns.get("max_retries", re.compile(r"$^")).search(context))
+        has_sleep = bool(lang_patterns.get("sleep_call", re.compile(r"sleep")).search(context))
 
         if not has_backoff and not has_sleep:
             issues.append(
@@ -413,12 +443,8 @@ class TimeoutDetector:
                 r"requests\.(get|post|put|delete|patch)\s*\([^)]*\)(?![^)]*timeout)"
             ),
             "httpx_timeout": re.compile(r"httpx\.\w+\s*\([^)]*timeout\s*="),
-            "aiohttp_timeout": re.compile(
-                r"aiohttp\.ClientTimeout|timeout\s*=\s*aiohttp"
-            ),
-            "socket_timeout": re.compile(
-                r"socket\.setdefaulttimeout|\.settimeout\s*\("
-            ),
+            "aiohttp_timeout": re.compile(r"aiohttp\.ClientTimeout|timeout\s*=\s*aiohttp"),
+            "socket_timeout": re.compile(r"socket\.setdefaulttimeout|\.settimeout\s*\("),
             "generic_timeout": re.compile(r"timeout\s*=\s*(\d+(?:\.\d+)?|None)"),
             "timeout_none": re.compile(r"timeout\s*=\s*None"),
         },
@@ -429,17 +455,49 @@ class TimeoutDetector:
         },
         "go": {
             "http_timeout": re.compile(r"&http\.Client\s*\{[^}]*Timeout\s*:"),
-            "context_timeout": re.compile(
-                r"context\.WithTimeout|context\.WithDeadline"
-            ),
+            "context_timeout": re.compile(r"context\.WithTimeout|context\.WithDeadline"),
             "no_timeout": re.compile(r"http\.DefaultClient|&http\.Client\s*\{\s*\}"),
         },
         "java": {
-            "okhttp_timeout": re.compile(
-                r"\.connectTimeout\(|\.readTimeout\(|\.writeTimeout\("
-            ),
+            "okhttp_timeout": re.compile(r"\.connectTimeout\(|\.readTimeout\(|\.writeTimeout\("),
             "spring_timeout": re.compile(r"@Timeout|\.timeout\("),
             "socket_timeout": re.compile(r"setSoTimeout|setConnectTimeout"),
+        },
+        "c": {
+            # C timeout patterns
+            "socket_timeout": re.compile(
+                r"setsockopt\s*\([^)]*SO_RCVTIMEO|setsockopt\s*\([^)]*SO_SNDTIMEO"
+            ),
+            "select_timeout": re.compile(
+                r"\bselect\s*\([^)]*&\s*\w*timeout|poll\s*\([^)]*,\s*\d+\s*\)"
+            ),
+            "alarm_timeout": re.compile(r"\balarm\s*\(\s*\d+\s*\)|signal\s*\(\s*SIGALRM"),
+            "connect_timeout": re.compile(r"connect\s*\([^)]*\).*(?:timeout|TIMEOUT|alarm)"),
+            "generic_timeout": re.compile(r"(?:timeout|TIMEOUT)\s*[=:]\s*\d+|#define\s+\w*TIMEOUT"),
+            "curl_timeout": re.compile(
+                r"CURLOPT_TIMEOUT|CURLOPT_CONNECTTIMEOUT|curl_easy_setopt\s*\([^)]*TIMEOUT"
+            ),
+            "no_timeout": re.compile(r"connect\s*\([^)]*\)\s*;(?![^;]*timeout)", re.IGNORECASE),
+            # POSIX timer patterns
+            "timer_create": re.compile(r"timer_create|timer_settime|setitimer"),
+            "pthread_timeout": re.compile(r"pthread_cond_timedwait|pthread_mutex_timedlock"),
+        },
+        "cpp": {
+            # Modern C++ timeout patterns
+            "chrono_timeout": re.compile(r"std::chrono::(?:seconds|milliseconds|microseconds)"),
+            "future_timeout": re.compile(r"std::future.*wait_for|std::future.*wait_until"),
+            "condition_timeout": re.compile(
+                r"std::condition_variable.*wait_for|std::condition_variable.*wait_until"
+            ),
+            "mutex_timeout": re.compile(r"std::timed_mutex|try_lock_for|try_lock_until"),
+            "async_timeout": re.compile(r"std::async.*std::launch"),
+            # Boost/ASIO timeout patterns
+            "asio_timeout": re.compile(
+                r"boost::asio::deadline_timer|asio::steady_timer|expires_after|expires_at"
+            ),
+            "boost_timeout": re.compile(r"boost::chrono|boost::posix_time"),
+            # Socket timeouts
+            "socket_timeout": re.compile(r"setsockopt\s*\([^)]*SO_RCVTIMEO|socket_base::timeout"),
         },
     }
 
@@ -450,14 +508,12 @@ class TimeoutDetector:
         patterns = []
         issues = []
 
-        lang_patterns = self.TIMEOUT_PATTERNS.get(
-            language, self.TIMEOUT_PATTERNS.get("python", {})
-        )
+        lang_patterns = self.TIMEOUT_PATTERNS.get(language, self.TIMEOUT_PATTERNS.get("python", {}))
 
         # Check for missing timeouts on network calls
-        no_timeout_pattern = lang_patterns.get(
-            "requests_no_timeout"
-        ) or lang_patterns.get("no_timeout")
+        no_timeout_pattern = lang_patterns.get("requests_no_timeout") or lang_patterns.get(
+            "no_timeout"
+        )
         if no_timeout_pattern:
             for match in no_timeout_pattern.finditer(content):
                 line_num = content[: match.start()].count("\n") + 1
@@ -566,9 +622,7 @@ class CircuitBreakerDetector:
 
     CB_PATTERNS = {
         "python": {
-            "pybreaker": re.compile(
-                r"from\s+pybreaker|import\s+pybreaker|CircuitBreaker\s*\("
-            ),
+            "pybreaker": re.compile(r"from\s+pybreaker|import\s+pybreaker|CircuitBreaker\s*\("),
             "circuitbreaker": re.compile(r"@circuit|from\s+circuitbreaker"),
             "custom_cb": re.compile(r"class\s+\w*CircuitBreaker|OPEN|CLOSED|HALF_OPEN"),
             # Quality indicators
@@ -592,11 +646,40 @@ class CircuitBreakerDetector:
             "cb_metrics": re.compile(r"CircuitBreakerMetrics|HealthIndicator"),
         },
         "go": {
-            "gobreaker": re.compile(
-                r"gobreaker\.NewCircuitBreaker|gobreaker\.Settings"
-            ),
+            "gobreaker": re.compile(r"gobreaker\.NewCircuitBreaker|gobreaker\.Settings"),
             "hystrix_go": re.compile(r"hystrix\.Do|hystrix\.ConfigureCommand"),
             "cb_on_state": re.compile(r"OnStateChange|ReadyToTrip"),
+        },
+        "c": {
+            # C circuit breaker patterns are rare, but we look for state machines
+            "custom_cb": re.compile(
+                r"(?:circuit|cb)_state\s*==?\s*(?:OPEN|CLOSED|HALF_OPEN)|enum\s+\w*circuit\w*state",
+                re.IGNORECASE,
+            ),
+            "state_machine": re.compile(
+                r"(?:CIRCUIT|CB)_(?:OPEN|CLOSED|HALF_OPEN)|failure_count\s*>=?\s*threshold"
+            ),
+            # Quality indicators for C
+            "cb_threshold": re.compile(
+                r"(?:failure|error)_(?:threshold|limit|max)\s*[=:]|#define\s+\w*(?:FAILURE|ERROR)_(?:THRESHOLD|LIMIT)"
+            ),
+            "cb_logging": re.compile(
+                r"(?:syslog|fprintf\s*\(\s*stderr|printf).*(?:circuit|state|open|closed)",
+                re.IGNORECASE,
+            ),
+        },
+        "cpp": {
+            # C++ circuit breaker patterns
+            "custom_cb": re.compile(
+                r"class\s+\w*CircuitBreaker|CircuitBreaker\s*<|circuit_breaker", re.IGNORECASE
+            ),
+            "state_enum": re.compile(
+                r"enum\s+(?:class\s+)?(?:State|CircuitState)\s*\{[^}]*OPEN[^}]*CLOSED"
+            ),
+            # Quality indicators for C++
+            "cb_metrics": re.compile(r"prometheus|statsd|metrics::|counter\+\+|gauge"),
+            "cb_logging": re.compile(r"LOG\(|SPDLOG|spdlog::|std::cerr|std::clog"),
+            "cb_atomic": re.compile(r"std::atomic|atomic_|compare_exchange"),  # Thread-safe state
         },
     }
 
@@ -607,22 +690,13 @@ class CircuitBreakerDetector:
         patterns = []
         issues = []
 
-        lang_patterns = self.CB_PATTERNS.get(
-            language, self.CB_PATTERNS.get("python", {})
-        )
+        lang_patterns = self.CB_PATTERNS.get(language, self.CB_PATTERNS.get("python", {}))
 
         # Look for circuit breaker implementations
         for pattern_name, pattern in lang_patterns.items():
             if any(
                 x in pattern_name
-                for x in [
-                    "fallback",
-                    "metrics",
-                    "listener",
-                    "events",
-                    "threshold",
-                    "on_state",
-                ]
+                for x in ["fallback", "metrics", "listener", "events", "threshold", "on_state"]
             ):
                 continue  # Skip quality indicators
 
@@ -667,9 +741,7 @@ class CircuitBreakerDetector:
             for p in ["cb_metrics", "cb_listener", "cb_events", "cb_on_state"]
         )
         has_threshold = bool(
-            lang_patterns.get("cb_threshold", re.compile(r"threshold|fail_max")).search(
-                context
-            )
+            lang_patterns.get("cb_threshold", re.compile(r"threshold|fail_max")).search(context)
         )
 
         if has_fallback and has_metrics:
@@ -727,9 +799,7 @@ class ExceptionDetector:
         "python": {
             # Bad patterns
             "bare_except": re.compile(r"except\s*:"),
-            "broad_except": re.compile(
-                r"except\s+(?:Exception|BaseException)\s*(?:as\s+\w+)?:"
-            ),
+            "broad_except": re.compile(r"except\s+(?:Exception|BaseException)\s*(?:as\s+\w+)?:"),
             "except_pass": re.compile(r"except[^:]*:\s*\n\s*pass\b"),
             "except_continue": re.compile(r"except[^:]*:\s*\n\s*continue\b"),
             # Good patterns
@@ -742,9 +812,7 @@ class ExceptionDetector:
         "javascript": {
             "empty_catch": re.compile(r"catch\s*\([^)]*\)\s*\{\s*\}"),
             "catch_all": re.compile(r"catch\s*\(\s*(?:e|err|error|ex)?\s*\)\s*\{"),
-            "catch_log": re.compile(
-                r"catch\s*\([^)]*\)\s*\{[^}]*console\.(log|error|warn)"
-            ),
+            "catch_log": re.compile(r"catch\s*\([^)]*\)\s*\{[^}]*console\.(log|error|warn)"),
         },
         "go": {
             "ignore_error": re.compile(r"\w+,\s*_\s*:?=|_\s*=\s*\w+\("),
@@ -753,9 +821,106 @@ class ExceptionDetector:
         "java": {
             "empty_catch": re.compile(r"catch\s*\([^)]+\)\s*\{\s*\}"),
             "catch_throwable": re.compile(r"catch\s*\(\s*(?:Throwable|Exception)\s+"),
-            "swallow_exception": re.compile(
-                r"catch\s*\([^)]+\)\s*\{[^}]*(?:// *ignore|// *TODO)"
+            "swallow_exception": re.compile(r"catch\s*\([^)]+\)\s*\{[^}]*(?:// *ignore|// *TODO)"),
+        },
+        "c": {
+            # C error handling patterns - BAD
+            "ignore_errno": re.compile(
+                r"(?:if\s*\()?\s*\w+\s*\([^)]*\)\s*;(?!\s*if|\s*&&|\s*\|\|)"
+            ),  # Function call without checking return
+            "ignore_return": re.compile(
+                r"^\s*\w+\s*\([^)]*\)\s*;\s*$", re.MULTILINE
+            ),  # Ignoring return value
+            "empty_error_check": re.compile(
+                r"if\s*\([^)]*(?:err|error|ret|rc|status)\s*[!=<>]=?[^)]*\)\s*\{\s*\}"
             ),
+            # C error handling patterns - GOOD
+            "check_errno": re.compile(r"if\s*\(\s*errno\s*[!=]=|perror\s*\("),
+            "check_return": re.compile(r"if\s*\(\s*(?:ret|rc|status|result)\s*[!=<>=]+"),
+            "goto_cleanup": re.compile(r"goto\s+(?:cleanup|error|fail|out|err|done)\s*;"),
+            "error_logging": re.compile(r"(?:syslog|fprintf\s*\(\s*stderr|perror)\s*\("),
+            # Safe C patterns - GOOD
+            "safe_string_funcs": re.compile(
+                r"\b(?:strncpy|strncat|snprintf|strlcpy|strlcat|strncmp)\s*\("
+            ),
+            "bounds_check": re.compile(r"sizeof\s*\([^)]+\)|_countof|ARRAY_SIZE|ARRAYSIZE"),
+            "null_check": re.compile(r"if\s*\(\s*\w+\s*==\s*NULL|if\s*\(\s*!\s*\w+\s*\)"),
+            # Safe C library patterns (safec, libbsd, glib)
+            "safec_lib": re.compile(
+                r"#include\s*<safe_(?:str|mem|lib)\.h>|_s\s*\(|strcpy_s|strcat_s|sprintf_s|memcpy_s"
+            ),
+            "libbsd": re.compile(r"#include\s*<bsd/string\.h>|strlcpy|strlcat|reallocarray"),
+            "glib_safe": re.compile(r"g_strdup|g_strndup|g_malloc|g_new|g_slice_new|g_string_"),
+            # Memory safety - GOOD
+            "free_null": re.compile(
+                r"free\s*\([^)]+\)\s*;\s*\w+\s*=\s*NULL"
+            ),  # Free and null pattern
+            "malloc_check": re.compile(
+                r"if\s*\(\s*\w+\s*==\s*NULL\s*\).*malloc|malloc[^;]*;\s*if\s*\(\s*\w+\s*==\s*NULL"
+            ),
+            "realloc_safe": re.compile(
+                r"\w+\s*=\s*realloc\s*\([^,]+,|tmp\s*=\s*realloc"
+            ),  # Safe realloc pattern
+            # Thread safety - GOOD
+            "mutex_lock": re.compile(r"pthread_mutex_lock|pthread_mutex_trylock|mtx_lock"),
+            "mutex_unlock": re.compile(r"pthread_mutex_unlock|mtx_unlock"),
+            "atomic_ops": re.compile(
+                r"__atomic_|__sync_|atomic_load|atomic_store|atomic_compare_exchange"
+            ),
+            # Defensive patterns
+            "assert_check": re.compile(r"\bassert\s*\("),
+            "static_assert": re.compile(r"_Static_assert|static_assert"),
+        },
+        "cpp": {
+            # C++ exception patterns - BAD
+            "empty_catch": re.compile(r"catch\s*\([^)]*\)\s*\{\s*\}"),
+            "catch_all_ignore": re.compile(r"catch\s*\(\s*\.\.\.\s*\)\s*\{\s*\}"),
+            "swallow_exception": re.compile(
+                r"catch\s*\([^)]+\)\s*\{[^}]*(?:// *ignore|// *TODO)[^}]*\}"
+            ),
+            # C++ exception patterns - GOOD
+            "specific_catch": re.compile(
+                r"catch\s*\(\s*(?:const\s+)?(?:std::)?(?:\w+_)?(?:error|exception)"
+            ),
+            "catch_log": re.compile(r"catch\s*\([^)]*\)\s*\{[^}]*(?:LOG|log|cerr|clog|spdlog)"),
+            "catch_rethrow": re.compile(r"catch\s*\([^)]*\)\s*\{[^}]*throw\s*;"),
+            "noexcept": re.compile(r"\bnoexcept\b"),
+            # RAII patterns - GOOD (Modern C++ safety)
+            "smart_ptr": re.compile(
+                r"std::unique_ptr|std::shared_ptr|std::weak_ptr|std::make_unique|std::make_shared"
+            ),
+            "raii_lock": re.compile(
+                r"std::lock_guard|std::unique_lock|std::scoped_lock|std::shared_lock"
+            ),
+            "raii_file": re.compile(r"std::fstream|std::ifstream|std::ofstream|std::stringstream"),
+            # Modern C++ safety patterns - GOOD
+            "optional": re.compile(
+                r"std::optional|std::nullopt|\.value\(\)|\.value_or\(|\.has_value\(\)"
+            ),
+            "expected": re.compile(
+                r"std::expected|tl::expected|boost::outcome"
+            ),  # C++23 / pre-standard
+            "variant": re.compile(r"std::variant|std::visit|std::get_if|std::holds_alternative"),
+            "span": re.compile(r"std::span|gsl::span"),  # Bounds-safe view
+            "string_view": re.compile(r"std::string_view|std::wstring_view"),
+            # C++ bounds safety - GOOD
+            "at_access": re.compile(r"\.at\s*\("),  # Bounds-checked access
+            "gsl_contracts": re.compile(r"gsl::|Expects\s*\(|Ensures\s*\(|gsl_assert"),
+            "safe_cast": re.compile(r"static_cast|dynamic_cast|gsl::narrow|gsl::narrow_cast"),
+            # C++ thread safety - GOOD
+            "mutex": re.compile(
+                r"std::mutex|std::recursive_mutex|std::shared_mutex|std::timed_mutex"
+            ),
+            "atomic": re.compile(r"std::atomic|std::atomic_ref|std::memory_order"),
+            "condition_var": re.compile(r"std::condition_variable|std::condition_variable_any"),
+            "thread_local": re.compile(r"\bthread_local\b"),
+            # C++ defensive programming - GOOD
+            "static_assert": re.compile(r"static_assert\s*\("),
+            "concepts": re.compile(r"\bconcept\b|requires\s*\(|requires\s+\w+"),  # C++20 concepts
+            "constexpr_check": re.compile(r"if\s+constexpr|consteval"),
+            # C++ error handling libraries
+            "boost_system": re.compile(r"boost::system::error_code|boost::system::error_category"),
+            "abseil_status": re.compile(r"absl::Status|absl::StatusOr"),
         },
     }
 
@@ -800,14 +965,10 @@ class ExceptionDetector:
 
                 has_logging = bool(
                     re.search(
-                        r"log|logger|logging|console\.|print|fmt\.Print",
-                        context,
-                        re.IGNORECASE,
+                        r"log|logger|logging|console\.|print|fmt\.Print", context, re.IGNORECASE
                     )
                 )
-                has_raise = bool(
-                    re.search(r"\braise\b|\bthrow\b|return\s+err", context)
-                )
+                has_raise = bool(re.search(r"\braise\b|\bthrow\b|return\s+err", context))
 
                 if has_logging or has_raise:
                     quality = "PARTIAL"
@@ -847,11 +1008,7 @@ class ExceptionDetector:
 
     def _map_issue_type(self, pattern_name: str) -> str:
         """Map pattern name to issue type."""
-        if (
-            "pass" in pattern_name
-            or "empty" in pattern_name
-            or "swallow" in pattern_name
-        ):
+        if "pass" in pattern_name or "empty" in pattern_name or "swallow" in pattern_name:
             return "swallow"
         elif (
             "bare" in pattern_name
@@ -890,13 +1047,9 @@ class LibraryDetector:
             "retrying": re.compile(r"from\s+retrying|import\s+retrying"),
             "backoff": re.compile(r"from\s+backoff|import\s+backoff"),
             "pybreaker": re.compile(r"from\s+pybreaker|import\s+pybreaker"),
-            "circuitbreaker": re.compile(
-                r"from\s+circuitbreaker|import\s+circuitbreaker"
-            ),
+            "circuitbreaker": re.compile(r"from\s+circuitbreaker|import\s+circuitbreaker"),
             "pyfailsafe": re.compile(r"from\s+failsafe|import\s+failsafe"),
-            "timeout_decorator": re.compile(
-                r"from\s+timeout_decorator|import\s+timeout_decorator"
-            ),
+            "timeout_decorator": re.compile(r"from\s+timeout_decorator|import\s+timeout_decorator"),
             "async_timeout": re.compile(r"from\s+async_timeout|import\s+async_timeout"),
             "aiobreaker": re.compile(r"from\s+aiobreaker|import\s+aiobreaker"),
         },
@@ -919,6 +1072,37 @@ class LibraryDetector:
             "backoff": re.compile(r"cenkalti/backoff"),
             "retry-go": re.compile(r"avast/retry-go"),
             "hystrix-go": re.compile(r"afex/hystrix-go"),
+        },
+        "c": {
+            # Safe C libraries
+            "safec": re.compile(r'#include\s*[<"]safe_(?:str|mem|lib)\.h[>"]|safeclib'),
+            "libbsd": re.compile(r'#include\s*[<"]bsd/string\.h[>"]|strlcpy|strlcat'),
+            "glib": re.compile(r'#include\s*[<"]glib\.h[>"]|g_malloc|g_strdup'),
+            # Error handling
+            "libcurl": re.compile(r'#include\s*[<"]curl/curl\.h[>"]|CURLOPT_'),
+            "openssl": re.compile(r'#include\s*[<"]openssl/|SSL_|EVP_|ERR_'),
+            # Concurrency
+            "pthreads": re.compile(r'#include\s*[<"]pthread\.h[>"]|pthread_'),
+        },
+        "cpp": {
+            # Modern C++ features (not libraries per se, but indicate modern usage)
+            "std_modern": re.compile(r"std::unique_ptr|std::shared_ptr|std::optional|std::variant"),
+            # Boost libraries
+            "boost_asio": re.compile(r'#include\s*[<"]boost/asio|boost::asio'),
+            "boost_system": re.compile(r"boost::system::error_code|boost/system"),
+            "boost_outcome": re.compile(r"boost::outcome|BOOST_OUTCOME"),
+            # Google libraries
+            "abseil": re.compile(r'#include\s*[<"]absl/|absl::'),
+            "glog": re.compile(r'#include\s*[<"]glog/|google::LOG|LOG\(INFO\)|LOG\(ERROR\)'),
+            # Guidelines Support Library
+            "gsl": re.compile(r'#include\s*[<"]gsl/|gsl::span|gsl::not_null|Expects|Ensures'),
+            # Logging
+            "spdlog": re.compile(r'#include\s*[<"]spdlog/|spdlog::'),
+            "fmt": re.compile(r'#include\s*[<"]fmt/|fmt::format'),
+            # Threading
+            "cpp_threads": re.compile(
+                r'#include\s*[<"]thread[>"]|#include\s*[<"]mutex[>"]|std::thread|std::mutex'
+            ),
         },
     }
 
@@ -947,7 +1131,8 @@ class Hubris:
     without adding reliability.
     """
 
-    LANGUAGE_EXTENSIONS = {
+    # Languages with full resilience pattern support
+    SUPPORTED_LANGUAGES = {
         ".py": "python",
         ".js": "javascript",
         ".ts": "javascript",
@@ -955,9 +1140,45 @@ class Hubris:
         ".tsx": "javascript",
         ".go": "go",
         ".java": "java",
+        ".c": "c",
+        ".h": "c",  # Treat .h as C by default
+        ".cpp": "cpp",
+        ".cc": "cpp",
+        ".cxx": "cpp",
+        ".hpp": "cpp",
+        ".hxx": "cpp",
+        ".C": "cpp",  # Uppercase .C is C++ by convention
+        ".hh": "cpp",
+    }
+
+    # Languages we recognize but don't fully support - will return N/A
+    UNSUPPORTED_LANGUAGES = {
         ".rs": "rust",
         ".rb": "ruby",
+        ".php": "php",
+        ".cs": "csharp",
+        ".swift": "swift",
+        ".kt": "kotlin",
+        ".scala": "scala",
+        ".ex": "elixir",
+        ".exs": "elixir",
+        ".erl": "erlang",
+        ".hs": "haskell",
+        ".ml": "ocaml",
+        ".clj": "clojure",
+        ".lua": "lua",
+        ".pl": "perl",
+        ".r": "r",
+        ".R": "r",
+        ".m": "objective-c",
+        ".mm": "objective-c",
+        ".asm": "assembly",
+        ".s": "assembly",
+        ".S": "assembly",
     }
+
+    # Combined for backward compatibility
+    LANGUAGE_EXTENSIONS = {**SUPPORTED_LANGUAGES, **UNSUPPORTED_LANGUAGES}
 
     def __init__(self, codebase_path: str):
         self.codebase_path = Path(codebase_path)
@@ -978,9 +1199,74 @@ class Hubris:
         print(f"[HUBRIS] Scanning for resilience theater in {self.codebase_path}...")
 
         all_libraries = set()
+        languages_found = {}  # language -> file_count
+        unsupported_found = {}  # language -> file_count
 
-        # Scan all files
-        for ext, language in self.LANGUAGE_EXTENSIONS.items():
+        # First pass: count files by language to determine primary language
+        for ext in list(self.SUPPORTED_LANGUAGES.keys()) + list(self.UNSUPPORTED_LANGUAGES.keys()):
+            for filepath in self.codebase_path.rglob(f"*{ext}"):
+                if any(
+                    skip in str(filepath)
+                    for skip in [
+                        "node_modules",
+                        "venv",
+                        ".venv",
+                        "__pycache__",
+                        ".git",
+                        "dist",
+                        "build",
+                        "vendor",
+                        "test",
+                        "tests",
+                        "__tests__",
+                        "spec",
+                        "mock",
+                        "fixture",
+                    ]
+                ):
+                    continue
+
+                if ext in self.SUPPORTED_LANGUAGES:
+                    lang = self.SUPPORTED_LANGUAGES[ext]
+                    languages_found[lang] = languages_found.get(lang, 0) + 1
+                elif ext in self.UNSUPPORTED_LANGUAGES:
+                    lang = self.UNSUPPORTED_LANGUAGES[ext]
+                    unsupported_found[lang] = unsupported_found.get(lang, 0) + 1
+
+        # Track languages in report
+        report.languages_analyzed = sorted(languages_found.keys())
+        report.languages_skipped = sorted(unsupported_found.keys())
+
+        total_supported = sum(languages_found.values())
+        total_unsupported = sum(unsupported_found.values())
+        total_files = total_supported + total_unsupported
+
+        if total_files > 0:
+            report.supported_language_ratio = total_supported / total_files
+
+        # Determine primary language
+        all_langs = {**languages_found, **unsupported_found}
+        if all_langs:
+            report.primary_language = max(all_langs.keys(), key=lambda k: all_langs[k])
+
+        # If majority of code is in unsupported languages, return N/A
+        if report.supported_language_ratio < 0.2 and total_files > 0:
+            print(f"  Primary language: {report.primary_language}")
+            print(f"  Supported language ratio: {report.supported_language_ratio:.1%}")
+            print("  Skipping detailed analysis - insufficient supported code")
+
+            report.theater_ratio = "N/A"
+            report.quadrant = "N/A"
+            report.verdict = (
+                f"Theater analysis not available. The codebase is primarily {report.primary_language} "
+                f"({100 - report.supported_language_ratio*100:.0f}% of code), which is not yet fully supported. "
+                f"Supported languages: Python, JavaScript, TypeScript, Go, Java, C/C++."
+            )
+            report.risk_level = "UNKNOWN"
+            return report
+
+        # Scan supported files
+        for ext, language in self.SUPPORTED_LANGUAGES.items():
             for filepath in self.codebase_path.rglob(f"*{ext}"):
                 # Skip non-source directories
                 if any(
@@ -1013,27 +1299,19 @@ class Hubris:
                     all_libraries.update(libs)
 
                     # Detect patterns and issues
-                    patterns, issues = self.retry_detector.detect(
-                        content, rel_path, language
-                    )
+                    patterns, issues = self.retry_detector.detect(content, rel_path, language)
                     report.patterns.extend(patterns)
                     report.retry_issues.extend(issues)
 
-                    patterns, issues = self.timeout_detector.detect(
-                        content, rel_path, language
-                    )
+                    patterns, issues = self.timeout_detector.detect(content, rel_path, language)
                     report.patterns.extend(patterns)
                     report.timeout_issues.extend(issues)
 
-                    patterns, issues = self.cb_detector.detect(
-                        content, rel_path, language
-                    )
+                    patterns, issues = self.cb_detector.detect(content, rel_path, language)
                     report.patterns.extend(patterns)
                     report.circuit_breaker_issues.extend(issues)
 
-                    patterns, issues = self.exception_detector.detect(
-                        content, rel_path, language
-                    )
+                    patterns, issues = self.exception_detector.detect(content, rel_path, language)
                     report.patterns.extend(patterns)
                     report.exception_issues.extend(issues)
 
@@ -1054,7 +1332,12 @@ class Hubris:
 
         print(f"  Patterns detected: {report.patterns_detected}")
         print(f"  Correctly implemented: {report.patterns_correct}")
-        print(f"  Theater ratio: {report.theater_ratio:.2f}")
+        if isinstance(report.theater_ratio, str):
+            print(f"  Theater ratio: {report.theater_ratio}")
+        elif report.theater_ratio == float("inf"):
+            print("  Theater ratio: ∞ (all patterns are cargo cult)")
+        else:
+            print(f"  Theater ratio: {report.theater_ratio:.2f}")
         print(f"  Verdict: {report.quadrant}")
 
         return report
@@ -1062,15 +1345,9 @@ class Hubris:
     def _calculate_statistics(self, report: HubrisReport):
         """Calculate pattern statistics."""
         report.patterns_detected = len(report.patterns)
-        report.patterns_correct = sum(
-            1 for p in report.patterns if p.quality == "CORRECT"
-        )
-        report.patterns_partial = sum(
-            1 for p in report.patterns if p.quality == "PARTIAL"
-        )
-        report.patterns_cargo_cult = sum(
-            1 for p in report.patterns if p.quality == "CARGO_CULT"
-        )
+        report.patterns_correct = sum(1 for p in report.patterns if p.quality == "CORRECT")
+        report.patterns_partial = sum(1 for p in report.patterns if p.quality == "PARTIAL")
+        report.patterns_cargo_cult = sum(1 for p in report.patterns if p.quality == "CARGO_CULT")
 
         # Theater ratio: detected / correct (higher = more theater)
         if report.patterns_correct > 0:
@@ -1186,9 +1463,7 @@ class Hubris:
             )
 
         # Timeout issues
-        missing_timeouts = [
-            i for i in report.timeout_issues if i.issue_type == "missing"
-        ]
+        missing_timeouts = [i for i in report.timeout_issues if i.issue_type == "missing"]
         if missing_timeouts:
             recs.append(
                 {
@@ -1204,9 +1479,7 @@ class Hubris:
             )
 
         # Circuit breaker issues
-        invisible_cb = [
-            i for i in report.circuit_breaker_issues if i.issue_type == "invisible"
-        ]
+        invisible_cb = [i for i in report.circuit_breaker_issues if i.issue_type == "invisible"]
         if invisible_cb:
             recs.append(
                 {
@@ -1316,9 +1589,7 @@ class Hubris:
 # =============================================================================
 
 
-def generate_hubris_html(
-    report: HubrisReport, output_path: str, repo_name: str = ""
-) -> str:
+def generate_hubris_html(report: HubrisReport, output_path: str, repo_name: str = "") -> str:
     """Generate visual HTML report."""
 
     # Determine colors based on quadrant
@@ -1329,9 +1600,7 @@ def generate_hubris_html(
         "OVERENGINEERED": ("#eab308", "#a16207"),  # Yellow
     }
 
-    primary_color, dark_color = quadrant_colors.get(
-        report.quadrant, ("#64748b", "#334155")
-    )
+    primary_color, dark_color = quadrant_colors.get(report.quadrant, ("#64748b", "#334155"))
 
     # Build issues HTML
     issues_html = ""
@@ -1348,9 +1617,7 @@ def generate_hubris_html(
 
     # Sort by severity
     severity_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
-    all_issues.sort(
-        key=lambda x: severity_order.get(getattr(x[1], "severity", "LOW"), 3)
-    )
+    all_issues.sort(key=lambda x: severity_order.get(getattr(x[1], "severity", "LOW"), 3))
 
     for category, issue in all_issues[:20]:
         severity_color = {"HIGH": "#ef4444", "MEDIUM": "#eab308", "LOW": "#64748b"}.get(
@@ -1407,7 +1674,7 @@ def generate_hubris_html(
     <title>Hubris Report - {repo_name or 'Resilience Theater Analysis'}</title>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        
+
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -1415,17 +1682,17 @@ def generate_hubris_html(
             color: #e2e8f0;
             padding: 2rem;
         }}
-        
+
         .container {{
             max-width: 1200px;
             margin: 0 auto;
         }}
-        
+
         header {{
             text-align: center;
             margin-bottom: 2rem;
         }}
-        
+
         header h1 {{
             font-size: 2.5rem;
             font-weight: 700;
@@ -1434,26 +1701,26 @@ def generate_hubris_html(
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }}
-        
+
         header .subtitle {{
             color: #94a3b8;
             margin-top: 0.5rem;
         }}
-        
+
         .grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }}
-        
+
         .card {{
             background: rgba(30, 41, 59, 0.8);
             border-radius: 1rem;
             padding: 1.5rem;
             border: 1px solid rgba(148, 163, 184, 0.1);
         }}
-        
+
         .card h2 {{
             font-size: 1rem;
             color: #94a3b8;
@@ -1461,25 +1728,25 @@ def generate_hubris_html(
             letter-spacing: 0.05em;
             margin-bottom: 1rem;
         }}
-        
+
         .quadrant-display {{
             text-align: center;
             padding: 2rem;
         }}
-        
+
         .quadrant-name {{
             font-size: 2rem;
             font-weight: 700;
             color: {primary_color};
             margin-bottom: 0.5rem;
         }}
-        
+
         .quadrant-desc {{
             color: #94a3b8;
             font-size: 0.9rem;
             line-height: 1.6;
         }}
-        
+
         .metric {{
             display: flex;
             justify-content: space-between;
@@ -1487,51 +1754,51 @@ def generate_hubris_html(
             padding: 0.75rem 0;
             border-bottom: 1px solid rgba(148, 163, 184, 0.1);
         }}
-        
+
         .metric:last-child {{
             border-bottom: none;
         }}
-        
+
         .metric-label {{
             color: #94a3b8;
         }}
-        
+
         .metric-value {{
             font-size: 1.25rem;
             font-weight: 600;
         }}
-        
+
         .theater-ratio {{
             text-align: center;
             padding: 1.5rem;
         }}
-        
+
         .theater-value {{
             font-size: 3rem;
             font-weight: 700;
             color: {primary_color};
         }}
-        
+
         .theater-label {{
             color: #94a3b8;
             font-size: 0.9rem;
             margin-top: 0.5rem;
         }}
-        
+
         .issue {{
             background: rgba(15, 23, 42, 0.6);
             border-radius: 0.5rem;
             padding: 1rem;
             margin-bottom: 0.75rem;
         }}
-        
+
         .issue-header {{
             display: flex;
             align-items: center;
             gap: 0.75rem;
             margin-bottom: 0.5rem;
         }}
-        
+
         .severity {{
             padding: 0.25rem 0.5rem;
             border-radius: 0.25rem;
@@ -1539,24 +1806,24 @@ def generate_hubris_html(
             font-weight: 600;
             color: white;
         }}
-        
+
         .category {{
             color: #94a3b8;
             font-size: 0.85rem;
         }}
-        
+
         .location {{
             color: #64748b;
             font-size: 0.8rem;
             font-family: monospace;
             margin-left: auto;
         }}
-        
+
         .issue-body {{
             color: #cbd5e1;
             font-size: 0.9rem;
         }}
-        
+
         .recommendation {{
             background: rgba(15, 23, 42, 0.6);
             border-radius: 0.5rem;
@@ -1564,41 +1831,41 @@ def generate_hubris_html(
             margin-bottom: 0.75rem;
             border-left: 3px solid {primary_color};
         }}
-        
+
         .rec-header {{
             display: flex;
             align-items: center;
             gap: 0.75rem;
             margin-bottom: 0.5rem;
         }}
-        
+
         .rec-priority {{
             color: {primary_color};
             font-weight: 600;
             font-size: 0.85rem;
         }}
-        
+
         .rec-category {{
             color: #e2e8f0;
             font-weight: 500;
         }}
-        
+
         .rec-message {{
             color: #94a3b8;
             font-size: 0.9rem;
             margin-bottom: 0.75rem;
         }}
-        
+
         .rec-actions {{
             margin-left: 1.5rem;
             color: #cbd5e1;
             font-size: 0.85rem;
         }}
-        
+
         .rec-actions li {{
             margin-bottom: 0.25rem;
         }}
-        
+
         .risk-badge {{
             display: inline-block;
             padding: 0.5rem 1rem;
@@ -1606,18 +1873,18 @@ def generate_hubris_html(
             font-weight: 600;
             margin-top: 1rem;
         }}
-        
+
         .risk-CRITICAL {{ background: #7f1d1d; color: #fecaca; }}
         .risk-HIGH {{ background: #991b1b; color: #fecaca; }}
         .risk-MEDIUM {{ background: #a16207; color: #fef3c7; }}
         .risk-LOW {{ background: #166534; color: #bbf7d0; }}
-        
+
         .libraries {{
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
         }}
-        
+
         .library-tag {{
             background: rgba(59, 130, 246, 0.2);
             color: #93c5fd;
@@ -1625,14 +1892,14 @@ def generate_hubris_html(
             border-radius: 1rem;
             font-size: 0.85rem;
         }}
-        
+
         footer {{
             text-align: center;
             margin-top: 2rem;
             color: #64748b;
             font-size: 0.85rem;
         }}
-        
+
         .quadrant-chart {{
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1644,7 +1911,7 @@ def generate_hubris_html(
             height: 200px;
             margin: 1rem 0;
         }}
-        
+
         .quadrant-cell {{
             background: rgba(30, 41, 59, 0.9);
             display: flex;
@@ -1654,13 +1921,13 @@ def generate_hubris_html(
             color: #64748b;
             position: relative;
         }}
-        
+
         .quadrant-cell.active {{
             background: {primary_color}22;
             color: {primary_color};
             font-weight: 600;
         }}
-        
+
         .quadrant-cell.active::after {{
             content: '●';
             position: absolute;
@@ -1674,13 +1941,13 @@ def generate_hubris_html(
             <h1>HUBRIS</h1>
             <p class="subtitle">Resilience Theater Analysis{f' — {repo_name}' if repo_name else ''}</p>
         </header>
-        
+
         <div class="grid">
             <div class="card quadrant-display">
                 <div class="quadrant-name">{report.quadrant.replace('_', ' ')}</div>
                 <div class="quadrant-desc">{report.verdict.split('.')[0]}.</div>
                 <div class="risk-badge risk-{report.risk_level}">{report.risk_level} RISK</div>
-                
+
                 <div class="quadrant-chart">
                     <div class="quadrant-cell {'active' if report.quadrant == 'OVERENGINEERED' else ''}">OVERENGINEERED</div>
                     <div class="quadrant-cell {'active' if report.quadrant == 'BATTLE_HARDENED' else ''}">BATTLE-HARDENED</div>
@@ -1688,7 +1955,7 @@ def generate_hubris_html(
                     <div class="quadrant-cell {'active' if report.quadrant == 'SIMPLE' else ''}">SIMPLE</div>
                 </div>
             </div>
-            
+
             <div class="card theater-ratio">
                 <h2>Theater Ratio</h2>
                 <div class="theater-value">{theater_display}</div>
@@ -1699,7 +1966,7 @@ def generate_hubris_html(
                 </div>
             </div>
         </div>
-        
+
         <div class="grid">
             <div class="card">
                 <h2>Pattern Analysis</h2>
@@ -1720,7 +1987,7 @@ def generate_hubris_html(
                     <span class="metric-value" style="color: #ef4444">{report.patterns_cargo_cult}</span>
                 </div>
             </div>
-            
+
             <div class="card">
                 <h2>Issues by Severity</h2>
                 <div class="metric">
@@ -1741,7 +2008,7 @@ def generate_hubris_html(
                 </div>
             </div>
         </div>
-        
+
         {f'''
         <div class="card">
             <h2>Resilience Libraries Detected ({report.library_count})</h2>
@@ -1751,21 +2018,21 @@ def generate_hubris_html(
             {'<p style="margin-top: 1rem; color: #f59e0b; font-size: 0.9rem;">⚠️ Multiple libraries suggest inconsistent resilience strategy</p>' if report.library_count > 2 else ''}
         </div>
         ''' if report.resilience_libraries else ''}
-        
+
         {f'''
         <div class="card">
             <h2>Issues Found</h2>
             {issues_html if issues_html else '<p style="color: #64748b;">No issues detected</p>'}
         </div>
         ''' if all_issues else ''}
-        
+
         {f'''
         <div class="card">
             <h2>Recommendations</h2>
             {recs_html if recs_html else '<p style="color: #64748b;">No recommendations</p>'}
         </div>
         ''' if report.recommendations else ''}
-        
+
         <footer>
             <p>Hubris - Resilience Theater Detector</p>
             <p>"The complexity added by reliability patterns can introduce more failure modes than it prevents."</p>

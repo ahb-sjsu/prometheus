@@ -10,7 +10,7 @@ The main issues:
 2. Detection code detecting itself
 
 Usage:
-    Add these functions to hubris.py and call is_false_positive() before 
+    Add these functions to hubris.py and call is_false_positive() before
     flagging issues in each detector's detect() method.
 """
 
@@ -18,9 +18,7 @@ import re
 from pathlib import Path
 
 
-def is_pattern_definition_context(
-    content: str, match_start: int, match_end: int
-) -> bool:
+def is_pattern_definition_context(content: str, match_start: int, match_end: int) -> bool:
     """
     Check if a regex match is inside a pattern definition context.
 
@@ -155,9 +153,7 @@ def should_flag_match(content: str, match, filepath: str) -> bool:
         line = content[line_start : line_end if line_end != -1 else len(content)]
 
         # Skip if line looks like it's defining patterns
-        if any(
-            x in line for x in ["Pattern", "pattern", "PATTERN", "compile", "regex"]
-        ):
+        if any(x in line for x in ["Pattern", "pattern", "PATTERN", "compile", "regex"]):
             return False
 
     return True
@@ -168,7 +164,7 @@ def should_flag_match(content: str, match, filepath: str) -> bool:
 # =============================================================================
 
 """
-To integrate this into the existing hubris.py, update each detector's 
+To integrate this into the existing hubris.py, update each detector's
 detect() method to filter matches:
 
 BEFORE:
@@ -181,14 +177,14 @@ AFTER:
         # NEW: Filter false positives
         if not should_flag_match(content, match, filepath):
             continue
-            
+
         line_num = content[:match.start()].count('\\n') + 1
         # ... process match
 
 
 Apply this to:
 - RetryDetector.detect()
-- TimeoutDetector.detect()  
+- TimeoutDetector.detect()
 - CircuitBreakerDetector.detect()
 - ExceptionDetector.detect()
 """
@@ -212,14 +208,12 @@ def test_filtering():
     import re as regex
 
     match = regex.search(r"@retry", code1)
-    assert not should_flag_match(
-        code1, match, "hubris.py"
-    ), "Should not flag pattern definition"
+    assert not should_flag_match(code1, match, "hubris.py"), "Should not flag pattern definition"
 
     # Test case 2: Actual retry usage (SHOULD flag)
     code2 = """
     from tenacity import retry
-    
+
     @retry
     def flaky_function():
         pass

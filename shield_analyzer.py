@@ -24,13 +24,12 @@ Patterns detected:
 
 """
 
-import re
 import ast
 import json
 import logging
+import re
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from dataclasses import dataclass, field, asdict
-from typing import Optional
 
 # Import modular language analyzers
 from lang_analyzers import ANALYZER_REGISTRY, LanguageResilienceMetrics, get_analyzer
@@ -154,9 +153,7 @@ class FileResilienceMetrics:
     lines_of_code: int = 0
 
     error_handling: ErrorHandlingMetrics = field(default_factory=ErrorHandlingMetrics)
-    circuit_breakers: CircuitBreakerMetrics = field(
-        default_factory=CircuitBreakerMetrics
-    )
+    circuit_breakers: CircuitBreakerMetrics = field(default_factory=CircuitBreakerMetrics)
     retries: RetryMetrics = field(default_factory=RetryMetrics)
     timeouts: TimeoutMetrics = field(default_factory=TimeoutMetrics)
     bulkheads: BulkheadMetrics = field(default_factory=BulkheadMetrics)
@@ -327,9 +324,7 @@ class PatternDetector:
         "feature_flag": re.compile(
             r"\b(feature_flag|FeatureFlag|is_enabled|isFeatureEnabled|toggle|LaunchDarkly|split\.io)\b"
         ),
-        "cache_fallback": re.compile(
-            r"\b(cache\.get|getFromCache|cached_value|stale_if_error)\b"
-        ),
+        "cache_fallback": re.compile(r"\b(cache\.get|getFromCache|cached_value|stale_if_error)\b"),
         "default_value": re.compile(
             r"\b(default=|\.get\([^,]+,\s*[^)]+\)|getOrDefault|orElse|unwrap_or)\b"
         ),
@@ -337,9 +332,7 @@ class PatternDetector:
         "log_statement": re.compile(
             r"\b(log\.|logger\.|logging\.|console\.(log|error|warn)|print\(|println)\b"
         ),
-        "log_level": re.compile(
-            r"\.(debug|info|warning|warn|error|critical|fatal)\s*\("
-        ),
+        "log_level": re.compile(r"\.(debug|info|warning|warn|error|critical|fatal)\s*\("),
         "metric_emit": re.compile(
             r"\b(counter|gauge|histogram|timer|increment|observe|record|emit_metric)\b"
         ),
@@ -348,9 +341,7 @@ class PatternDetector:
         ),
         "structured_log": re.compile(r"\b(structlog|loguru|extra=|context=|fields=)\b"),
         # Health checks
-        "health_endpoint": re.compile(
-            r'["\']/(health|healthz|healthcheck|_health|status)["\']'
-        ),
+        "health_endpoint": re.compile(r'["\']/(health|healthz|healthcheck|_health|status)["\']'),
         "liveness": re.compile(r"\b(liveness|livenessProbe|is_alive|ping)\b"),
         "readiness": re.compile(r"\b(readiness|readinessProbe|is_ready|ready)\b"),
         "dependency_check": re.compile(
@@ -361,9 +352,7 @@ class PatternDetector:
         "http_call": re.compile(
             r'\b(requests\.(get|post|put|delete|patch|head|options)\s*\(|urllib\.request\.|httpx\.(get|post|put|delete|patch|head|options|Client)|aiohttp\.(get|post|ClientSession)|fetch\s*\(\s*["\']https?://|axios\.(get|post|put|delete)|http\.request\s*\(|new\s+HttpClient)\b'
         ),
-        "db_call": re.compile(
-            r"\b(cursor\.execute|\.raw\s*\(|connection\.execute)\s*\("
-        ),
+        "db_call": re.compile(r"\b(cursor\.execute|\.raw\s*\(|connection\.execute)\s*\("),
     }
 
 
@@ -402,13 +391,10 @@ class PythonResilienceAnalyzer(PatternDetector):
 
         if metrics.error_handling.except_blocks > 0:
             metrics.error_handling.specificity_ratio = (
-                metrics.error_handling.specific_excepts
-                / metrics.error_handling.except_blocks
+                metrics.error_handling.specific_excepts / metrics.error_handling.except_blocks
             )
 
-    def _analyze_error_handling(
-        self, tree: ast.AST, content: str, metrics: FileResilienceMetrics
-    ):
+    def _analyze_error_handling(self, tree: ast.AST, content: str, metrics: FileResilienceMetrics):
         """Analyze exception handling patterns."""
         for node in ast.walk(tree):
             if isinstance(node, ast.Try):
@@ -517,32 +503,22 @@ class PythonResilienceAnalyzer(PatternDetector):
         metrics.circuit_breakers.failure_threshold_configs += len(
             self.PATTERNS["failure_threshold"].findall(content)
         )
-        metrics.circuit_breakers.fallback_methods += len(
-            self.PATTERNS["fallback"].findall(content)
-        )
+        metrics.circuit_breakers.fallback_methods += len(self.PATTERNS["fallback"].findall(content))
 
         # Retry patterns
         metrics.retries.exponential_backoff += len(
             self.PATTERNS["exponential_backoff"].findall(content)
         )
-        metrics.retries.max_retries_configs += len(
-            self.PATTERNS["max_retries"].findall(content)
-        )
+        metrics.retries.max_retries_configs += len(self.PATTERNS["max_retries"].findall(content))
         metrics.retries.jitter_patterns += len(self.PATTERNS["jitter"].findall(content))
-        metrics.retries.manual_retry_loops += len(
-            self.PATTERNS["retry_loop"].findall(content)
-        )
+        metrics.retries.manual_retry_loops += len(self.PATTERNS["retry_loop"].findall(content))
 
         # Timeout patterns
-        metrics.timeouts.generic_timeouts += len(
-            self.PATTERNS["timeout_config"].findall(content)
-        )
+        metrics.timeouts.generic_timeouts += len(self.PATTERNS["timeout_config"].findall(content))
         metrics.timeouts.timeout_handlers += len(
             self.PATTERNS["timeout_exception"].findall(content)
         )
-        metrics.timeouts.timeout_handlers += len(
-            self.PATTERNS["async_timeout"].findall(content)
-        )
+        metrics.timeouts.timeout_handlers += len(self.PATTERNS["async_timeout"].findall(content))
 
         # Check for network calls without timeouts
         # Only flag this as a vulnerability if:
@@ -552,9 +528,7 @@ class PythonResilienceAnalyzer(PatternDetector):
         timeout_mentions = self.PATTERNS["timeout_config"].findall(content)
 
         # Count actual HTTP calls (filter out partial matches)
-        actual_http_calls = len(
-            [c for c in http_calls if c[0]]
-        )  # First group is the actual call
+        actual_http_calls = len([c for c in http_calls if c[0]])  # First group is the actual call
 
         if actual_http_calls > len(timeout_mentions):
             missing = actual_http_calls - len(timeout_mentions)
@@ -563,46 +537,28 @@ class PythonResilienceAnalyzer(PatternDetector):
             # based on file path (test files excluded)
 
         # Bulkhead patterns
-        metrics.bulkheads.thread_pool_configs += len(
-            self.PATTERNS["thread_pool"].findall(content)
-        )
-        metrics.bulkheads.semaphore_usage += len(
-            self.PATTERNS["semaphore"].findall(content)
-        )
+        metrics.bulkheads.thread_pool_configs += len(self.PATTERNS["thread_pool"].findall(content))
+        metrics.bulkheads.semaphore_usage += len(self.PATTERNS["semaphore"].findall(content))
         metrics.bulkheads.connection_pool_limits += len(
             self.PATTERNS["connection_pool"].findall(content)
         )
-        metrics.bulkheads.queue_size_limits += len(
-            self.PATTERNS["queue_limit"].findall(content)
-        )
+        metrics.bulkheads.queue_size_limits += len(self.PATTERNS["queue_limit"].findall(content))
 
         # Graceful degradation
-        metrics.degradation.feature_flags += len(
-            self.PATTERNS["feature_flag"].findall(content)
-        )
-        metrics.degradation.cache_fallbacks += len(
-            self.PATTERNS["cache_fallback"].findall(content)
-        )
-        metrics.degradation.default_returns += len(
-            self.PATTERNS["default_value"].findall(content)
-        )
+        metrics.degradation.feature_flags += len(self.PATTERNS["feature_flag"].findall(content))
+        metrics.degradation.cache_fallbacks += len(self.PATTERNS["cache_fallback"].findall(content))
+        metrics.degradation.default_returns += len(self.PATTERNS["default_value"].findall(content))
 
         # Observability
-        metrics.observability.log_statements += len(
-            self.PATTERNS["log_statement"].findall(content)
-        )
+        metrics.observability.log_statements += len(self.PATTERNS["log_statement"].findall(content))
         log_levels = self.PATTERNS["log_level"].findall(content)
         metrics.observability.log_levels_used = set(log_levels)
-        metrics.observability.error_logging = log_levels.count(
-            "error"
-        ) + log_levels.count("critical")
+        metrics.observability.error_logging = log_levels.count("error") + log_levels.count(
+            "critical"
+        )
 
-        metrics.observability.metric_emissions += len(
-            self.PATTERNS["metric_emit"].findall(content)
-        )
-        metrics.observability.trace_spans += len(
-            self.PATTERNS["trace_span"].findall(content)
-        )
+        metrics.observability.metric_emissions += len(self.PATTERNS["metric_emit"].findall(content))
+        metrics.observability.trace_spans += len(self.PATTERNS["trace_span"].findall(content))
         metrics.observability.structured_logging += len(
             self.PATTERNS["structured_log"].findall(content)
         )
@@ -611,12 +567,8 @@ class PythonResilienceAnalyzer(PatternDetector):
         metrics.health_checks.health_endpoints += len(
             self.PATTERNS["health_endpoint"].findall(content)
         )
-        metrics.health_checks.liveness_probes += len(
-            self.PATTERNS["liveness"].findall(content)
-        )
-        metrics.health_checks.readiness_probes += len(
-            self.PATTERNS["readiness"].findall(content)
-        )
+        metrics.health_checks.liveness_probes += len(self.PATTERNS["liveness"].findall(content))
+        metrics.health_checks.readiness_probes += len(self.PATTERNS["readiness"].findall(content))
         metrics.health_checks.dependency_checks += len(
             self.PATTERNS["dependency_check"].findall(content)
         )
@@ -634,12 +586,8 @@ class GenericResilienceAnalyzer(PatternDetector):
         # Count basic error handling via regex
         if language in ["javascript", "typescript", "java", "go"]:
             metrics.error_handling.try_blocks = len(re.findall(r"\btry\s*\{", content))
-            metrics.error_handling.except_blocks = len(
-                re.findall(r"\bcatch\s*\(", content)
-            )
-            metrics.error_handling.finally_blocks = len(
-                re.findall(r"\bfinally\s*\{", content)
-            )
+            metrics.error_handling.except_blocks = len(re.findall(r"\bcatch\s*\(", content))
+            metrics.error_handling.finally_blocks = len(re.findall(r"\bfinally\s*\{", content))
 
         # Language-specific library detection
         libs = self.RESILIENCE_LIBRARIES.get(language, {})
@@ -760,7 +708,7 @@ class Aegis:
                 if metrics:
                     self.file_metrics.append(metrics)
 
-    def _analyze_file(self, filepath: Path) -> Optional[FileResilienceMetrics]:
+    def _analyze_file(self, filepath: Path) -> FileResilienceMetrics | None:
         """Analyze a single file for resilience patterns using modular analyzers."""
         try:
             content = filepath.read_text(encoding="utf-8", errors="ignore")
@@ -819,9 +767,7 @@ class Aegis:
         file.observability.log_statements = lang.log_statements
         file.observability.error_logging = lang.error_logging
         if file.lines_of_code > 0:
-            file.observability.logs_per_100_loc = (
-                lang.log_statements / file.lines_of_code * 100
-            )
+            file.observability.logs_per_100_loc = lang.log_statements / file.lines_of_code * 100
 
         # Retries
         file.retries.retry_decorators = lang.retry_patterns
@@ -909,9 +855,7 @@ class Aegis:
 
             # Check if this file has boundary-crossing code
             has_io = m.resource_acquisition if hasattr(m, "resource_acquisition") else 0
-            has_network = (
-                m.timeouts.http_calls if hasattr(m.timeouts, "http_calls") else 0
-            )
+            has_network = m.timeouts.http_calls if hasattr(m.timeouts, "http_calls") else 0
 
             # Also check via the metrics we do have
             has_boundaries = (
@@ -919,8 +863,7 @@ class Aegis:
                 or has_network > 0
                 or m.error_handling.try_blocks
                 > 0  # if they have error handling, they probably need it
-                or m.observability.error_logging
-                > 0  # if they log errors, they deal with errors
+                or m.observability.error_logging > 0  # if they log errors, they deal with errors
             )
 
             if has_boundaries:
@@ -1045,14 +988,14 @@ class Aegis:
         # MINIMUM SIZE CHECK
         # Codebases under 2000 LOC are too small to have meaningful resilience patterns.
         # We mark them as "TOO_SMALL" rather than giving a misleading low score.
-        MIN_LOC_FOR_SCORING = 2000
+        min_loc_for_scoring = 2000
 
-        if total_loc < MIN_LOC_FOR_SCORING:
+        if total_loc < min_loc_for_scoring:
             report.too_small_to_score = True
             report.overall_resilience_score = -1  # Sentinel value
             report.shield_rating = "TOO_SMALL"
             report.too_small_reason = (
-                f"Codebase has {total_loc:,} LOC (minimum {MIN_LOC_FOR_SCORING:,} required). "
+                f"Codebase has {total_loc:,} LOC (minimum {min_loc_for_scoring:,} required). "
                 f"Small codebases don't have enough patterns to analyze meaningfully."
             )
             # Still calculate category scores for informational purposes
@@ -1064,34 +1007,27 @@ class Aegis:
         # Error handling score
         total_try = sum(fm.error_handling.try_blocks for fm in self.file_metrics)
         total_bare = sum(fm.error_handling.bare_excepts for fm in self.file_metrics)
-        total_specific = sum(
-            fm.error_handling.specific_excepts for fm in self.file_metrics
-        )
+        total_specific = sum(fm.error_handling.specific_excepts for fm in self.file_metrics)
 
         if total_try > 0:
             report.error_handling_score = min(
                 100,
                 (
                     (total_try / total_loc * 1000) * 0.5  # Try density
-                    + (total_specific / max(1, total_specific + total_bare))
-                    * 50  # Specificity
+                    + (total_specific / max(1, total_specific + total_bare)) * 50  # Specificity
                 ),
             )
 
         # Circuit breaker score - require actual circuit breaker patterns
         # Not just fallback methods (which could be normal code)
-        cb_files = sum(
-            1 for fm in self.file_metrics if fm.circuit_breakers.library_imports
-        )
+        cb_files = sum(1 for fm in self.file_metrics if fm.circuit_breakers.library_imports)
         cb_state_machines = sum(
             fm.circuit_breakers.state_machine_patterns for fm in self.file_metrics
         )
         cb_thresholds = sum(
             fm.circuit_breakers.failure_threshold_configs for fm in self.file_metrics
         )
-        cb_fallbacks = sum(
-            fm.circuit_breakers.fallback_methods for fm in self.file_metrics
-        )
+        cb_fallbacks = sum(fm.circuit_breakers.fallback_methods for fm in self.file_metrics)
 
         # Only count fallbacks if there's evidence of actual circuit breaker usage
         has_cb_evidence = cb_files > 0 or cb_state_machines > 0 or cb_thresholds > 0
@@ -1114,14 +1050,11 @@ class Aegis:
             if fm.retries.library_imports or fm.retries.retry_decorators > 0
         )
         backoff_count = sum(fm.retries.exponential_backoff for fm in self.file_metrics)
-        report.retry_score = min(
-            100, (retry_files / n * 60 + min(backoff_count, 5) * 8)
-        )
+        report.retry_score = min(100, (retry_files / n * 60 + min(backoff_count, 5) * 8))
 
         # Timeout score - different calculation in library mode
         timeout_count = sum(
-            fm.timeouts.generic_timeouts + fm.timeouts.timeout_handlers
-            for fm in self.file_metrics
+            fm.timeouts.generic_timeouts + fm.timeouts.timeout_handlers for fm in self.file_metrics
         )
         missing_count = sum(fm.timeouts.missing_timeouts for fm in self.file_metrics)
 
@@ -1153,21 +1086,13 @@ class Aegis:
         report.degradation_score = min(100, degradation_patterns / n * 30)
 
         # Observability score - different expectations in library mode
-        avg_log_density = (
-            sum(fm.observability.logs_per_100_loc for fm in self.file_metrics) / n
-        )
-        has_metrics = sum(
-            1 for fm in self.file_metrics if fm.observability.metric_emissions > 0
-        )
-        has_traces = sum(
-            1 for fm in self.file_metrics if fm.observability.trace_spans > 0
-        )
+        avg_log_density = sum(fm.observability.logs_per_100_loc for fm in self.file_metrics) / n
+        has_metrics = sum(1 for fm in self.file_metrics if fm.observability.metric_emissions > 0)
+        has_traces = sum(1 for fm in self.file_metrics if fm.observability.trace_spans > 0)
 
         if self.library_mode:
             # Libraries shouldn't be heavily logged - just error logging is fine
-            error_logging = sum(
-                fm.observability.error_logging for fm in self.file_metrics
-            )
+            error_logging = sum(fm.observability.error_logging for fm in self.file_metrics)
             report.observability_score = min(
                 100,
                 (
@@ -1179,11 +1104,7 @@ class Aegis:
         else:
             report.observability_score = min(
                 100,
-                (
-                    min(avg_log_density, 5) * 10
-                    + (has_metrics / n * 25)
-                    + (has_traces / n * 25)
-                ),
+                (min(avg_log_density, 5) * 10 + (has_metrics / n * 25) + (has_traces / n * 25)),
             )
 
         # Health check score - less important for libraries
@@ -1214,9 +1135,7 @@ class Aegis:
 
         if not getattr(report, "too_small_to_score", False):
             # Detect codebase characteristics
-            has_network_code = (
-                sum(fm.timeouts.missing_timeouts for fm in self.file_metrics) > 0
-            )
+            has_network_code = sum(fm.timeouts.missing_timeouts for fm in self.file_metrics) > 0
             has_good_error_handling = report.error_handling_score >= 40
 
             if self.library_mode:
@@ -1425,9 +1344,7 @@ class Aegis:
         d = asdict(fm)
         # Convert sets to lists
         if "observability" in d and "log_levels_used" in d["observability"]:
-            d["observability"]["log_levels_used"] = list(
-                d["observability"]["log_levels_used"]
-            )
+            d["observability"]["log_levels_used"] = list(d["observability"]["log_levels_used"])
         return d
 
     def save_report(self, report: AegisReport, output_path: str = None) -> str:
@@ -1470,9 +1387,7 @@ class Aegis:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Aegis - Analyze codebase resilience patterns"
-    )
+    parser = argparse.ArgumentParser(description="Aegis - Analyze codebase resilience patterns")
     parser.add_argument("path", help="Path to codebase")
     parser.add_argument("-o", "--output", help="Output JSON path")
     parser.add_argument("--summary", action="store_true", help="Print summary only")
@@ -1504,9 +1419,7 @@ def main():
     print(f"  Health Checks:     {report.health_check_score:5.1f}/100")
 
     if report.resilience_libraries:
-        print(
-            f"\nResilience Libraries Detected: {', '.join(report.resilience_libraries)}"
-        )
+        print(f"\nResilience Libraries Detected: {', '.join(report.resilience_libraries)}")
 
     if report.vulnerabilities and not args.summary:
         print(f"\nVulnerabilities ({len(report.vulnerabilities)}):")

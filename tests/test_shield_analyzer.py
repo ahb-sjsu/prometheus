@@ -3,20 +3,20 @@
 Tests for shield_analyzer.py - Resilience Pattern Analyzer (Aegis)
 """
 
-import pytest
-import tempfile
 import json
+import tempfile
 from pathlib import Path
 
-from shield_analyzer import (
-    ErrorHandlingMetrics,
-    TimeoutMetrics,
-    RetryMetrics,
-    AegisReport,
-    PatternDetector,
-    Aegis,
-)
+import pytest
 
+from shield_analyzer import (
+    Aegis,
+    AegisReport,
+    ErrorHandlingMetrics,
+    PatternDetector,
+    RetryMetrics,
+    TimeoutMetrics,
+)
 
 # =============================================================================
 # FIXTURES
@@ -66,12 +66,12 @@ class CircuitBreaker:
     CLOSED = "CLOSED"
     OPEN = "OPEN"
     HALF_OPEN = "HALF_OPEN"
-    
+
     def __init__(self, failure_threshold: int = 5):
         self.state = self.CLOSED
         self.failure_count = 0
         self.failure_threshold = failure_threshold
-    
+
     def call(self, func, *args, **kwargs):
         if self.state == self.OPEN:
             raise Exception("Circuit is open")

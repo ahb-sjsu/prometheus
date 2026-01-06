@@ -30,13 +30,13 @@ This module checks which tools are available and runs them,
 aggregating results into a unified security report.
 """
 
-import subprocess
 import json
-import shutil
 import logging
-from pathlib import Path
-from dataclasses import dataclass, field
 import re
+import shutil
+import subprocess
+from dataclasses import dataclass, field
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -216,9 +216,7 @@ class BanditWrapper(ToolWrapper):
                     test_id = r.get("test_id", "")
                     findings.append(
                         SecurityFinding(
-                            severity=cls.SEVERITY_MAP.get(
-                                r.get("issue_severity", "LOW"), "LOW"
-                            ),
+                            severity=cls.SEVERITY_MAP.get(r.get("issue_severity", "LOW"), "LOW"),
                             category="security",
                             title=r.get("test_name", "Unknown"),
                             description=r.get("issue_text", ""),
@@ -298,9 +296,7 @@ class SemgrepWrapper(ToolWrapper):
     INSTALL_CMD = "pip install semgrep"
 
     @classmethod
-    def run(
-        cls, codebase_path: str, config: str = "p/owasp-top-ten"
-    ) -> list[SecurityFinding]:
+    def run(cls, codebase_path: str, config: str = "p/owasp-top-ten") -> list[SecurityFinding]:
         findings = []
 
         try:
@@ -326,16 +322,8 @@ class SemgrepWrapper(ToolWrapper):
                             file=r.get("path", ""),
                             line=r.get("start", {}).get("line", 0),
                             tool="semgrep",
-                            cwe=(
-                                metadata.get("cwe", [""])[0]
-                                if metadata.get("cwe")
-                                else ""
-                            ),
-                            owasp=(
-                                metadata.get("owasp", [""])[0]
-                                if metadata.get("owasp")
-                                else ""
-                            ),
+                            cwe=(metadata.get("cwe", [""])[0] if metadata.get("cwe") else ""),
+                            owasp=(metadata.get("owasp", [""])[0] if metadata.get("owasp") else ""),
                         )
                     )
         except subprocess.TimeoutExpired:
@@ -381,9 +369,7 @@ class GitleaksWrapper(ToolWrapper):
                 for leak in data if isinstance(data, list) else []:
                     # Redact the actual secret
                     secret = leak.get("Secret", "")
-                    redacted = (
-                        secret[:4] + "..." + secret[-4:] if len(secret) > 8 else "***"
-                    )
+                    redacted = secret[:4] + "..." + secret[-4:] if len(secret) > 8 else "***"
 
                     secrets.append(
                         SecretFinding(
@@ -438,9 +424,7 @@ class NpmAuditWrapper(ToolWrapper):
                         DependencyVuln(
                             package=name,
                             version=advisory.get("range", "unknown"),
-                            vulnerability=advisory.get(
-                                "title", advisory.get("name", "Unknown")
-                            ),
+                            vulnerability=advisory.get("title", advisory.get("name", "Unknown")),
                             severity=advisory.get("severity", "unknown").upper(),
                             cve=advisory.get("cve", ""),
                         )
@@ -575,9 +559,7 @@ class FallbackSecurityScanner:
         ),
         # Command Injection
         "os_system": (
-            re.compile(
-                r"\b(os\.system|os\.popen|subprocess\.call|subprocess\.run)\s*\([^)]*\+"
-            ),
+            re.compile(r"\b(os\.system|os\.popen|subprocess\.call|subprocess\.run)\s*\([^)]*\+"),
             "HIGH",
             "A03",
             "Potential command injection",
@@ -943,9 +925,7 @@ def main():
         print("\nTop Issues:")
         for f in sorted(
             report.findings,
-            key=lambda x: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(
-                x.severity, 4
-            ),
+            key=lambda x: {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(x.severity, 4),
         )[:5]:
             print(f"  [{f.severity}] {f.file}:{f.line} - {f.title}")
 

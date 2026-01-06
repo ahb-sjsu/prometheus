@@ -6,7 +6,7 @@ Prometheus - Combined Complexity & Resilience Fitness Analyzer
 Named after the Titan who gave fire (technology) to humanity.
 
 Combines:
-- Entropy analysis (from Shannon/thermodynamics)  
+- Entropy analysis (from Shannon/thermodynamics)
 - Resilience patterns (from SRE principles)
 
 Produces a 2D fitness map:
@@ -29,14 +29,14 @@ The goal: Move toward BUNKER quadrant.
 """
 
 import json
+import re
+import shutil
 import subprocess
 import tempfile
-import shutil
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from dataclasses import dataclass, field
 from urllib.parse import urlparse
-import re
 
 # Import our analyzers
 from entropy_analyzer import ComplexityFitnessPipeline
@@ -106,10 +106,10 @@ def clone_github_repo(url: str, target_dir: str = None) -> tuple[str, str]:
         print("        Done!")
         return str(clone_path), repo_name
 
-    except subprocess.TimeoutExpired:
-        raise RuntimeError("Git clone timed out after 120 seconds")
-    except FileNotFoundError:
-        raise RuntimeError("Git is not installed or not in PATH")
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError("Git clone timed out after 120 seconds") from e
+    except FileNotFoundError as e:
+        raise RuntimeError("Git is not installed or not in PATH") from e
 
 
 def is_github_url(path: str) -> bool:
@@ -174,11 +174,7 @@ def fetch_github_metadata(repo_path: str) -> GitHubMetadata:
                 created_at=data.get("created_at", ""),
                 updated_at=data.get("updated_at", ""),
                 open_issues=data.get("open_issues_count", 0),
-                license=(
-                    data.get("license", {}).get("spdx_id", "")
-                    if data.get("license")
-                    else ""
-                ),
+                license=(data.get("license", {}).get("spdx_id", "") if data.get("license") else ""),
                 url=data.get("html_url", ""),
             )
     except Exception:
@@ -420,9 +416,7 @@ class Prometheus:
             },
             "vulnerabilities": resilience_result.vulnerabilities[:10],
             "recommendations": resilience_result.recommendations,
-            "too_small_to_score": getattr(
-                resilience_result, "too_small_to_score", False
-            ),
+            "too_small_to_score": getattr(resilience_result, "too_small_to_score", False),
             "total_loc": getattr(resilience_result, "total_loc", 0),
         }
 
@@ -491,8 +485,7 @@ class Prometheus:
         report.quadrant_description = q["description"]
 
         report.fitness_verdict = (
-            f"{q['emoji']} {q['name']}: {q['description']}\n\n"
-            f"Recommended Action: {q['action']}"
+            f"{q['emoji']} {q['name']}: {q['description']}\n\n" f"Recommended Action: {q['action']}"
         )
 
     def _generate_priorities(self, report: PrometheusReport, complexity, resilience):
@@ -668,7 +661,7 @@ Based on information theory and thermodynamics:
 - **Halstead Metrics**: Operator/operand analysis predicting bug density
 
 **Theoretical basis**: Systems with higher complexity have more failure modes.
-Reliability of a series system: `R = r₁ × r₂ × ... × rₙ` — each component 
+Reliability of a series system: `R = r₁ × r₂ × ... × rₙ` — each component
 with reliability `r < 1` multiplicatively reduces total reliability.
 
 ## 2. Resilience Analysis (SRE Principles)
@@ -682,7 +675,7 @@ Detection of defensive programming patterns:
 - **Observability**: Logging density, metrics emission, trace spans
 - **Health Checks**: Liveness/readiness probes, dependency checks
 
-**Theoretical basis**: Defense in depth. Each resilience pattern 
+**Theoretical basis**: Defense in depth. Each resilience pattern
 reduces the probability that a failure becomes an outage.
 
 ---
@@ -851,9 +844,9 @@ logger = structlog.get_logger()
 
 def process_order(order_id: str, user_id: str):
     log = logger.bind(order_id=order_id, user_id=user_id)
-    
+
     log.info("processing_started")
-    
+
     try:
         result = do_processing()
         log.info("processing_complete", items=len(result))
@@ -1197,9 +1190,7 @@ def generate_quadrant_html(
                 "DEATHTRAP": "#ef4444",
             }
             q_color = quadrant_colors.get(r.quadrant, "#6b7280")
-            name = (
-                r.github.full_name if r.github.full_name else Path(r.codebase_path).name
-            )
+            name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
             stars = f"⭐ {r.github.stars:,}" if r.github.stars else "-"
             lang = r.github.language or "-"
             comparison_rows += f"""
@@ -1258,7 +1249,30 @@ def generate_quadrant_html(
             <ul class="steps">{steps_html}</ul>
         </div>
         """
+    # Build comparison items HTML for multi-repo view
+    def _build_comparison_item(r):
+        """Build HTML for a single comparison item."""
+        item_color = '#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'
+        name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
+        desc = r.github.description[:40] + '...' if r.github.description and len(r.github.description) > 40 else r.github.description or ''
+        quadrant_short = r.quadrant.split()[0]
+        return f'''
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {item_color};">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #f8fafc;">{name}</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">{desc}</div>
+                        </div>
+                        <div style="text-align: center; min-width: 80px;">
+                            <div style="font-size: 1.25rem; font-weight: bold; color: {item_color};">{quadrant_short}</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">QUADRANT</div>
+                        </div>
+                        <div style="text-align: center; min-width: 60px;">
+                            <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{r.resilience_score:.0f}</div>
+                            <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
+                        </div>
+                    </div>'''
 
+    comparison_items_html = "".join(_build_comparison_item(r) for r in sorted(reports_data, key=lambda x: -x.resilience_score))
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1267,7 +1281,7 @@ def generate_quadrant_html(
     <title>Prometheus: {display_name}</title>
     <style>
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-        
+
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -1275,9 +1289,9 @@ def generate_quadrant_html(
             min-height: 100vh;
             padding: 2rem;
         }}
-        
+
         .container {{ max-width: 1200px; margin: 0 auto; }}
-        
+
         h1 {{
             font-size: 2.5rem;
             background: linear-gradient(90deg, #f97316, #eab308);
@@ -1286,20 +1300,20 @@ def generate_quadrant_html(
             background-clip: text;
             margin-bottom: 0.5rem;
         }}
-        
+
         .repo-name {{
             font-size: 1.5rem;
             color: #e2e8f0;
             font-weight: 300;
             margin-bottom: 0.25rem;
         }}
-        
+
         .subtitle {{ color: #94a3b8; margin-bottom: 2rem; }}
-        
+
         .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }}
-        
+
         @media (max-width: 900px) {{ .grid {{ grid-template-columns: 1fr; }} }}
-        
+
         .card {{
             background: rgba(30, 41, 59, 0.8);
             border-radius: 1rem;
@@ -1307,13 +1321,13 @@ def generate_quadrant_html(
             backdrop-filter: blur(10px);
             border: 1px solid rgba(148, 163, 184, 0.1);
         }}
-        
+
         .quadrant-container {{
             position: relative;
             width: 100%;
             aspect-ratio: 1;
-            background: linear-gradient(135deg, 
-                rgba(239, 68, 68, 0.15) 0%, 
+            background: linear-gradient(135deg,
+                rgba(239, 68, 68, 0.15) 0%,
                 rgba(239, 68, 68, 0.15) 50%,
                 rgba(234, 179, 8, 0.15) 50%,
                 rgba(234, 179, 8, 0.15) 100%
@@ -1321,7 +1335,7 @@ def generate_quadrant_html(
             border-radius: 0.5rem;
             overflow: hidden;
         }}
-        
+
         .quadrant-container::before {{
             content: '';
             position: absolute;
@@ -1334,7 +1348,7 @@ def generate_quadrant_html(
                 rgba(34, 197, 94, 0.15) 100%
             );
         }}
-        
+
         .quadrant-container::after {{
             content: '';
             position: absolute;
@@ -1344,15 +1358,15 @@ def generate_quadrant_html(
             bottom: 0;
             background: rgba(34, 197, 94, 0.15);
         }}
-        
+
         .axis {{
             position: absolute;
             background: rgba(148, 163, 184, 0.3);
         }}
-        
+
         .axis-x {{ left: 0; right: 0; top: 50%; height: 2px; }}
         .axis-y {{ top: 0; bottom: 0; left: 50%; width: 2px; }}
-        
+
         .quadrant-label {{
             position: absolute;
             font-size: 0.75rem;
@@ -1360,12 +1374,12 @@ def generate_quadrant_html(
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }}
-        
+
         .label-bunker {{ bottom: 10%; right: 10%; color: #22c55e; }}
         .label-fortress {{ top: 10%; right: 10%; color: #3b82f6; }}
         .label-glass {{ bottom: 10%; left: 10%; color: #eab308; }}
         .label-death {{ top: 10%; left: 10%; color: #ef4444; }}
-        
+
         .position-dot {{
             position: absolute;
             width: 24px;
@@ -1377,73 +1391,73 @@ def generate_quadrant_html(
             z-index: 10;
             animation: pulse 2s infinite;
         }}
-        
+
         @keyframes pulse {{
             0%, 100% {{ transform: translate(-50%, -50%) scale(1); }}
             50% {{ transform: translate(-50%, -50%) scale(1.2); }}
         }}
-        
+
         .axis-label {{
             position: absolute;
             font-size: 0.7rem;
             color: #94a3b8;
         }}
-        
+
         .label-top {{ top: 5px; left: 50%; transform: translateX(-50%); }}
         .label-bottom {{ bottom: 5px; left: 50%; transform: translateX(-50%); }}
         .label-left {{ left: 5px; top: 50%; transform: translateY(-50%) rotate(-90deg); transform-origin: left center; }}
         .label-right {{ right: 5px; top: 50%; transform: translateY(-50%) rotate(90deg); transform-origin: right center; }}
-        
+
         .verdict {{
             text-align: center;
             padding: 1.5rem;
         }}
-        
+
         .verdict-quadrant {{
             font-size: 3rem;
             margin-bottom: 0.5rem;
         }}
-        
+
         .verdict-name {{
             font-size: 1.5rem;
             font-weight: bold;
             color: {color};
             margin-bottom: 0.5rem;
         }}
-        
+
         .verdict-desc {{
             color: #94a3b8;
             margin-bottom: 1rem;
         }}
-        
+
         .scores {{
             display: flex;
             justify-content: center;
             gap: 2rem;
             margin-top: 1rem;
         }}
-        
+
         .score {{
             text-align: center;
         }}
-        
+
         .score-value {{
             font-size: 2rem;
             font-weight: bold;
         }}
-        
+
         .score-label {{
             font-size: 0.75rem;
             color: #64748b;
             text-transform: uppercase;
         }}
-        
+
         h2 {{
             font-size: 1.25rem;
             margin-bottom: 1rem;
             color: #f8fafc;
         }}
-        
+
         .priority {{
             background: rgba(15, 23, 42, 0.5);
             border-radius: 0.5rem;
@@ -1451,41 +1465,41 @@ def generate_quadrant_html(
             margin-bottom: 1rem;
             border-left: 4px solid #64748b;
         }}
-        
+
         .priority-0 {{ border-color: #ef4444; }}
         .priority-1 {{ border-color: #f97316; }}
         .priority-2 {{ border-color: #eab308; }}
         .priority-3 {{ border-color: #3b82f6; }}
         .priority-4, .priority-5 {{ border-color: #64748b; }}
-        
+
         .priority-header {{
             display: flex;
             justify-content: space-between;
             margin-bottom: 0.5rem;
         }}
-        
+
         .priority-badge {{
             font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
             color: #f8fafc;
         }}
-        
+
         .priority p {{
             color: #cbd5e1;
             margin-bottom: 0.75rem;
         }}
-        
+
         .steps {{
             margin-left: 1.25rem;
             color: #94a3b8;
             font-size: 0.9rem;
         }}
-        
+
         .steps li {{
             margin-bottom: 0.25rem;
         }}
-        
+
         .formula {{
             text-align: center;
             padding: 1rem;
@@ -1493,14 +1507,14 @@ def generate_quadrant_html(
             border-radius: 0.5rem;
             margin-top: 1rem;
         }}
-        
+
         .formula-text {{
             font-family: 'Times New Roman', serif;
             font-style: italic;
             font-size: 1.1rem;
             color: #94a3b8;
         }}
-        
+
         footer {{
             text-align: center;
             margin-top: 2rem;
@@ -1509,7 +1523,7 @@ def generate_quadrant_html(
             color: #64748b;
             font-size: 0.875rem;
         }}
-        
+
         .point {{
             position: absolute;
             width: 20px;
@@ -1535,7 +1549,7 @@ def generate_quadrant_html(
             padding: 2px 6px;
             border-radius: 4px;
         }}
-        
+
         .legend {{
             margin-top: 1rem;
             display: flex;
@@ -1555,7 +1569,7 @@ def generate_quadrant_html(
         }}
         .legend-name {{ color: #e2e8f0; }}
         .legend-quadrant {{ font-size: 0.7rem; }}
-        
+
         .repo-meta {{
             color: #94a3b8;
             font-size: 0.9rem;
@@ -1582,31 +1596,31 @@ def generate_quadrant_html(
         {f'<p class="repo-meta">{subtitle}</p>' if subtitle else ''}
         {f'<p class="repo-description">{description}</p>' if description else ''}
         <p class="subtitle">Combined Fitness Analysis • {report.timestamp[:10]}</p>
-        
+
         {comparison_table}
-        
+
         <div class="grid">
             <div class="card">
                 <h2>Fitness Quadrant</h2>
                 <div class="quadrant-container">
                     <div class="axis axis-x"></div>
                     <div class="axis axis-y"></div>
-                    
+
                     <span class="quadrant-label label-bunker">🏰 Bunker</span>
                     <span class="quadrant-label label-fortress">🏯 Fortress</span>
                     <span class="quadrant-label label-glass">🏠 Glass House</span>
                     <span class="quadrant-label label-death">💀 Deathtrap</span>
-                    
+
                     <span class="axis-label label-top">High Resilience</span>
                     <span class="axis-label label-bottom">Low Resilience</span>
                     <span class="axis-label label-left">High Complexity</span>
                     <span class="axis-label label-right">Low Complexity</span>
-                    
+
                     {points_html if len(reports_data) > 1 else f'<div class="position-dot" style="left: {x}%; bottom: {y}%;"></div>'}
                 </div>
                 {f'<div class="legend">{legend_html}</div>' if legend_html else ''}
             </div>
-            
+
             <div class="card verdict">
                 {"" if len(reports_data) > 1 else f'''
                 <div class="verdict-quadrant">
@@ -1614,7 +1628,7 @@ def generate_quadrant_html(
                 </div>
                 <div class="verdict-name">{report.quadrant}</div>
                 <div class="verdict-desc">{report.quadrant_description}</div>
-                
+
                 <div class="scores">
                     <div class="score">
                         <div class="score-value" style="color: {"#22c55e" if report.complexity_score >= 60 else "#eab308" if report.complexity_score >= 40 else "#ef4444"}">
@@ -1629,7 +1643,7 @@ def generate_quadrant_html(
                         <div class="score-label">Shield Rating</div>
                     </div>
                 </div>
-                
+
                 <div class="scores">
                     <div class="score">
                         <div class="score-value">{report.avg_cyclomatic:.1f}</div>
@@ -1640,49 +1654,28 @@ def generate_quadrant_html(
                         <div class="score-label">Resilience Score</div>
                     </div>
                 </div>
-                
+
                 <div class="formula">
                     <div class="formula-text">
                         Fitness = f(1/Complexity, Resilience)
                     </div>
                 </div>
                 '''}
+
                 {f'''
                 <h2 style="margin-bottom: 1rem;">Comparison Summary</h2>
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    {"".join(f"""
-                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {
-                        '#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'
-                    };">
-                        <div style="flex: 1;">
-                            <div style="font-weight: bold; color: #f8fafc;">{r.github.full_name if r.github.full_name else Path(r.codebase_path).name}</div>
-                            <div style="font-size: 0.8rem; color: #94a3b8;">{r.github.description[:40] + '...' if r.github.description and len(r.github.description) > 40 else r.github.description or ''}</div>
-                        </div>
-                        <div style="text-align: center; min-width: 80px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: {'#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'};">{r.quadrant.split()[0]}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">QUADRANT</div>
-                        </div>
-                        <div style="text-align: center; min-width: 60px;">
-                            <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{r.resilience_score:.0f}</div>
-                            <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
-                        </div>
-                    </div>
-                    """ for r in sorted(reports_data, key=lambda x: -x.resilience_score))}
-                </div>
-                <div class="formula" style="margin-top: 1rem;">
-                    <div class="formula-text">
-                        Higher resilience = better defended
-                    </div>
+                    {comparison_items_html}
                 </div>
                 ''' if len(reports_data) > 1 else ''}
             </div>
         </div>
-        
+
         <div class="card">
             <h2>Priority Actions</h2>
             {priorities_html if priorities_html else '<p style="color: #64748b;">No critical actions required. Maintain current practices.</p>'}
         </div>
-        
+
         <footer>
             <p>Prometheus Fitness Analyzer</p>
             <p>Complexity × Resilience = Reliability</p>
@@ -1725,12 +1718,8 @@ Examples:
         """,
     )
     parser.add_argument("paths", nargs="+", help="Path(s) to codebase or GitHub URL(s)")
-    parser.add_argument(
-        "-o", "--output", help="Output JSON path (default: prometheus_<repo>.json)"
-    )
-    parser.add_argument(
-        "--html", help="Output HTML report path (default: prometheus_<repo>.html)"
-    )
+    parser.add_argument("-o", "--output", help="Output JSON path (default: prometheus_<repo>.json)")
+    parser.add_argument("--html", help="Output HTML report path (default: prometheus_<repo>.html)")
     parser.add_argument(
         "--report",
         action="store_true",
@@ -1768,11 +1757,24 @@ Examples:
         action="store_true",
         help="Run code smell analysis (NIH patterns, long functions, outdated code)",
     )
+    parser.add_argument("--keep", action="store_true", help="Keep cloned repo after analysis")
     parser.add_argument(
-        "--keep", action="store_true", help="Keep cloned repo after analysis"
+        "--temp-dir",
+        help="Directory for temporary JSON files (default: current directory, use 'auto' for system temp)",
     )
 
     args = parser.parse_args()
+
+    # Determine temp directory for JSON files
+    if args.temp_dir == 'auto':
+        import tempfile as tf
+        temp_dir = Path(tf.gettempdir()) / "prometheus_output"
+        temp_dir.mkdir(exist_ok=True)
+    elif args.temp_dir:
+        temp_dir = Path(args.temp_dir)
+        temp_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        temp_dir = Path.cwd()
 
     # Multi-repo comparison mode
     if len(args.paths) > 1 or args.compare:
@@ -1792,15 +1794,13 @@ Examples:
                     safe_print("[META] Fetching GitHub metadata...")
                     report.github = fetch_github_metadata(path)
                     if report.github.stars:
-                        safe_print(
-                            f"       ⭐ {report.github.stars:,} | {report.github.language}"
-                        )
+                        safe_print(f"       ⭐ {report.github.stars:,} | {report.github.language}")
 
                 reports.append((report, prometheus))
 
-                # Save individual JSON
-                json_path = f"prometheus_{prometheus.repo_name}.json"
-                prometheus.save_report(report, json_path)
+                # Save individual JSON to temp directory
+                json_path = temp_dir / f"prometheus_{prometheus.repo_name}.json"
+                prometheus.save_report(report, str(json_path))
 
             except Exception as e:
                 safe_print(f"  ERROR: {e}")
@@ -1813,11 +1813,7 @@ Examples:
             safe_print("=" * 70)
 
             for report, prometheus in reports:
-                name = (
-                    report.github.full_name
-                    if report.github.full_name
-                    else prometheus.repo_name
-                )
+                name = report.github.full_name if report.github.full_name else prometheus.repo_name
                 stars = f" ⭐{report.github.stars:,}" if report.github.stars else ""
                 safe_print(
                     f"\n  {name}{stars}: {report.quadrant} (C:{report.complexity_score:.0f} R:{report.resilience_score:.0f})"
@@ -1857,7 +1853,7 @@ Examples:
                 )
 
         # Save JSON FIRST (before any emoji printing that might fail on Windows)
-        json_path = args.output or f"prometheus_{prometheus.repo_name}.json"
+        json_path = args.output or str(temp_dir / f"prometheus_{prometheus.repo_name}.json")
         prometheus.save_report(report, json_path)
 
         safe_print("\n" + "=" * 70)
@@ -1867,12 +1863,8 @@ Examples:
         safe_print("=" * 70)
         safe_print(f"\n{report.fitness_verdict}")
 
-        safe_print(
-            f"\nComplexity: {report.complexity_risk} (Score: {report.complexity_score:.0f})"
-        )
-        safe_print(
-            f"Resilience: {report.shield_rating} (Score: {report.resilience_score:.0f})"
-        )
+        safe_print(f"\nComplexity: {report.complexity_risk} (Score: {report.complexity_score:.0f})")
+        safe_print(f"Resilience: {report.shield_rating} (Score: {report.resilience_score:.0f})")
 
         if report.priorities:
             safe_print("\nTop Priorities:")
@@ -1899,21 +1891,17 @@ Examples:
                 sentinel = Sentinel(str(prometheus.codebase_path))
                 security_report = sentinel.analyze()
 
-                security_path = f"sentinel_{prometheus.repo_name}.json"
+                security_path = str(temp_dir / f"sentinel_{prometheus.repo_name}.json")
                 sentinel.save_report(security_report, security_path)
                 safe_print(f"  Security: {security_path}")
-                safe_print(
-                    f"\n  Security Score: {security_report.security_score:.0f}/100"
-                )
+                safe_print(f"\n  Security Score: {security_report.security_score:.0f}/100")
                 safe_print(
                     f"  Issues: {security_report.critical_count} Critical, "
                     f"{security_report.high_count} High, "
                     f"{security_report.medium_count} Medium"
                 )
             except ImportError:
-                safe_print(
-                    "\n  [WARNING] sentinel.py not found - skipping security analysis"
-                )
+                safe_print("\n  [WARNING] sentinel.py not found - skipping security analysis")
 
         # Run code smell analysis if requested
         if args.smells:
@@ -1924,7 +1912,7 @@ Examples:
                 scent = ScentAnalyzer(str(prometheus.codebase_path))
                 smell_report = scent.analyze()
 
-                smell_path = f"scent_{prometheus.repo_name}.json"
+                smell_path = str(temp_dir / f"scent_{prometheus.repo_name}.json")
                 scent.save_report(smell_report, smell_path)
                 safe_print(f"  Smells:   {smell_path}")
 
@@ -1935,9 +1923,7 @@ Examples:
                     "MOLDY": "[MOLDY]",
                     "ROTTEN": "[ROTTEN]",
                 }.get(smell_report.freshness_rating, "[?]")
-                safe_print(
-                    f"\n  {freshness_indicator} Freshness: {smell_report.freshness_rating}"
-                )
+                safe_print(f"\n  {freshness_indicator} Freshness: {smell_report.freshness_rating}")
                 safe_print(
                     f"  Smell Score: {smell_report.overall_smell_score:.0f}/100 (lower is better)"
                 )
@@ -1945,19 +1931,13 @@ Examples:
                 if smell_report.top_issues:
                     safe_print("\n  Top Issues:")
                     for issue in smell_report.top_issues[:3]:
-                        safe_print(
-                            f"    - {issue['issue']}: {issue['count']} occurrences"
-                        )
+                        safe_print(f"    - {issue['issue']}: {issue['count']} occurrences")
             except ImportError:
-                safe_print(
-                    "\n  [WARNING] scent_analyzer.py not found - skipping smell analysis"
-                )
+                safe_print("\n  [WARNING] scent_analyzer.py not found - skipping smell analysis")
 
         # Generate technical report if requested
         if args.report:
-            report_path = (
-                args.report_path or f"prometheus_{prometheus.repo_name}_report.md"
-            )
+            report_path = args.report_path or f"prometheus_{prometheus.repo_name}_report.md"
             generate_technical_report(report, report_path)
             safe_print(f"  Report:   {report_path}")
 
@@ -1973,9 +1953,7 @@ Examples:
             prometheus.cleanup()
         elif prometheus.cloned and prometheus.temp_dir:
             safe_print(f"\n[KEEP] Repository kept at: {prometheus.temp_dir}")
-            safe_print(
-                f"       Re-run with: python prometheus.py {prometheus.temp_dir}"
-            )
+            safe_print(f"       Re-run with: python prometheus.py {prometheus.temp_dir}")
 
 
 if __name__ == "__main__":

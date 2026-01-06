@@ -10,21 +10,21 @@ Tests cover:
 - ComplexityFitnessPipeline (end-to-end)
 """
 
-import pytest
 import tempfile
-from pathlib import Path
 from dataclasses import asdict
+from pathlib import Path
+
+import pytest
 
 from entropy_analyzer import (
+    Analyzer,
+    CodebaseMetrics,
+    ComplexityFitnessPipeline,
+    Extractor,
     FileMetrics,
     TaskMetrics,
-    CodebaseMetrics,
-    Extractor,
     Transformer,
-    Analyzer,
-    ComplexityFitnessPipeline,
 )
-
 
 # =============================================================================
 # FIXTURES
@@ -59,11 +59,11 @@ from typing import List, Optional
 
 class DataProcessor:
     """Process data with multiple methods."""
-    
+
     def __init__(self, config: dict):
         self.config = config
         self.data = []
-    
+
     def process(self, items: List[str]) -> List[str]:
         """Process items with conditional logic."""
         results = []
@@ -78,7 +78,7 @@ class DataProcessor:
             else:
                 results.append(item)
         return results
-    
+
     def validate(self, data: Optional[str]) -> bool:
         """Validate data with nested conditions."""
         if data is None:
@@ -366,8 +366,8 @@ class TestExtractorCompressionRatio:
     def test_random_content_low_ratio(self, temp_codebase):
         """Test that random content doesn't compress as well."""
         extractor = Extractor(temp_codebase)
-        import string
         import random
+        import string
 
         random_content = "".join(random.choices(string.ascii_letters, k=1000))
         ratio = extractor._calculate_compression_ratio(random_content)
@@ -407,9 +407,7 @@ class TestTransformer:
         expected_funcs = sum(m.num_functions for m in sample_file_metrics)
         assert result.total_functions == expected_funcs
 
-    def test_calculates_average_cyclomatic(
-        self, sample_file_metrics, sample_task_metrics
-    ):
+    def test_calculates_average_cyclomatic(self, sample_file_metrics, sample_task_metrics):
         """Test that average cyclomatic complexity is calculated."""
         transformer = Transformer(sample_file_metrics, sample_task_metrics)
         result = transformer.transform()
@@ -424,9 +422,7 @@ class TestTransformer:
 
         assert result.max_cyclomatic == 5.0
 
-    def test_calculates_average_maintainability(
-        self, sample_file_metrics, sample_task_metrics
-    ):
+    def test_calculates_average_maintainability(self, sample_file_metrics, sample_task_metrics):
         """Test that average maintainability is calculated."""
         transformer = Transformer(sample_file_metrics, sample_task_metrics)
         result = transformer.transform()

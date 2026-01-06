@@ -3,23 +3,23 @@
 Tests for lang_analyzers.py - Language-specific Resilience Analyzers
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from lang_analyzers import (
-    LanguageResilienceMetrics,
-    PythonAnalyzer,
-    JavaScriptAnalyzer,
+    AnalyzerRegistry,
+    CAnalyzer,
     GoAnalyzer,
     JavaAnalyzer,
-    CAnalyzer,
+    JavaScriptAnalyzer,
+    LanguageResilienceMetrics,
+    PythonAnalyzer,
     RustAnalyzer,
-    AnalyzerRegistry,
-    get_analyzer,
     analyze_file,
+    get_analyzer,
 )
-
 
 # =============================================================================
 # FIXTURES

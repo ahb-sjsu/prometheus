@@ -1,6 +1,6 @@
 {
   "codebase_path": "C:\\source\\prometheus\\.olympus_cache\\git_git",
-  "timestamp": "2026-01-05T15:04:19.294425",
+  "timestamp": "2026-01-05T17:06:40.023687",
   "quadrant": "GLASS HOUSE",
   "fitness_verdict": "\ud83c\udfe0 GLASS HOUSE: Low complexity, low resilience. Simple but fragile.\n\nRecommended Action: Add defensive patterns: error handling, timeouts, retries. Complexity will increase but reliability will improve.",
   "scores": {
@@ -183,10 +183,10 @@
     "total_loc": 656447
   },
   "hubris": {
-    "theater_ratio": "Infinity",
+    "theater_ratio": 4.666666666666667,
     "quadrant": "CARGO_CULT",
-    "patterns_detected": 24,
-    "patterns_correct": 0,
-    "high_severity_issues": 16
+    "patterns_detected": 126,
+    "patterns_correct": 27,
+    "high_severity_issues": 91
   }
 }

@@ -17,9 +17,7 @@ Contains:
 # COPYRIGHT
 # =============================================================================
 
-COPYRIGHT_NOTICE = (
-    "Copyright © 2025 Andrew H. Bond <andrew.bond@sjsu.edu> • All rights reserved"
-)
+COPYRIGHT_NOTICE = "Copyright © 2025 Andrew H. Bond <andrew.bond@sjsu.edu> • All rights reserved"
 COPYRIGHT_HTML = '<p style="text-align: center; color: #64748b; font-size: 0.75rem; margin-top: 1rem;">Copyright © 2025 Andrew H. Bond &lt;andrew.bond@sjsu.edu&gt; • All rights reserved</p>'
 
 # =============================================================================
@@ -121,7 +119,7 @@ def get_base_css() -> str:
     """Base CSS for dark theme."""
     return """
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -129,12 +127,12 @@ def get_base_css() -> str:
             color: #e2e8f0;
             padding: 2rem;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         .card {
             background: rgba(30, 41, 59, 0.8);
             border-radius: 1rem;
@@ -143,11 +141,11 @@ def get_base_css() -> str:
             backdrop-filter: blur(10px);
             border: 1px solid rgba(148, 163, 184, 0.1);
         }
-        
+
         h1, h2, h3 {
             color: #f8fafc;
         }
-        
+
         h2 {
             font-size: 1.1rem;
             margin-bottom: 1rem;
@@ -164,14 +162,14 @@ def get_quadrant_css() -> str:
             flex-direction: column;
             align-items: center;
         }
-        
+
         .top-labels {
             display: flex;
             width: 100%;
             max-width: 500px;
             margin-bottom: 0.25rem;
         }
-        
+
         .top-label {
             flex: 1;
             text-align: center;
@@ -180,16 +178,16 @@ def get_quadrant_css() -> str:
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-        
+
         .top-label.left { color: #d88888; }   /* DEATHTRAP - red */
         .top-label.right { color: #888888; } /* FORTRESS - grey */
-        
+
         .chart-with-sides {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .side-label {
             writing-mode: vertical-rl;
             text-orientation: mixed;
@@ -197,11 +195,11 @@ def get_quadrant_css() -> str:
             color: #64748b;
             padding: 0.5rem 0;
         }
-        
+
         .side-label.left {
             transform: rotate(180deg);
         }
-        
+
         /* Quadrant chart container */
         .quadrant-chart {
             position: relative;
@@ -211,7 +209,7 @@ def get_quadrant_css() -> str:
             border-radius: 0.25rem;
             overflow: visible;
         }
-        
+
         /* 16x16 Bivariate gradient - dithered, correct corners */
         .bivariate-grid {
             display: grid;
@@ -488,14 +486,14 @@ def get_quadrant_css() -> str:
         .cell-254 { background: #e3c9a8; }
         .cell-255 { background: #e5c8a5; }
         .cell-256 { background: #e6c8a3; }
-        
+
         /* Axis lines - bold */
         .axis-line {
             position: absolute;
             background: #475569;
             z-index: 5;
         }
-        
+
         .axis-h {
             left: 0;
             right: 0;
@@ -503,7 +501,7 @@ def get_quadrant_css() -> str:
             height: 2px;
             transform: translateY(-50%);
         }
-        
+
         .axis-v {
             top: 0;
             bottom: 0;
@@ -511,7 +509,7 @@ def get_quadrant_css() -> str:
             width: 2px;
             transform: translateX(-50%);
         }
-        
+
         /* Repo dots with avatars */
         .repo-dot {
             position: absolute;
@@ -527,19 +525,19 @@ def get_quadrant_css() -> str:
             overflow: hidden;
             background: #334155;
         }
-        
+
         .repo-dot img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         .repo-dot:hover {
             transform: translate(-50%, -50%) scale(1.3);
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             z-index: 20;
         }
-        
+
         .dot-label {
             position: absolute;
             top: -22px;
@@ -554,7 +552,7 @@ def get_quadrant_css() -> str:
             pointer-events: none;
             font-weight: 500;
         }
-        
+
         /* Bottom labels */
         .bottom-labels {
             display: flex;
@@ -562,7 +560,7 @@ def get_quadrant_css() -> str:
             max-width: 500px;
             margin-top: 0.25rem;
         }
-        
+
         .bottom-label {
             flex: 1;
             text-align: center;
@@ -571,17 +569,17 @@ def get_quadrant_css() -> str:
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-        
+
         .bottom-label.left { color: #88a8c8; }  /* GLASS HOUSE - blue */
         .bottom-label.right { color: #c4a484; } /* BUNKER - brown */
-        
+
         .axis-title {
             color: #64748b;
             font-size: 0.65rem;
             text-align: center;
             margin-top: 0.75rem;
         }
-        
+
         /* Legend */
         .legend {
             display: flex;
@@ -592,14 +590,14 @@ def get_quadrant_css() -> str:
             padding-top: 1rem;
             border-top: 1px solid #334155;
         }
-        
+
         .legend-item {
             display: flex;
             align-items: center;
             gap: 0.4rem;
             font-size: 0.8rem;
         }
-        
+
         .legend-avatar {
             width: 20px;
             height: 20px;
@@ -608,7 +606,7 @@ def get_quadrant_css() -> str:
             flex-shrink: 0;
             object-fit: cover;
         }
-        
+
         .legend-dot-fallback {
             width: 20px;
             height: 20px;
@@ -616,11 +614,11 @@ def get_quadrant_css() -> str:
             border: 2px solid rgba(255, 255, 255, 0.6);
             flex-shrink: 0;
         }
-        
+
         .legend-name {
             color: #e2e8f0;
         }
-        
+
         .legend-quadrant {
             font-size: 0.7rem;
             font-weight: 600;
@@ -635,7 +633,7 @@ def get_table_css() -> str:
             width: 100%;
             border-collapse: collapse;
         }
-        
+
         th {
             text-align: left;
             padding: 0.75rem;
@@ -646,17 +644,17 @@ def get_table_css() -> str:
             letter-spacing: 0.05em;
             border-bottom: 1px solid #334155;
         }
-        
+
         td {
             padding: 0.75rem;
             border-bottom: 1px solid rgba(148, 163, 184, 0.1);
             color: #cbd5e1;
         }
-        
+
         tr:hover {
             background: rgba(148, 163, 184, 0.05);
         }
-        
+
         .badge {
             display: inline-block;
             padding: 0.2rem 0.5rem;
@@ -690,11 +688,21 @@ def generate_repo_dot_html(
     quadrant: str,
     complexity: float,
     resilience: float,
-    theater: float = 1.0,
+    theater: float | None = 1.0,
 ) -> str:
     """Generate HTML for a single repo dot on the quadrant."""
+    import math
+
     short_name = name.split("/")[-1][:10]
-    theater_str = f"&#10;Theater: {theater:.2f}" if theater != 1.0 else ""
+    # Format theater for display
+    if theater is None:
+        theater_str = "&#10;Theater: N/A"
+    elif math.isinf(theater):
+        theater_str = "&#10;Theater: ∞"
+    elif theater != 1.0:
+        theater_str = f"&#10;Theater: {theater:.2f}"
+    else:
+        theater_str = ""
     # Use bottom positioning: 0% = bottom of chart, 100% = top
     # y_pct represents complexity where low values = high complexity = should be at TOP
     # So we need to invert: bottom = 100 - y_pct
@@ -702,7 +710,7 @@ def generate_repo_dot_html(
     return f"""
         <div class="repo-dot" style="left: {x_pct}%; bottom: {bottom_pct}%;"
              title="{name}&#10;Quadrant: {quadrant}&#10;Complexity: {complexity:.0f}&#10;Resilience: {resilience:.0f}{theater_str}">
-            <img src="{avatar_url}" alt="{name}" 
+            <img src="{avatar_url}" alt="{name}"
                  onerror="this.style.display='none'; this.parentElement.style.backgroundColor='{fallback_color}';">
             <span class="dot-label">{short_name}</span>
         </div>
@@ -734,33 +742,33 @@ def generate_quadrant_chart_html(dots_html: str, legend_html: str) -> str:
                 <div class="top-label left">☠️ DEATHTRAP</div>
                 <div class="top-label right">🏯 FORTRESS</div>
             </div>
-            
+
             <div class="chart-with-sides">
                 <div class="side-label left">← Low Resilience</div>
-                
+
                 <div class="quadrant-chart">
                     {generate_bivariate_grid_html()}
-                    
+
                     <div class="axis-line axis-h"></div>
                     <div class="axis-line axis-v"></div>
-                    
+
                     {dots_html}
                 </div>
-                
+
                 <div class="side-label right">High Resilience →</div>
             </div>
-            
+
             <!-- Bottom labels -->
             <div class="bottom-labels">
                 <div class="bottom-label left">🏠 GLASS HOUSE</div>
                 <div class="bottom-label right">🏰 BUNKER</div>
             </div>
-            
+
             <div class="axis-title">
                 X: Resilience Score (left=low, right=high) • Y: Complexity Score (top=high, bottom=low)
             </div>
         </div>
-        
+
         <div class="legend">
             {legend_html}
         </div>
@@ -773,13 +781,22 @@ def generate_comparison_table_html(repos: list) -> str:
 
     repos: list of dicts with keys: name, health, quadrant, complexity, resilience, theater
     """
+    import math
+
     rows = ""
     for i, repo in enumerate(repos, 1):
         health = repo.get("health", 0)
-        health_color = (
-            "#22c55e" if health >= 70 else "#f59e0b" if health >= 50 else "#ef4444"
-        )
+        health_color = "#22c55e" if health >= 70 else "#f59e0b" if health >= 50 else "#ef4444"
         quadrant_color = QUADRANT_TEXT_COLORS.get(repo.get("quadrant", ""), "#64748b")
+
+        # Format theater for display
+        theater_val = repo.get("theater", 1.0)
+        if theater_val is None:
+            theater_str = "N/A"
+        elif isinstance(theater_val, float) and math.isinf(theater_val):
+            theater_str = "∞"
+        else:
+            theater_str = f"{theater_val:.2f}"
 
         rows += f"""
         <tr>
@@ -789,7 +806,7 @@ def generate_comparison_table_html(repos: list) -> str:
             <td style="color: {quadrant_color}; font-weight: 600;">{repo.get('quadrant', '')}</td>
             <td>{repo.get('complexity', 0):.0f}</td>
             <td>{repo.get('resilience', 0):.0f}</td>
-            <td>{repo.get('theater', 1.0):.2f}</td>
+            <td>{theater_str}</td>
         </tr>
         """
 
@@ -836,37 +853,29 @@ def calculate_dot_position(complexity_score: float, resilience_score: float) -> 
     The visual center (50%) must align with the classification thresholds.
     """
     # Thresholds from prometheus.py - must match!
-    COMPLEXITY_THRESHOLD = 50
-    RESILIENCE_THRESHOLD = 35
+    complexity_threshold = 50
+    resilience_threshold = 35
 
     # X-axis: Resilience - scale so threshold (35) maps to visual center (50%)
     # Score 0 -> ~8%, Score 35 -> 50%, Score 70 -> 92%
     if resilience_score < 0:
         x_pct = 50  # Unknown resilience -> center
-    elif resilience_score < RESILIENCE_THRESHOLD:
+    elif resilience_score < resilience_threshold:
         # Below threshold: map 0-35 to 8-50%
-        x_pct = 8 + (resilience_score / RESILIENCE_THRESHOLD) * 42
+        x_pct = 8 + (resilience_score / resilience_threshold) * 42
     else:
         # Above threshold: map 35-100 to 50-92%
-        x_pct = (
-            50
-            + ((resilience_score - RESILIENCE_THRESHOLD) / (100 - RESILIENCE_THRESHOLD))
-            * 42
-        )
+        x_pct = 50 + ((resilience_score - resilience_threshold) / (100 - resilience_threshold)) * 42
 
     # Y-axis: Complexity - threshold is 50, which naturally maps to 50%
     # But Y is inverted: low score = high complexity = top
     # Score 0 -> top (8%), Score 50 -> center (50%), Score 100 -> bottom (92%)
-    if complexity_score < COMPLEXITY_THRESHOLD:
+    if complexity_score < complexity_threshold:
         # Below threshold (high complexity): map 0-50 to 8-50%
-        y_pct = 8 + (complexity_score / COMPLEXITY_THRESHOLD) * 42
+        y_pct = 8 + (complexity_score / complexity_threshold) * 42
     else:
         # Above threshold (low complexity): map 50-100 to 50-92%
-        y_pct = (
-            50
-            + ((complexity_score - COMPLEXITY_THRESHOLD) / (100 - COMPLEXITY_THRESHOLD))
-            * 42
-        )
+        y_pct = 50 + ((complexity_score - complexity_threshold) / (100 - complexity_threshold)) * 42
 
     # Clamp to safe bounds
     x_pct = max(8, min(92, x_pct))

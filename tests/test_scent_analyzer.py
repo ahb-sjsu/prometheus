@@ -3,19 +3,19 @@
 Tests for scent_analyzer.py - Code Smell Analyzer
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 
-from scent_analyzer import (
-    NIHPatterns,
-    CodeSmells,
-    OutdatedPatterns,
-    FileSmellMetrics,
-    ScentReport,
-    ScentAnalyzer,
-)
+import pytest
 
+from scent_analyzer import (
+    CodeSmells,
+    FileSmellMetrics,
+    NIHPatterns,
+    OutdatedPatterns,
+    ScentAnalyzer,
+    ScentReport,
+)
 
 # =============================================================================
 # FIXTURES
@@ -249,7 +249,7 @@ class TestNIHDetection:
             '''
 class CustomHttpClient:
     """Custom HTTP client."""
-    
+
     def get(self, url):
         import socket
         sock = socket.socket()

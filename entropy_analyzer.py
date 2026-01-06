@@ -16,16 +16,15 @@ Pipeline stages:
 
 """
 
-import json
-import gzip
-import math
-import logging
-from pathlib import Path
-from dataclasses import dataclass, field, asdict
-from typing import Optional
-from collections import defaultdict
 import ast
+import gzip
+import json
+import logging
+import math
 import re
+from collections import defaultdict
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -196,7 +195,7 @@ class Extractor:
                 if metrics:
                     self.file_metrics.append(metrics)
 
-    def _analyze_file(self, filepath: Path, language: str) -> Optional[FileMetrics]:
+    def _analyze_file(self, filepath: Path, language: str) -> FileMetrics | None:
         """Extract all metrics for a single file."""
         try:
             content = filepath.read_text(encoding="utf-8", errors="ignore")
@@ -204,9 +203,7 @@ class Extractor:
             logger.debug(f"Could not read {filepath}: {e}")
             return None
 
-        metrics = FileMetrics(
-            path=str(filepath.relative_to(self.codebase_path)), language=language
-        )
+        metrics = FileMetrics(path=str(filepath.relative_to(self.codebase_path)), language=language)
 
         # Basic line counts
         lines = content.splitlines()
@@ -240,14 +237,10 @@ class Extractor:
 
         # Count structures
         functions = [
-            n
-            for n in ast.walk(tree)
-            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+            n for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
         ]
         classes = [n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)]
-        imports = [
-            n for n in ast.walk(tree) if isinstance(n, (ast.Import, ast.ImportFrom))
-        ]
+        imports = [n for n in ast.walk(tree) if isinstance(n, (ast.Import, ast.ImportFrom))]
 
         metrics.num_functions = len(functions)
         metrics.num_classes = len(classes)
@@ -280,14 +273,10 @@ class Extractor:
 
         # Simple structural counts via regex
         metrics.num_functions = len(
-            re.findall(
-                r"\b(function|def|fn|func|void|int|string|bool)\s+\w+\s*\(", content
-            )
+            re.findall(r"\b(function|def|fn|func|void|int|string|bool)\s+\w+\s*\(", content)
         )
         metrics.num_classes = len(re.findall(r"\bclass\s+\w+", content))
-        metrics.imports = len(
-            re.findall(r"\b(import|require|include|using)\b", content)
-        )
+        metrics.imports = len(re.findall(r"\b(import|require|include|using)\b", content))
 
     def _max_depth(self, node, current_depth=0) -> int:
         """Calculate maximum nesting depth in AST."""
@@ -316,7 +305,7 @@ class Extractor:
         """Use radon for Python complexity metrics."""
         try:
             from radon.complexity import cc_visit
-            from radon.metrics import mi_visit, h_visit
+            from radon.metrics import h_visit, mi_visit
             from radon.raw import analyze
         except ImportError:
             # Radon not installed - warn once
@@ -358,9 +347,7 @@ class Extractor:
         try:
             import lizard
 
-            analysis = lizard.analyze_file.analyze_source_code(
-                f"temp.{language[:2]}", content
-            )
+            analysis = lizard.analyze_file.analyze_source_code(f"temp.{language[:2]}", content)
 
             if analysis.function_list:
                 complexities = [f.cyclomatic_complexity for f in analysis.function_list]
@@ -436,15 +423,11 @@ class Extractor:
                     content = filepath.read_text(encoding="utf-8", errors="ignore")
                     # Count test functions/methods
                     self.task_metrics.num_test_cases += len(
-                        re.findall(
-                            r"\b(def test_|it\(|test\(|func Test|#\[test\])", content
-                        )
+                        re.findall(r"\b(def test_|it\(|test\(|func Test|#\[test\])", content)
                     )
                     # Count assertions
                     self.task_metrics.num_assertions += len(
-                        re.findall(
-                            r"\b(assert|expect|should|Assert\.|assertEquals)", content
-                        )
+                        re.findall(r"\b(assert|expect|should|Assert\.|assertEquals)", content)
                     )
                 except (OSError, UnicodeDecodeError) as e:
                     logger.debug(f"Could not read test file {filepath}: {e}")
@@ -501,30 +484,20 @@ class Transformer:
 
         # Totals
         self.codebase_metrics.total_files = len(self.file_metrics)
-        self.codebase_metrics.total_loc = sum(
-            fm.lines_of_code for fm in self.file_metrics
-        )
-        self.codebase_metrics.total_functions = sum(
-            fm.num_functions for fm in self.file_metrics
-        )
-        self.codebase_metrics.total_classes = sum(
-            fm.num_classes for fm in self.file_metrics
-        )
+        self.codebase_metrics.total_loc = sum(fm.lines_of_code for fm in self.file_metrics)
+        self.codebase_metrics.total_functions = sum(fm.num_functions for fm in self.file_metrics)
+        self.codebase_metrics.total_classes = sum(fm.num_classes for fm in self.file_metrics)
 
         # Complexity aggregates
         complexities = [
-            fm.cyclomatic_complexity
-            for fm in self.file_metrics
-            if fm.cyclomatic_complexity > 0
+            fm.cyclomatic_complexity for fm in self.file_metrics if fm.cyclomatic_complexity > 0
         ]
         if complexities:
             self.codebase_metrics.avg_cyclomatic = sum(complexities) / len(complexities)
             self.codebase_metrics.max_cyclomatic = max(complexities)
 
         cognitive = [
-            fm.cognitive_complexity
-            for fm in self.file_metrics
-            if fm.cognitive_complexity > 0
+            fm.cognitive_complexity for fm in self.file_metrics if fm.cognitive_complexity > 0
         ]
         if cognitive:
             self.codebase_metrics.avg_cognitive = sum(cognitive) / len(cognitive)
@@ -534,19 +507,13 @@ class Transformer:
         )
 
         maintainability = [
-            fm.maintainability_index
-            for fm in self.file_metrics
-            if fm.maintainability_index > 0
+            fm.maintainability_index for fm in self.file_metrics if fm.maintainability_index > 0
         ]
         if maintainability:
-            self.codebase_metrics.avg_maintainability = sum(maintainability) / len(
-                maintainability
-            )
+            self.codebase_metrics.avg_maintainability = sum(maintainability) / len(maintainability)
 
         # Information theoretic
-        entropies = [
-            fm.token_entropy for fm in self.file_metrics if fm.token_entropy > 0
-        ]
+        entropies = [fm.token_entropy for fm in self.file_metrics if fm.token_entropy > 0]
         if entropies:
             self.codebase_metrics.codebase_entropy = sum(entropies) / len(entropies)
 
@@ -554,15 +521,11 @@ class Transformer:
             fm.compression_ratio for fm in self.file_metrics if fm.compression_ratio > 0
         ]
         if compressions:
-            self.codebase_metrics.total_compression_ratio = sum(compressions) / len(
-                compressions
-            )
+            self.codebase_metrics.total_compression_ratio = sum(compressions) / len(compressions)
 
         # Coupling
         total_imports = sum(fm.imports for fm in self.file_metrics)
-        self.codebase_metrics.avg_imports_per_file = total_imports / len(
-            self.file_metrics
-        )
+        self.codebase_metrics.avg_imports_per_file = total_imports / len(self.file_metrics)
 
         # Dependency graph density (edges / possible edges)
         all_deps = set()
@@ -572,9 +535,7 @@ class Transformer:
         if n > 1:
             possible_edges = n * (n - 1)
             actual_edges = total_imports
-            self.codebase_metrics.dependency_graph_density = (
-                actual_edges / possible_edges
-            )
+            self.codebase_metrics.dependency_graph_density = actual_edges / possible_edges
 
         return self.codebase_metrics
 
@@ -644,9 +605,7 @@ class Analyzer:
         # Complexity per feature
         if tm.estimated_function_points > 0:
             total_complexity = cm.avg_cyclomatic * cm.total_functions
-            report.complexity_per_feature = (
-                total_complexity / tm.estimated_function_points
-            )
+            report.complexity_per_feature = total_complexity / tm.estimated_function_points
             report.loc_per_function_point = cm.total_loc / tm.estimated_function_points
 
         # Complexity per test
@@ -670,21 +629,15 @@ class Analyzer:
             issues = []
 
             if fm.cyclomatic_complexity > self.THRESHOLDS["cyclomatic_high"]:
-                issues.append(
-                    f"Very high cyclomatic complexity: {fm.cyclomatic_complexity:.1f}"
-                )
+                issues.append(f"Very high cyclomatic complexity: {fm.cyclomatic_complexity:.1f}")
             elif fm.cyclomatic_complexity > self.THRESHOLDS["cyclomatic_medium"]:
-                issues.append(
-                    f"High cyclomatic complexity: {fm.cyclomatic_complexity:.1f}"
-                )
+                issues.append(f"High cyclomatic complexity: {fm.cyclomatic_complexity:.1f}")
 
             if (
                 fm.maintainability_index > 0
                 and fm.maintainability_index < self.THRESHOLDS["maintainability_poor"]
             ):
-                issues.append(
-                    f"Poor maintainability index: {fm.maintainability_index:.1f}"
-                )
+                issues.append(f"Poor maintainability index: {fm.maintainability_index:.1f}")
 
             if fm.max_nesting_depth > 4:
                 issues.append(f"Deep nesting: {fm.max_nesting_depth} levels")
@@ -702,9 +655,7 @@ class Analyzer:
                 )
 
         # Sort by number of issues
-        report.hotspots = sorted(
-            hotspots, key=lambda x: len(x["issues"]), reverse=True
-        )[:10]
+        report.hotspots = sorted(hotspots, key=lambda x: len(x["issues"]), reverse=True)[:10]
 
     def _generate_verdicts(self, report: FitnessReport):
         """Generate overall verdict and recommendations."""
@@ -849,9 +800,7 @@ class ComplexityFitnessPipeline:
         print(f"  Avg complexity: {codebase_metrics.avg_cyclomatic:.2f}")
 
         print("[ANALYZE] Generating fitness report...")
-        analyzer = Analyzer(
-            self.codebase_path, file_metrics, task_metrics, codebase_metrics
-        )
+        analyzer = Analyzer(self.codebase_path, file_metrics, task_metrics, codebase_metrics)
         report = analyzer.analyze()
         print(f"  Risk level: {report.risk_level}")
 
@@ -873,9 +822,7 @@ class ComplexityFitnessPipeline:
             "recommendations": report.recommendations,
             "hotspots": report.hotspots,
             "metrics": {
-                "codebase": (
-                    asdict(report.codebase_metrics) if report.codebase_metrics else {}
-                ),
+                "codebase": (asdict(report.codebase_metrics) if report.codebase_metrics else {}),
                 "task": asdict(report.task_metrics) if report.task_metrics else {},
             },
             "fitness_ratios": {

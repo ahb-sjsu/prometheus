@@ -7,11 +7,11 @@ Analyzes what's ACTUALLY IN THE CODEBASE to assess production readiness.
 Does not guess about external systems - only analyzes repo contents.
 """
 
-import re
-import logging
-from pathlib import Path
-from dataclasses import dataclass, field
 import json
+import logging
+import re
+from dataclasses import dataclass, field
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -135,9 +135,7 @@ class Oracle:
         "statsd": re.compile(r"statsd|dogstatsd|from statsd"),
         "datadog": re.compile(r"ddtrace|datadog|from datadog"),
         "opentelemetry": re.compile(r"opentelemetry|from otel|@trace"),
-        "structured_log": re.compile(
-            r"structlog|loguru|from loguru|zap\.|zerolog|pino|bunyan"
-        ),
+        "structured_log": re.compile(r"structlog|loguru|from loguru|zap\.|zerolog|pino|bunyan"),
         "log_context": re.compile(r"extra\s*=|context\s*=|\.bind\(|with_fields"),
         "tracing": re.compile(r"start_span|tracer\.|with_span|@traced|Span\("),
         "health_endpoint": re.compile(
@@ -147,9 +145,7 @@ class Oracle:
     }
 
     DEFENSIVE_PATTERNS = {
-        "input_validation": re.compile(
-            r"validate|sanitize|escape|clean_input|is_valid"
-        ),
+        "input_validation": re.compile(r"validate|sanitize|escape|clean_input|is_valid"),
         "null_check": re.compile(
             r"is None|is not None|!= None|== None|!= null|=== null|\?\.|Optional\["
         ),
@@ -246,14 +242,10 @@ class Oracle:
             obs.opentelemetry = True
         if self.OBSERVABILITY_PATTERNS["structured_log"].search(content):
             obs.structured_logging = True
-        obs.context_logging += len(
-            self.OBSERVABILITY_PATTERNS["log_context"].findall(content)
-        )
+        obs.context_logging += len(self.OBSERVABILITY_PATTERNS["log_context"].findall(content))
         if self.OBSERVABILITY_PATTERNS["tracing"].search(content):
             obs.trace_instrumentation = True
-            obs.span_creation += len(
-                self.OBSERVABILITY_PATTERNS["tracing"].findall(content)
-            )
+            obs.span_creation += len(self.OBSERVABILITY_PATTERNS["tracing"].findall(content))
         if self.OBSERVABILITY_PATTERNS["health_endpoint"].search(content):
             obs.health_endpoint = True
         if self.OBSERVABILITY_PATTERNS["readiness"].search(content):
@@ -267,15 +259,9 @@ class Oracle:
         defense.input_validation += len(
             self.DEFENSIVE_PATTERNS["input_validation"].findall(content)
         )
-        defense.null_checks += len(
-            self.DEFENSIVE_PATTERNS["null_check"].findall(content)
-        )
-        defense.bounds_checks += len(
-            self.DEFENSIVE_PATTERNS["bounds_check"].findall(content)
-        )
-        defense.type_assertions += len(
-            self.DEFENSIVE_PATTERNS["type_check"].findall(content)
-        )
+        defense.null_checks += len(self.DEFENSIVE_PATTERNS["null_check"].findall(content))
+        defense.bounds_checks += len(self.DEFENSIVE_PATTERNS["bounds_check"].findall(content))
+        defense.type_assertions += len(self.DEFENSIVE_PATTERNS["type_check"].findall(content))
         defense.assertions += len(self.DEFENSIVE_PATTERNS["assertion"].findall(content))
         defense.resource_cleanup += len(
             re.findall(r"\bfinally\s*:|defer\s+|using\s*\(|with\s+\w+\s+as\b", content)
@@ -285,9 +271,7 @@ class Oracle:
         config.env_var_usage += len(self.CONFIG_PATTERNS["env_var"].findall(content))
         if self.CONFIG_PATTERNS["dotenv"].search(content):
             config.dotenv_usage = True
-        config.hardcoded_strings += len(
-            self.CONFIG_PATTERNS["hardcoded_url"].findall(content)
-        )
+        config.hardcoded_strings += len(self.CONFIG_PATTERNS["hardcoded_url"].findall(content))
 
     def _check_deployment_artifacts(self, report: OracleReport):
         deploy = report.deployment
@@ -348,9 +332,7 @@ class Oracle:
             if readme_path.exists():
                 docs.readme_exists = True
                 try:
-                    content = readme_path.read_text(
-                        encoding="utf-8", errors="ignore"
-                    ).lower()
+                    content = readme_path.read_text(encoding="utf-8", errors="ignore").lower()
                     sections = []
                     for section in [
                         "install",
@@ -422,11 +404,7 @@ class Oracle:
             try:
                 lines = (path / "requirements.txt").read_text().splitlines()
                 deps.dependency_count = len(
-                    [
-                        line
-                        for line in lines
-                        if line.strip() and not line.startswith("#")
-                    ]
+                    [line for line in lines if line.strip() and not line.startswith("#")]
                 )
             except OSError as e:
                 logger.debug(f"Could not read requirements.txt: {e}")
@@ -596,9 +574,7 @@ class Oracle:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Oracle - Production Readiness Analyzer"
-    )
+    parser = argparse.ArgumentParser(description="Oracle - Production Readiness Analyzer")
     parser.add_argument("path", help="Path to codebase")
     parser.add_argument("-o", "--output", help="Output JSON path")
 
