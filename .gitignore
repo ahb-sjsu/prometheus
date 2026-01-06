@@ -86,3 +86,5 @@ pip-wheel-metadata/
 # Cloned repos (from olympus.py)
 # -----------------------------------------------------------------------------
 cloned_repos/
+!docs/ 
+!docs/*.html 
