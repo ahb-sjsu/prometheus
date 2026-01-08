@@ -631,10 +631,16 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
     return output_path
 
 
-def clone_and_analyze(repo: str, work_dir: Path) -> Optional[str]:
-    """Clone a repo and run full prometheus+hubris analysis. Returns JSON report path or None."""
+def clone_and_analyze(repo: str, work_dir: Path, refresh: bool = False) -> Optional[str]:
+    """Clone a repo and run full prometheus+hubris analysis. Returns JSON report path or None.
+
+    Args:
+        repo: Repository path (owner/repo, URL, or local path)
+        work_dir: Working directory for clones and cache
+        refresh: If True, delete cached results and re-analyze
+    """
     import subprocess
-    
+
     # Parse repo format: owner/repo, full URL, or local path
     if repo.startswith('http'):
         url = repo
@@ -664,8 +670,18 @@ def clone_and_analyze(repo: str, work_dir: Path) -> Optional[str]:
         owner = "local"
     
     display_name = f"{owner}/{name}" if not is_local else name
-    
-    # Skip if already analyzed
+
+    # Handle refresh - delete cached files
+    if refresh:
+        hubris_json = work_dir / f"hubris_{owner}_{name}.json"
+        if json_path.exists():
+            json_path.unlink()
+            print(f"  [refresh] Deleted cached {json_path.name}")
+        if hubris_json.exists():
+            hubris_json.unlink()
+            print(f"  [refresh] Deleted cached {hubris_json.name}")
+
+    # Skip if already analyzed (and not refreshing)
     if json_path.exists():
         print(f"  [cached] {display_name}")
         return str(json_path)
@@ -787,6 +803,7 @@ repos.txt format (one per line):
     parser.add_argument('-o', '--output', default='olympus_comparison.html', help='Output HTML path')
     parser.add_argument('-w', '--work-dir', default='.olympus_cache', help='Working directory for clones')
     parser.add_argument('--json', help='Also output JSON report')
+    parser.add_argument('--refresh', action='store_true', help='Force re-analysis (ignore cached results)')
     
     args = parser.parse_args()
     
@@ -829,7 +846,7 @@ repos.txt format (one per line):
             report_paths.append(repo)
         else:
             # Need to clone and analyze
-            json_path = clone_and_analyze(repo, work_dir)
+            json_path = clone_and_analyze(repo, work_dir, refresh=args.refresh)
             if json_path:
                 report_paths.append(json_path)
     

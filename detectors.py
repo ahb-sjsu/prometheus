@@ -144,33 +144,39 @@ class RetryDetector(BaseDetector):
 
 class TimeoutDetector(BaseDetector):
     """Detect timeout configurations and issues."""
-    
+
     PATTERNS = TIMEOUT_PATTERNS
     PATTERN_TYPE = "timeout"
-    
+
     def detect(self, content: str, filepath: str, language: str) -> tuple[list, list]:
         """Detect timeout patterns and issues."""
         patterns = []
         issues = []
-        
+
         lang_patterns = self.get_patterns(language)
-        
+
         # Check for missing timeouts first
         for pattern_name in TIMEOUT_ISSUES:
             pattern = lang_patterns.get(pattern_name)
             if not pattern:
                 continue
-                
+
             for match in filter_matches(pattern, content, filepath):
                 line_num = self.get_line_number(content, match.start())
-                context = self.get_context(content, line_num, before=10, after=5)
-                
+                context = self.get_context(content, line_num, before=5, after=2)
+
                 # Skip if timeout is set elsewhere in context
                 if "timeout" in context.lower() and pattern_name == "requests_no_timeout":
                     continue
-                
+
+                # CALIBRATION: Skip timeout=None in function/method definitions
+                # This is often intentional - the library wants the caller to set timeout
+                if pattern_name == "timeout_none":
+                    if self._is_default_parameter(context):
+                        continue
+
                 quality = "CARGO_CULT"
-                
+
                 patterns.append(PatternDetection(
                     pattern_type=self.PATTERN_TYPE,
                     file=filepath,
@@ -178,11 +184,13 @@ class TimeoutDetector(BaseDetector):
                     quality=quality,
                     details={"issue": pattern_name},
                 ))
-                
+
                 if pattern_name == "timeout_none":
+                    # Lower severity if it looks like configuration/setup
+                    severity = "MEDIUM" if self._is_config_context(context) else "HIGH"
                     issues.append(TimeoutIssue(
                         file=filepath, line=line_num,
-                        issue_type="explicit_none", severity="HIGH",
+                        issue_type="explicit_none", severity=severity,
                         description="Explicit timeout=None disables timeout - can hang indefinitely",
                     ))
                 else:
@@ -192,15 +200,15 @@ class TimeoutDetector(BaseDetector):
                         description="Network call without timeout - can hang indefinitely",
                         context=match.group(0)[:100],
                     ))
-        
+
         # Check for configured timeouts (these are good)
         for pattern_name, pattern in lang_patterns.items():
             if pattern_name in TIMEOUT_ISSUES:
                 continue
-                
+
             for match in filter_matches(pattern, content, filepath):
                 line_num = self.get_line_number(content, match.start())
-                
+
                 patterns.append(PatternDetection(
                     pattern_type=self.PATTERN_TYPE,
                     file=filepath,
@@ -208,8 +216,27 @@ class TimeoutDetector(BaseDetector):
                     quality="CORRECT",
                     details={"pattern": pattern_name},
                 ))
-        
+
         return patterns, issues
+
+    def _is_default_parameter(self, context: str) -> bool:
+        """Check if timeout=None is a default parameter in a function definition."""
+        # Function/method definitions
+        if re.search(r'def\s+\w+\s*\([^)]*timeout\s*=\s*None', context):
+            return True
+        # Class __init__ with timeout parameter
+        if re.search(r'def\s+__init__\s*\([^)]*timeout\s*=\s*None', context):
+            return True
+        # Constructor or function signature patterns in other languages
+        if re.search(r'function\s+\w+\s*\([^)]*timeout\s*[=:]\s*null', context, re.IGNORECASE):
+            return True
+        return False
+
+    def _is_config_context(self, context: str) -> bool:
+        """Check if timeout=None is in a configuration/setup context."""
+        context_lower = context.lower()
+        config_indicators = ['config', 'settings', 'options', 'defaults', 'self.timeout', 'this.timeout']
+        return any(ind in context_lower for ind in config_indicators)
 
 
 class CircuitBreakerDetector(BaseDetector):
@@ -299,25 +326,46 @@ class CircuitBreakerDetector(BaseDetector):
 
 class ExceptionDetector(BaseDetector):
     """Detect problematic exception handling patterns."""
-    
+
     PATTERNS = EXCEPTION_PATTERNS
     PATTERN_TYPE = "exception_handling"
-    
+
+    # CALIBRATED: Severity based on actual impact, not theoretical purity
+    SEVERITY_MAP = {
+        "bare_except": "MEDIUM",  # Bad but common, often intentional for cleanup
+        "broad_except": "LOW",    # Lowered - often intentional at boundaries
+        "except_pass": "MEDIUM",  # Context matters - check for logging
+        "except_continue": "MEDIUM",
+        "empty_catch": "MEDIUM",
+        "catch_all": "LOW",       # Lowered - often intentional
+        "catch_throwable": "LOW", # Lowered - often intentional in Java
+        "swallow_exception": "LOW",  # Has comment, somewhat intentional
+        "ignore_error": "LOW",    # Go idiom - sometimes intentional
+        "empty_if_err": "MEDIUM",
+        "ignore_return": "LOW",   # Very common, often fine
+        "empty_error_check": "LOW",
+    }
+
     def detect(self, content: str, filepath: str, language: str) -> tuple[list, list]:
         """Detect exception handling patterns and issues."""
         patterns = []
         issues = []
-        
+
         lang_patterns = self.get_patterns(language)
-        
+
         for pattern_name, pattern in lang_patterns.items():
             is_anti_pattern = pattern_name in EXCEPTION_ANTI_PATTERNS
-            
+
             for match in filter_matches(pattern, content, filepath):
                 line_num = self.get_line_number(content, match.start())
-                
+                context = self.get_context(content, line_num, before=3, after=3)
+
+                # CALIBRATION: Skip if context suggests intentional handling
+                if self._is_intentional_handling(context, pattern_name):
+                    continue
+
                 quality = "CARGO_CULT" if is_anti_pattern else "CORRECT"
-                
+
                 patterns.append(PatternDetection(
                     pattern_type=self.PATTERN_TYPE,
                     file=filepath,
@@ -325,16 +373,39 @@ class ExceptionDetector(BaseDetector):
                     quality=quality,
                     details={"pattern": pattern_name},
                 ))
-                
+
                 if is_anti_pattern:
+                    severity = self.SEVERITY_MAP.get(pattern_name, "LOW")
                     issues.append(ExceptionIssue(
                         file=filepath, line=line_num,
-                        issue_type=pattern_name, severity="MEDIUM",
+                        issue_type=pattern_name, severity=severity,
                         description=self._get_issue_description(pattern_name),
                     ))
-        
+
         return patterns, issues
-    
+
+    def _is_intentional_handling(self, context: str, pattern_name: str) -> bool:
+        """Check if the exception handling appears intentional."""
+        context_lower = context.lower()
+
+        # Logging nearby suggests the exception is being recorded
+        if any(log in context_lower for log in ['log.', 'logger.', 'logging.', 'print(', 'console.']):
+            return True
+
+        # Comments suggesting intentional ignoring
+        if any(comment in context_lower for comment in ['# ignore', '# skip', '# optional', '// ignore', '/* ignore']):
+            return True
+
+        # Cleanup/finally context - often intentional
+        if 'finally' in context_lower or 'cleanup' in context_lower or '__del__' in context_lower:
+            return True
+
+        # Top-level handlers (main, run, start) - often intentional
+        if any(fn in context_lower for fn in ['def main', 'def run', 'def start', 'if __name__']):
+            return True
+
+        return False
+
     def _get_issue_description(self, pattern_name: str) -> str:
         """Get description for an exception anti-pattern."""
         descriptions = {
