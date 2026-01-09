@@ -39,7 +39,6 @@ from pathlib import Path
 from prometheus_ui import (
     FALLBACK_COLORS,
     calculate_dot_position,
-    generate_comparison_table_html,
     generate_legend_item_html,
     generate_quadrant_chart_html,
     generate_repo_dot_html,
@@ -76,6 +75,9 @@ class RepoSnapshot:
 
     # Source
     source_file: str = ""
+
+    # Full JSON data for detailed reports
+    full_data: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -161,6 +163,7 @@ def load_prometheus_report(path: str) -> RepoSnapshot | None:
             patterns_correct=patterns_correct,
             high_severity_issues=high_severity,
             source_file=path,
+            full_data=data,
         )
     except Exception as e:
         print(f"Warning: Could not load {path}: {e}")
@@ -222,6 +225,93 @@ def calculate_overall_health(snapshot: RepoSnapshot) -> float:
     return complexity_component + resilience_component + theater_component
 
 
+def generate_table_with_download(repos: list) -> str:
+    """Generate a comparison table with download buttons.
+
+    repos: list of dicts with keys: name, health, quadrant, complexity, resilience, theater, repo_id
+    """
+    import math
+
+    from prometheus_ui import QUADRANT_TEXT_COLORS
+
+    rows = ""
+    for i, repo in enumerate(repos, 1):
+        health = repo.get("health", 0)
+        health_color = "#22c55e" if health >= 70 else "#f59e0b" if health >= 50 else "#ef4444"
+        quadrant_color = QUADRANT_TEXT_COLORS.get(repo.get("quadrant", ""), "#64748b")
+
+        # Format theater for display
+        theater_val = repo.get("theater", 1.0)
+        if isinstance(theater_val, str):
+            if theater_val.lower() in ("inf", "∞", "infinity"):
+                theater_val = float("inf")
+            elif theater_val.lower() in ("n/a", "na", "none", ""):
+                theater_val = None
+            else:
+                try:
+                    theater_val = float(theater_val)
+                except (ValueError, TypeError):
+                    theater_val = None
+
+        if theater_val is None:
+            theater_str = "N/A"
+        elif isinstance(theater_val, float) and math.isinf(theater_val):
+            theater_str = "∞"
+        else:
+            theater_str = f"{theater_val:.2f}"
+
+        # Handle negative resilience
+        resilience_val = repo.get("resilience", 0)
+        if isinstance(resilience_val, str):
+            try:
+                resilience_val = float(resilience_val)
+            except (ValueError, TypeError):
+                resilience_val = -1
+
+        if resilience_val < 0:
+            resilience_str = "N/A"
+        else:
+            resilience_str = f"{resilience_val:.0f}"
+
+        repo_name = repo.get("name", "")
+        repo_id = repo.get(
+            "repo_id", repo_name.replace("/", "_").replace("-", "_").replace(".", "_")
+        )
+
+        rows += f"""
+        <tr data-repo="{repo_id}">
+            <td>{i}</td>
+            <td style="font-weight: 500; color: #e2e8f0;">{repo_name}</td>
+            <td><span class="badge" style="background: {health_color}">{health:.0f}</span></td>
+            <td style="color: {quadrant_color}; font-weight: 600;">{repo.get('quadrant', '')}</td>
+            <td>{repo.get('complexity', 0):.0f}</td>
+            <td>{resilience_str}</td>
+            <td>{theater_str}</td>
+            <td><button class="download-btn" onclick="downloadReport('{repo_id}')" title="Download detailed report">📥</button></td>
+        </tr>
+        """
+
+    return f"""
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Repository</th>
+                    <th>Health</th>
+                    <th>Quadrant</th>
+                    <th>Complexity</th>
+                    <th>Resilience</th>
+                    <th>Theater</th>
+                    <th>Report</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows}
+            </tbody>
+        </table>
+    """
+
+
 def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
     """Generate an interactive HTML comparison report."""
 
@@ -253,25 +343,66 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             quadrant=repo.quadrant,
         )
 
-    # Build table data
+    # Build table data with full_data for download feature
     sorted_repos = sorted(report.repos, key=lambda r: -r.overall_health)
-    table_data = [
-        {
-            "name": r.name,
-            "health": r.overall_health,
-            "quadrant": r.quadrant,
-            "complexity": r.complexity_score,
-            "resilience": r.resilience_score,
-            "theater": r.theater_ratio,
-        }
-        for r in sorted_repos
-    ]
+
+    # Create repo_id mapping for JavaScript
+    repo_data_map = {}
+    table_data = []
+    for r in sorted_repos:
+        repo_id = r.name.replace("/", "_").replace("-", "_").replace(".", "_")
+        table_data.append(
+            {
+                "name": r.name,
+                "health": r.overall_health,
+                "quadrant": r.quadrant,
+                "complexity": r.complexity_score,
+                "resilience": r.resilience_score,
+                "theater": r.theater_ratio,
+                "repo_id": repo_id,
+            }
+        )
+        # Store full data for JavaScript access
+        repo_data_map[repo_id] = (
+            r.full_data
+            if r.full_data
+            else {
+                "codebase_path": r.name,
+                "quadrant": r.quadrant,
+                "scores": {
+                    "complexity_score": r.complexity_score,
+                    "resilience_score": r.resilience_score,
+                },
+            }
+        )
 
     # Generate quadrant chart
     quadrant_html = generate_quadrant_chart_html(dots_html, legend_html)
 
-    # Generate table
-    table_html = generate_comparison_table_html(table_data)
+    # Generate table with download buttons
+    table_html = generate_table_with_download(table_data)
+
+    # Embed repo data as JSON for download functionality
+    import math
+
+    def json_serialize(obj):
+        if isinstance(obj, float) and math.isinf(obj):
+            return "Infinity" if obj > 0 else "-Infinity"
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+    # Handle infinity values in theater_ratio
+    clean_repo_data = {}
+    for k, v in repo_data_map.items():
+        clean_repo_data[k] = v
+        # Handle hubris theater_ratio if present
+        if isinstance(v, dict) and "hubris" in v:
+            hubris = v.get("hubris", {})
+            if isinstance(hubris, dict) and "theater_ratio" in hubris:
+                tr = hubris["theater_ratio"]
+                if isinstance(tr, float) and math.isinf(tr):
+                    v["hubris"]["theater_ratio"] = "Infinity"
+
+    repo_data_json = json.dumps(clean_repo_data, indent=2, default=str)
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -593,6 +724,199 @@ def generate_comparison_html(report: OlympusReport, output_path: str) -> str:
             highlightRepo(this.dataset.repo, true);  // Scroll on click
         }});
     }});
+
+    // Embedded repository data for detailed reports
+    const repoData = {repo_data_json};
+
+    // Generate and download detailed markdown report
+    function downloadReport(repoId) {{
+        const data = repoData[repoId];
+        if (!data) {{
+            alert('No detailed data available for this repository');
+            return;
+        }}
+
+        const report = generateMarkdownReport(data);
+        const blob = new Blob([report], {{ type: 'text/markdown' }});
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${{repoId}}_fitness_report.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }}
+
+    function generateMarkdownReport(data) {{
+        const name = data.codebase_path || 'Unknown Repository';
+        const quadrant = data.quadrant || 'N/A';
+        const scores = data.scores || {{}};
+        const complexity = data.complexity_analysis || {{}};
+        const resilience = data.resilience_analysis || {{}};
+        const hubris = data.hubris || {{}};
+        const priorities = data.priorities || [];
+
+        let md = `# Fitness Report: ${{name}}\n\n`;
+        md += `**Generated:** ${{new Date().toISOString().split('T')[0]}}\n\n`;
+
+        // Executive Summary
+        md += `## Executive Summary\n\n`;
+        md += `| Metric | Value |\n|--------|-------|\n`;
+        md += `| **Quadrant** | ${{quadrant}} |\n`;
+        md += `| **Complexity Score** | ${{(scores.complexity_score || 0).toFixed(1)}} |\n`;
+        md += `| **Complexity Risk** | ${{scores.complexity_risk || 'N/A'}} |\n`;
+        md += `| **Resilience Score** | ${{scores.resilience_score >= 0 ? scores.resilience_score.toFixed(1) : 'N/A'}} |\n`;
+        md += `| **Shield Rating** | ${{scores.shield_rating || 'N/A'}} |\n`;
+
+        if (hubris.theater_ratio !== undefined) {{
+            const tr = hubris.theater_ratio;
+            const trDisplay = tr === 'Infinity' || tr === Infinity ? '∞' : (typeof tr === 'number' ? tr.toFixed(2) : tr);
+            md += `| **Theater Ratio** | ${{trDisplay}} |\n`;
+            md += `| **Hubris Quadrant** | ${{hubris.quadrant || 'N/A'}} |\n`;
+        }}
+        md += `\n`;
+
+        // Verdict
+        if (data.fitness_verdict) {{
+            md += `### Verdict\n\n${{data.fitness_verdict}}\n\n`;
+        }}
+
+        // Priorities
+        if (priorities.length > 0) {{
+            md += `## Priority Actions\n\n`;
+            priorities.forEach((p, i) => {{
+                md += `### ${{i + 1}}. ${{p.category}} (${{p.priority === 0 ? 'CRITICAL' : 'Priority ' + p.priority}})\n\n`;
+                md += `${{p.action}}\n\n`;
+                if (p.first_steps && p.first_steps.length > 0) {{
+                    md += `**First Steps:**\n`;
+                    p.first_steps.forEach(step => {{
+                        md += `- ${{step}}\n`;
+                    }});
+                    md += `\n`;
+                }}
+            }});
+        }}
+
+        // Complexity Analysis
+        md += `## Complexity Analysis\n\n`;
+        if (complexity.risk_level) {{
+            md += `**Risk Level:** ${{complexity.risk_level}}\n\n`;
+        }}
+        if (complexity.verdict) {{
+            md += `${{complexity.verdict}}\n\n`;
+        }}
+
+        // Complexity Metrics
+        if (complexity.metrics) {{
+            const m = complexity.metrics;
+            md += `### Metrics\n\n`;
+            md += `| Metric | Value |\n|--------|-------|\n`;
+            if (m.total_loc) md += `| Total LOC | ${{m.total_loc.toLocaleString()}} |\n`;
+            if (m.avg_cyclomatic) md += `| Avg Cyclomatic Complexity | ${{m.avg_cyclomatic.toFixed(2)}} |\n`;
+            if (m.maintainability) md += `| Maintainability Index | ${{m.maintainability.toFixed(1)}} |\n`;
+            if (m.entropy) md += `| Entropy | ${{m.entropy.toFixed(2)}} |\n`;
+            md += `\n`;
+        }}
+
+        // Complexity Recommendations
+        if (complexity.recommendations && complexity.recommendations.length > 0) {{
+            md += `### Recommendations\n\n`;
+            complexity.recommendations.forEach(rec => {{
+                md += `- ${{rec}}\n`;
+            }});
+            md += `\n`;
+        }}
+
+        // Complexity Hotspots
+        if (complexity.hotspots && complexity.hotspots.length > 0) {{
+            md += `### Hotspots\n\n`;
+            md += `| File | Issues | Severity |\n|------|--------|----------|\n`;
+            complexity.hotspots.forEach(h => {{
+                const issues = (h.issues || []).join(', ');
+                md += `| ${{h.file}} | ${{issues}} | ${{h.severity}} |\n`;
+            }});
+            md += `\n`;
+        }}
+
+        // Resilience Analysis
+        md += `## Resilience Analysis\n\n`;
+        if (resilience.shield_rating) {{
+            md += `**Shield Rating:** ${{resilience.shield_rating}}\n\n`;
+        }}
+
+        // Category Scores
+        if (resilience.category_scores) {{
+            const cs = resilience.category_scores;
+            md += `### Category Scores\n\n`;
+            md += `| Category | Score |\n|----------|-------|\n`;
+            Object.entries(cs).forEach(([cat, score]) => {{
+                const displayScore = typeof score === 'number' ? score.toFixed(1) : score;
+                md += `| ${{cat.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase())}} | ${{displayScore}} |\n`;
+            }});
+            md += `\n`;
+        }}
+
+        // I/O Boundary Analysis
+        if (resilience.io_boundary_analysis) {{
+            const io = resilience.io_boundary_analysis;
+            md += `### I/O Boundary Analysis\n\n`;
+            md += `| Metric | Value |\n|--------|-------|\n`;
+            if (io.total_io_operations !== undefined) md += `| Total I/O Operations | ${{io.total_io_operations}} |\n`;
+            if (io.network_io_operations !== undefined) md += `| Network I/O Operations | ${{io.network_io_operations}} |\n`;
+            if (io.io_density !== undefined) md += `| I/O Density (per 100 LOC) | ${{io.io_density.toFixed(3)}} |\n`;
+            if (io.network_io_density !== undefined) md += `| Network I/O Density | ${{io.network_io_density.toFixed(3)}} |\n`;
+            md += `| Resilience Applicable | ${{io.resilience_applicable ? 'Yes' : 'No'}} |\n`;
+            md += `\n`;
+        }}
+
+        // Vulnerabilities
+        if (resilience.vulnerabilities && resilience.vulnerabilities.length > 0) {{
+            md += `### Vulnerabilities\n\n`;
+            md += `| File | Line | Type | Severity |\n|------|------|------|----------|\n`;
+            resilience.vulnerabilities.slice(0, 20).forEach(v => {{
+                md += `| ${{v.file}} | ${{v.line}} | ${{v.type}} | ${{v.severity}} |\n`;
+            }});
+            if (resilience.vulnerabilities.length > 20) {{
+                md += `\n*... and ${{resilience.vulnerabilities.length - 20}} more*\n`;
+            }}
+            md += `\n`;
+        }}
+
+        // Resilience Recommendations
+        if (resilience.recommendations && resilience.recommendations.length > 0) {{
+            md += `### Recommendations\n\n`;
+            resilience.recommendations.forEach(rec => {{
+                md += `**${{rec.priority}}:** ${{rec.category}}\n\n`;
+                md += `${{rec.message}}\n\n`;
+                if (rec.libraries && rec.libraries.length > 0) {{
+                    md += `Suggested libraries: ${{rec.libraries.join(', ')}}\n\n`;
+                }}
+            }});
+        }}
+
+        // Hubris Analysis (Theater Detection)
+        if (hubris && Object.keys(hubris).length > 0) {{
+            md += `## Theater Analysis (Hubris)\n\n`;
+            md += `| Metric | Value |\n|--------|-------|\n`;
+            const tr = hubris.theater_ratio;
+            const trDisplay = tr === 'Infinity' || tr === Infinity ? '∞' : (typeof tr === 'number' ? tr.toFixed(2) : tr);
+            md += `| Theater Ratio | ${{trDisplay}} |\n`;
+            md += `| Quadrant | ${{hubris.quadrant || 'N/A'}} |\n`;
+            md += `| Patterns Detected | ${{hubris.patterns_detected || 0}} |\n`;
+            md += `| Patterns Correct | ${{hubris.patterns_correct || 0}} |\n`;
+            md += `| High Severity Issues | ${{hubris.high_severity_issues || 0}} |\n`;
+            md += `\n`;
+        }}
+
+        // Footer
+        md += `---\n\n`;
+        md += `*Report generated by Prometheus/Olympus*\n`;
+        md += `*Copyright © 2025 Andrew H. Bond <andrew.bond@sjsu.edu>*\n`;
+
+        return md;
+    }}
     </script>
 
     <style>

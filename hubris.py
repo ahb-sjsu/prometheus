@@ -31,6 +31,7 @@ from detectors import (
 )
 
 # Import data models (re-exported for backward compatibility)
+from ignore_patterns import load_ignore_patterns, should_exclude
 from models import (  # noqa: F401
     CircuitBreakerIssue,
     ExceptionIssue,
@@ -146,34 +147,14 @@ class Hubris:
         languages_found = {}  # language -> file_count
         unsupported_found = {}  # language -> file_count
 
+        # Load ignore patterns from .prometheusignore or defaults
+        ignore_spec = load_ignore_patterns(self.codebase_path)
+
         # First pass: count files by language to determine primary language
         for ext in list(self.SUPPORTED_LANGUAGES.keys()) + list(self.UNSUPPORTED_LANGUAGES.keys()):
             for filepath in self.codebase_path.rglob(f"*{ext}"):
-                # Use relative path so we don't skip when codebase is inside a skip dir
-                try:
-                    rel_path = filepath.relative_to(self.codebase_path)
-                except ValueError:
-                    rel_path = filepath
-                if any(
-                    skip in str(rel_path)
-                    for skip in [
-                        "node_modules",
-                        "venv",
-                        ".venv",
-                        "__pycache__",
-                        ".git",
-                        "dist",
-                        "build",
-                        "vendor",
-                        "test",
-                        "tests",
-                        "__tests__",
-                        "spec",
-                        "mock",
-                        "fixture",
-                        ".olympus_cache",
-                    ]
-                ):
+                # Check if file should be excluded via .prometheusignore
+                if should_exclude(filepath, self.codebase_path, ignore_spec):
                     continue
 
                 if ext in self.SUPPORTED_LANGUAGES:
@@ -218,32 +199,8 @@ class Hubris:
         # Scan supported files
         for ext, language in self.SUPPORTED_LANGUAGES.items():
             for filepath in self.codebase_path.rglob(f"*{ext}"):
-                # Use relative path so we don't skip when codebase is inside a skip dir
-                try:
-                    rel_path = filepath.relative_to(self.codebase_path)
-                except ValueError:
-                    rel_path = filepath
-                # Skip non-source directories
-                if any(
-                    skip in str(rel_path)
-                    for skip in [
-                        "node_modules",
-                        "venv",
-                        ".venv",
-                        "__pycache__",
-                        ".git",
-                        "dist",
-                        "build",
-                        "vendor",
-                        "test",
-                        "tests",
-                        "__tests__",
-                        "spec",
-                        "mock",
-                        "fixture",
-                        ".olympus_cache",
-                    ]
-                ):
+                # Check if file should be excluded via .prometheusignore
+                if should_exclude(filepath, self.codebase_path, ignore_spec):
                     continue
 
                 try:
