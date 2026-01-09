@@ -26,6 +26,8 @@ python prometheus.py /path/to/your/code
 | **prometheus.py** | Titan who gave fire to humanity | Combined orchestrator — 2D fitness quadrant |
 | **shield_analyzer.py** (Aegis) | Shield of Zeus/Athena | Resilience pattern detector |
 | **entropy_analyzer.py** | Shannon | Complexity metrics |
+| **hubris.py** | Greek for "excessive pride" | Resilience theater detector — finds cargo-cult patterns |
+| **olympus.py** | Home of the gods | Multi-repository comparison tool |
 
 ## Theoretical Basis
 
@@ -162,6 +164,52 @@ To add new languages or metrics:
 1. Add extension mapping in `Extractor.LANGUAGE_EXTENSIONS`
 2. Implement `_analyze_<language>()` method
 3. Integrate additional static analysis tools
+
+## Hubris: Resilience Theater Detector
+
+Hubris analyzes codebases for **cargo-cult resilience patterns** — code that looks like it handles failures but doesn't actually work.
+
+### Quadrant Classification
+
+| Quadrant | Description |
+|----------|-------------|
+| **SIMPLE** | Few patterns, low complexity — appropriate for simple tasks |
+| **BATTLE_HARDENED** | Many patterns, correctly implemented — production-ready |
+| **OVERENGINEERED** | Too many patterns for the task — unnecessary complexity |
+| **CARGO_CULT** | Many patterns, poorly implemented — false sense of security |
+
+### What It Detects
+
+- **Retry without backoff**: Retries that hammer services without delay
+- **Missing timeouts**: Network calls without timeout configuration
+- **Empty exception handlers**: `except: pass` and similar anti-patterns
+- **Circuit breakers without metrics**: Breakers that can't report state
+- **Library soup**: Too many resilience libraries without coherent strategy
+
+### Architecture
+
+```
+hubris.py        # Main orchestrator
+├── models.py    # Data classes (HubrisReport, etc.)
+├── patterns.py  # Regex patterns for detection
+├── detectors.py # Detection logic (RetryDetector, TimeoutDetector, etc.)
+├── fp_filter.py # False positive filtering
+├── design_patterns.py  # Design pattern anti-pattern detection
+└── report.py    # HTML report generation
+```
+
+### Usage
+
+```bash
+# Analyze a codebase
+python hubris.py /path/to/code
+
+# Generate HTML report
+python hubris.py /path/to/code --html report.html
+
+# Export JSON
+python hubris.py /path/to/code -o report.json
+```
 
 ## Philosophy
 
