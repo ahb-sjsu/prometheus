@@ -1,0 +1,11 @@
+# Why are you interested in participating in the Fellows program?
+
+I've spent the past two years building falsifiable frameworks for AI alignment—the Bond Invariance Principle, SQND experiments, DEME architecture—largely in isolation from the frontier AI safety community. This fellowship represents an opportunity to bring these tools where they can have real impact: testing them against state-of-the-art models with researchers who understand the stakes.
+
+My core research question is deceptively simple: can we *measure* alignment failures before they become catastrophic? I've developed mathematical machinery (symmetry-based coherence detection, adversarial probe sets, gauge-theoretic normative analysis) and run thousands of experiments showing that LLMs exhibit measurable inconsistencies under semantic perturbation. But validating these methods requires scale—more compute, more models, and critically, collaboration with researchers who can challenge my assumptions.
+
+The fellowship appeals to me for two reasons. First, the transition from academic teaching to dedicated safety research. I've been splitting time between courses, thesis advising, and research; four months of focused work alongside Anthropic's team would let me push this work further than years of fragmented effort. Second, the community. AI safety is too important for isolated contributions. I want to learn how Anthropic thinks about these problems, test whether my frameworks integrate with your approaches to scalable oversight and interpretability, and contribute tools that might prove useful.
+
+Specifically, I want to: scale SQND experiments to rigorously characterize alignment failures across model families; apply the Bond Index and DEME evaluation to Claude to validate (or falsify) my methods on frontier systems; turn promising preprints into peer-reviewed contributions; and build practical verification tools that could inform deployment decisions. The fellowship's compute resources and mentorship make these goals tractable in ways they currently aren't.
+
+I'm not interested in theoretical elegance for its own sake. I want to build things that work—systems that catch alignment failures before they matter. Anthropic is doing the most serious work on this problem, and I want to contribute.
