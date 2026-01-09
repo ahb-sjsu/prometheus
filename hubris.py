@@ -149,8 +149,13 @@ class Hubris:
         # First pass: count files by language to determine primary language
         for ext in list(self.SUPPORTED_LANGUAGES.keys()) + list(self.UNSUPPORTED_LANGUAGES.keys()):
             for filepath in self.codebase_path.rglob(f"*{ext}"):
+                # Use relative path so we don't skip when codebase is inside a skip dir
+                try:
+                    rel_path = filepath.relative_to(self.codebase_path)
+                except ValueError:
+                    rel_path = filepath
                 if any(
-                    skip in str(filepath)
+                    skip in str(rel_path)
                     for skip in [
                         "node_modules",
                         "venv",
@@ -213,9 +218,14 @@ class Hubris:
         # Scan supported files
         for ext, language in self.SUPPORTED_LANGUAGES.items():
             for filepath in self.codebase_path.rglob(f"*{ext}"):
+                # Use relative path so we don't skip when codebase is inside a skip dir
+                try:
+                    rel_path = filepath.relative_to(self.codebase_path)
+                except ValueError:
+                    rel_path = filepath
                 # Skip non-source directories
                 if any(
-                    skip in str(filepath)
+                    skip in str(rel_path)
                     for skip in [
                         "node_modules",
                         "venv",

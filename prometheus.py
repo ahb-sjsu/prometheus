@@ -426,8 +426,11 @@ class Prometheus:
             # I/O boundary analysis
             "io_boundary_analysis": {
                 "total_io_operations": getattr(resilience_result, "total_io_operations", 0),
+                "network_io_operations": getattr(resilience_result, "network_io_operations", 0),
                 "io_density": getattr(resilience_result, "io_density", 0),
+                "network_io_density": getattr(resilience_result, "network_io_density", 0),
                 "has_io_boundaries": getattr(resilience_result, "has_io_boundaries", True),
+                "has_network_boundaries": getattr(resilience_result, "has_network_boundaries", True),
                 "resilience_applicable": getattr(resilience_result, "resilience_applicable", True),
                 "io_boundary_reason": getattr(resilience_result, "io_boundary_reason", ""),
             },
@@ -455,31 +458,33 @@ class Prometheus:
         complexity_threshold = 50  # >= 50 = low complexity (simpler code)
         resilience_threshold = 35  # >= 35 = adequate resilience for frameworks
 
-        # Check if resilience patterns are applicable (code crosses I/O boundaries)
+        # Check if resilience patterns are applicable (code crosses NETWORK I/O boundaries)
         if not getattr(resilience_result, "resilience_applicable", True):
-            # Code doesn't cross I/O boundaries - resilience patterns not expected
+            # Code doesn't cross network I/O boundaries - resilience patterns not expected
             total_loc = getattr(resilience_result, "total_loc", 0)
             total_io = getattr(resilience_result, "total_io_operations", 0)
+            network_io = getattr(resilience_result, "network_io_operations", 0)
+            file_io = total_io - network_io
             low_complexity = report.complexity_score >= complexity_threshold
-            
+
             if low_complexity:
                 # Simple computational/library code
                 report.quadrant = "BUNKER"
-                report.quadrant_description = "Simple computational/library code (no I/O boundaries)."
+                report.quadrant_description = "Simple computational/CLI code (no network I/O)."
                 report.fitness_verdict = (
-                    f"🏰 BUNKER (Library): Simple computational code.\n\n"
-                    f"Note: {total_io} I/O operations detected in {total_loc:,} LOC.\n"
-                    f"Resilience patterns (retries, timeouts, circuit breakers) aren't expected "
-                    f"for code that doesn't cross I/O boundaries. This is not a deficiency."
+                    f"🏰 BUNKER (CLI/Library): Simple code without network dependencies.\n\n"
+                    f"I/O Analysis: {network_io} network ops, {file_io} file ops in {total_loc:,} LOC.\n"
+                    f"Resilience patterns (retries, timeouts, circuit breakers) are for network-bound code. "
+                    f"This codebase primarily does local file I/O which doesn't need these patterns."
                 )
             else:
                 # Complex computational code
                 report.quadrant = "FORTRESS"
-                report.quadrant_description = "Complex computational/library code (no I/O boundaries)."
+                report.quadrant_description = "Complex computational/CLI code (no network I/O)."
                 report.fitness_verdict = (
-                    f"🏯 FORTRESS (Library): Complex computational code.\n\n"
-                    f"Note: {total_io} I/O operations detected in {total_loc:,} LOC.\n"
-                    f"Resilience patterns aren't expected for computational code. "
+                    f"🏯 FORTRESS (CLI/Library): Complex code without network dependencies.\n\n"
+                    f"I/O Analysis: {network_io} network ops, {file_io} file ops in {total_loc:,} LOC.\n"
+                    f"Resilience patterns aren't needed for file-based code. "
                     f"Consider simplifying the algorithms or structure."
                 )
 

@@ -168,8 +168,11 @@ class IOBoundaryMetrics:
     
     # Computed
     total_io_operations: int = 0
+    network_io_operations: int = 0  # Only network/DB I/O that needs resilience
     io_density: float = 0.0        # I/O operations per 100 LOC
+    network_io_density: float = 0.0  # Network I/O per 100 LOC
     has_io_boundaries: bool = False
+    has_network_boundaries: bool = False  # Specifically network I/O
 
 
 @dataclass
@@ -220,8 +223,11 @@ class AegisReport:
     
     # I/O boundary analysis
     total_io_operations: int = 0
+    network_io_operations: int = 0       # Only network/DB I/O that needs resilience
     io_density: float = 0.0              # I/O operations per 100 LOC
+    network_io_density: float = 0.0      # Network I/O per 100 LOC
     has_io_boundaries: bool = False       # Does code cross I/O boundaries?
+    has_network_boundaries: bool = False  # Specifically network I/O needing resilience
     io_boundary_reason: str = ""          # Explanation if no I/O detected
     resilience_applicable: bool = True    # Should resilience score apply?
 
@@ -709,19 +715,31 @@ class PythonResilienceAnalyzer(PatternDetector):
         
         # Calculate totals
         io.total_io_operations = (
-            io.http_calls + 
-            io.socket_operations + 
-            io.grpc_calls + 
-            io.database_queries + 
-            io.file_operations + 
-            io.subprocess_calls + 
+            io.http_calls +
+            io.socket_operations +
+            io.grpc_calls +
+            io.database_queries +
+            io.file_operations +
+            io.subprocess_calls +
             io.queue_operations
         )
-        
+
+        # Network I/O specifically (needs resilience patterns like retries, circuit breakers)
+        # File I/O and subprocess are local - they need error handling but not network resilience
+        io.network_io_operations = (
+            io.http_calls +
+            io.socket_operations +
+            io.grpc_calls +
+            io.database_queries +
+            io.queue_operations
+        )
+
         if metrics.lines_of_code > 0:
             io.io_density = (io.total_io_operations / metrics.lines_of_code) * 100
-        
+            io.network_io_density = (io.network_io_operations / metrics.lines_of_code) * 100
+
         io.has_io_boundaries = io.total_io_operations > 0
+        io.has_network_boundaries = io.network_io_operations > 0
 
 
 class GenericResilienceAnalyzer(PatternDetector):
@@ -838,8 +856,13 @@ class Aegis:
 
         for ext in supported_extensions:
             for filepath in self.codebase_path.rglob(f"*{ext}"):
+                # Get the relative path from codebase root to check for skip dirs
+                try:
+                    rel_path = filepath.relative_to(self.codebase_path)
+                except ValueError:
+                    rel_path = filepath
                 if any(
-                    skip in str(filepath)
+                    skip in str(rel_path)
                     for skip in [
                         "node_modules",
                         "venv",
@@ -850,6 +873,7 @@ class Aegis:
                         "build",
                         ".tox",
                         "egg-info",
+                        ".olympus_cache",
                     ]
                 ):
                     continue
@@ -1137,29 +1161,34 @@ class Aegis:
         
         # =================================================================
         # I/O BOUNDARY CHECK
-        # Code that doesn't cross I/O boundaries doesn't need resilience patterns.
+        # Only NETWORK I/O (HTTP, sockets, gRPC, database, queues) needs resilience patterns.
+        # File I/O and subprocess calls need error handling but not retries/circuit breakers.
         # =================================================================
         total_io = sum(fm.io_boundaries.total_io_operations for fm in self.file_metrics)
+        network_io = sum(fm.io_boundaries.network_io_operations for fm in self.file_metrics)
+
         report.total_io_operations = total_io
+        report.network_io_operations = network_io
         report.io_density = (total_io / total_loc * 100) if total_loc > 0 else 0
+        report.network_io_density = (network_io / total_loc * 100) if total_loc > 0 else 0
         report.has_io_boundaries = total_io > 0
-        
-        # Minimum I/O threshold: at least 1 I/O operation per 5000 LOC to be considered I/O-bound
-        # This is intentionally permissive to avoid false NO_IO classifications
-        MIN_IO_DENSITY = 0.02  # 0.02 I/O ops per 100 LOC = 1 per 5000 LOC
-        
-        if report.io_density < MIN_IO_DENSITY and total_loc >= 2000:
-            # Large codebase with minimal I/O - resilience patterns not applicable
+        report.has_network_boundaries = network_io > 0
+
+        # Check NETWORK I/O specifically - file I/O doesn't require resilience patterns
+        # Minimum threshold: at least 1 network I/O operation per 5000 LOC
+        MIN_NETWORK_IO_DENSITY = 0.02  # 0.02 network I/O ops per 100 LOC = 1 per 5000 LOC
+
+        if report.network_io_density < MIN_NETWORK_IO_DENSITY and total_loc >= 2000:
+            # Large codebase with minimal network I/O - resilience patterns not applicable
             report.resilience_applicable = False
             report.overall_resilience_score = -1  # Sentinel for N/A
             report.shield_rating = "NO_IO"
+            file_io = total_io - network_io
             report.io_boundary_reason = (
-                f"Codebase has minimal I/O boundary crossings ({total_io} operations in {total_loc:,} LOC). "
-                f"Resilience patterns (retries, circuit breakers, timeouts) apply to I/O-bound code. "
-                f"This appears to be primarily computational/library code where such patterns aren't expected."
+                f"Codebase has minimal network I/O ({network_io} network ops, {file_io} file ops in {total_loc:,} LOC). "
+                f"Resilience patterns (retries, circuit breakers, timeouts) apply to network-bound code. "
+                f"This appears to be primarily computational/CLI code where such patterns aren't expected."
             )
-            # Still calculate category scores for informational purposes
-            report.resilience_applicable = False
 
         # MINIMUM SIZE CHECK
         # Codebases under 2000 LOC are too small to have meaningful resilience patterns.
