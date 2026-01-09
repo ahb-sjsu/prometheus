@@ -18,30 +18,27 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-# Import data models
-from models import (
-    HubrisReport,
-    RetryIssue,
-    TimeoutIssue,
-    CircuitBreakerIssue,
-    ExceptionIssue,
-    FallbackIssue,
-    DesignPatternIssue,
-    PatternDetection,
-)
-
-# Import detectors
-from detectors import (
-    RetryDetector,
-    TimeoutDetector,
-    CircuitBreakerDetector,
-    ExceptionDetector,
-    LibraryDetector,
-)
-
 # Import design pattern detector
 from design_patterns import DesignPatternDetector, _is_generated_file
 
+# Import detectors
+from detectors import (
+    CircuitBreakerDetector,
+    ExceptionDetector,
+    LibraryDetector,
+    RetryDetector,
+    TimeoutDetector,
+)
+
+# Import data models (re-exported for backward compatibility)
+from models import (  # noqa: F401
+    CircuitBreakerIssue,
+    ExceptionIssue,
+    HubrisReport,
+    PatternDetection,
+    RetryIssue,
+    TimeoutIssue,
+)
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -437,7 +434,9 @@ class Hubris:
                 "but add failure modes rather than preventing them. "
                 "The complexity likely makes the system LESS reliable."
             )
-            report.risk_level = "CRITICAL" if report.theater_ratio > 3.0 else "HIGH"  # Raised from 2.5
+            report.risk_level = (
+                "CRITICAL" if report.theater_ratio > 3.0 else "HIGH"
+            )  # Raised from 2.5
 
         # Special case: library soup
         if report.library_count > 2:

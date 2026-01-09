@@ -28,6 +28,7 @@ from olympus import (
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def temp_dir():
     """Create a temporary directory."""
@@ -47,18 +48,18 @@ def prometheus_report_with_na(temp_dir):
             "complexity_score": 55,
             "complexity_risk": "MEDIUM",
             "resilience_score": 40,
-            "shield_rating": "BRONZE"
+            "shield_rating": "BRONZE",
         },
         "hubris": {
             "theater_ratio": "N/A",
             "quadrant": "N/A",
             "patterns_detected": 0,
             "patterns_correct": 0,
-            "high_severity_issues": 0
-        }
+            "high_severity_issues": 0,
+        },
     }
 
-    with open(report_path, 'w') as f:
+    with open(report_path, "w") as f:
         json.dump(report_data, f)
 
     return str(report_path)
@@ -76,18 +77,18 @@ def prometheus_report_with_infinity(temp_dir):
             "complexity_score": 70,
             "complexity_risk": "HIGH",
             "resilience_score": 20,
-            "shield_rating": "PAPER"
+            "shield_rating": "PAPER",
         },
         "hubris": {
             "theater_ratio": "∞",
             "quadrant": "CARGO_CULT",
             "patterns_detected": 10,
             "patterns_correct": 0,
-            "high_severity_issues": 5
-        }
+            "high_severity_issues": 5,
+        },
     }
 
-    with open(report_path, 'w') as f:
+    with open(report_path, "w") as f:
         json.dump(report_data, f)
 
     return str(report_path)
@@ -105,18 +106,18 @@ def prometheus_report_normal(temp_dir):
             "complexity_score": 60,
             "complexity_risk": "MEDIUM",
             "resilience_score": 70,
-            "shield_rating": "STEEL"
+            "shield_rating": "STEEL",
         },
         "hubris": {
             "theater_ratio": 1.5,
             "quadrant": "BATTLE_HARDENED",
             "patterns_detected": 10,
             "patterns_correct": 7,
-            "high_severity_issues": 1
-        }
+            "high_severity_issues": 1,
+        },
     }
 
-    with open(report_path, 'w') as f:
+    with open(report_path, "w") as f:
         json.dump(report_data, f)
 
     return str(report_path)
@@ -125,6 +126,7 @@ def prometheus_report_normal(temp_dir):
 # =============================================================================
 # REPO SNAPSHOT TESTS
 # =============================================================================
+
 
 class TestRepoSnapshot:
     """Tests for RepoSnapshot dataclass."""
@@ -136,35 +138,24 @@ class TestRepoSnapshot:
 
     def test_none_theater_ratio(self):
         """Test that theater_ratio can be None."""
-        snapshot = RepoSnapshot(
-            name="test",
-            timestamp="2024-01-01",
-            theater_ratio=None
-        )
+        snapshot = RepoSnapshot(name="test", timestamp="2024-01-01", theater_ratio=None)
         assert snapshot.theater_ratio is None
 
     def test_infinity_theater_ratio(self):
         """Test that theater_ratio can be infinity."""
-        snapshot = RepoSnapshot(
-            name="test",
-            timestamp="2024-01-01",
-            theater_ratio=float('inf')
-        )
+        snapshot = RepoSnapshot(name="test", timestamp="2024-01-01", theater_ratio=float("inf"))
         assert math.isinf(snapshot.theater_ratio)
 
     def test_normal_theater_ratio(self):
         """Test normal theater_ratio value."""
-        snapshot = RepoSnapshot(
-            name="test",
-            timestamp="2024-01-01",
-            theater_ratio=2.5
-        )
+        snapshot = RepoSnapshot(name="test", timestamp="2024-01-01", theater_ratio=2.5)
         assert snapshot.theater_ratio == 2.5
 
 
 # =============================================================================
 # CALCULATE_OVERALL_HEALTH TESTS
 # =============================================================================
+
 
 class TestCalculateOverallHealth:
     """Tests for calculate_overall_health function."""
@@ -176,7 +167,7 @@ class TestCalculateOverallHealth:
             timestamp="2024-01-01",
             complexity_score=50,
             resilience_score=50,
-            theater_ratio=None
+            theater_ratio=None,
         )
 
         health = calculate_overall_health(snapshot)
@@ -196,7 +187,7 @@ class TestCalculateOverallHealth:
             timestamp="2024-01-01",
             complexity_score=50,
             resilience_score=50,
-            theater_ratio=float('inf')
+            theater_ratio=float("inf"),
         )
 
         health = calculate_overall_health(snapshot)
@@ -215,7 +206,7 @@ class TestCalculateOverallHealth:
             timestamp="2024-01-01",
             complexity_score=50,
             resilience_score=50,
-            theater_ratio=0.0
+            theater_ratio=0.0,
         )
 
         health = calculate_overall_health(snapshot)
@@ -234,7 +225,7 @@ class TestCalculateOverallHealth:
             timestamp="2024-01-01",
             complexity_score=50,
             resilience_score=50,
-            theater_ratio=1.0
+            theater_ratio=1.0,
         )
 
         health = calculate_overall_health(snapshot)
@@ -253,7 +244,7 @@ class TestCalculateOverallHealth:
             timestamp="2024-01-01",
             complexity_score=50,
             resilience_score=50,
-            theater_ratio=4.0  # 4x more patterns than correct
+            theater_ratio=4.0,  # 4x more patterns than correct
         )
 
         health = calculate_overall_health(snapshot)
@@ -270,7 +261,7 @@ class TestCalculateOverallHealth:
         test_cases = [
             (0, 0, None),
             (100, 100, 1.0),
-            (50, 50, float('inf')),
+            (50, 50, float("inf")),
             (0, 100, 0.5),
             (100, 0, 10.0),
         ]
@@ -281,16 +272,19 @@ class TestCalculateOverallHealth:
                 timestamp="2024-01-01",
                 complexity_score=complexity,
                 resilience_score=resilience,
-                theater_ratio=theater
+                theater_ratio=theater,
             )
 
             health = calculate_overall_health(snapshot)
-            assert 0 <= health <= 100, f"Health {health} out of range for {complexity}, {resilience}, {theater}"
+            assert (
+                0 <= health <= 100
+            ), f"Health {health} out of range for {complexity}, {resilience}, {theater}"
 
 
 # =============================================================================
 # LOAD_PROMETHEUS_REPORT TESTS
 # =============================================================================
+
 
 class TestLoadPrometheusReport:
     """Tests for load_prometheus_report function."""
@@ -331,10 +325,10 @@ class TestLoadPrometheusReport:
             "codebase_path": "/test",
             "timestamp": "2024-01-01",
             "scores": {},
-            "hubris": {"theater_ratio": "inf"}
+            "hubris": {"theater_ratio": "inf"},
         }
 
-        with open(report_path, 'w') as f:
+        with open(report_path, "w") as f:
             json.dump(report_data, f)
 
         snapshot = load_prometheus_report(str(report_path))
@@ -353,10 +347,10 @@ class TestLoadPrometheusReport:
             "codebase_path": "/test",
             "timestamp": "2024-01-01",
             "scores": {},
-            "hubris": {"theater_ratio": "Infinity"}
+            "hubris": {"theater_ratio": "Infinity"},
         }
 
-        with open(report_path, 'w') as f:
+        with open(report_path, "w") as f:
             json.dump(report_data, f)
 
         snapshot = load_prometheus_report(str(report_path))
@@ -374,10 +368,10 @@ class TestLoadPrometheusReport:
             "codebase_path": "/test",
             "timestamp": "2024-01-01",
             "scores": {},
-            "hubris": {"theater_ratio": "invalid_value"}
+            "hubris": {"theater_ratio": "invalid_value"},
         }
 
-        with open(report_path, 'w') as f:
+        with open(report_path, "w") as f:
             json.dump(report_data, f)
 
         snapshot = load_prometheus_report(str(report_path))
@@ -392,6 +386,7 @@ class TestLoadPrometheusReport:
 # =============================================================================
 # OLYMPUS REPORT TESTS
 # =============================================================================
+
 
 class TestOlympusReport:
     """Tests for OlympusReport dataclass."""
@@ -409,10 +404,7 @@ class TestOlympusReport:
         snapshot1 = RepoSnapshot(name="repo1", timestamp="2024-01-01", theater_ratio=1.5)
         snapshot2 = RepoSnapshot(name="repo2", timestamp="2024-01-01", theater_ratio=None)
 
-        report = OlympusReport(
-            timestamp="2024-01-01",
-            repos=[snapshot1, snapshot2]
-        )
+        report = OlympusReport(timestamp="2024-01-01", repos=[snapshot1, snapshot2])
 
         assert len(report.repos) == 2
 
@@ -420,6 +412,7 @@ class TestOlympusReport:
 # =============================================================================
 # INTEGRATION TESTS
 # =============================================================================
+
 
 class TestIntegration:
     """Integration tests for olympus N/A handling."""
@@ -439,7 +432,7 @@ class TestIntegration:
             if theater == "N/A":
                 theater_val = None
             elif theater == "∞":
-                theater_val = float('inf')
+                theater_val = float("inf")
             else:
                 theater_val = theater
 
@@ -448,7 +441,7 @@ class TestIntegration:
                 timestamp="2024-01-01",
                 complexity_score=50,
                 resilience_score=50,
-                theater_ratio=theater_val
+                theater_ratio=theater_val,
             )
             snapshots.append(snapshot)
 
@@ -459,7 +452,8 @@ class TestIntegration:
 
         # Calculate average excluding None and inf
         finite_ratios = [
-            s.theater_ratio for s in snapshots
+            s.theater_ratio
+            for s in snapshots
             if s.theater_ratio is not None and not math.isinf(s.theater_ratio)
         ]
 
@@ -472,6 +466,7 @@ class TestIntegration:
 # EDGE CASES
 # =============================================================================
 
+
 class TestEdgeCases:
     """Tests for edge cases."""
 
@@ -482,7 +477,7 @@ class TestEdgeCases:
             timestamp="2024-01-01",
             complexity_score=50,
             resilience_score=50,
-            theater_ratio=-1.0
+            theater_ratio=-1.0,
         )
 
         health = calculate_overall_health(snapshot)
@@ -500,7 +495,7 @@ class TestEdgeCases:
             timestamp="2024-01-01",
             complexity_score=50,
             resilience_score=50,
-            theater_ratio=0.001
+            theater_ratio=0.001,
         )
 
         health = calculate_overall_health(snapshot)
@@ -509,6 +504,7 @@ class TestEdgeCases:
         # complexity: 50 * 0.35 = 17.5, resilience: 50 * 0.35 = 17.5
         # total: 17.5 + 17.5 + 29.97 ≈ 64.97
         import pytest
+
         assert health == pytest.approx(64.97, rel=0.01)
 
     def test_theater_ratio_exactly_one(self):
@@ -518,7 +514,7 @@ class TestEdgeCases:
             timestamp="2024-01-01",
             complexity_score=100,
             resilience_score=100,
-            theater_ratio=1.0
+            theater_ratio=1.0,
         )
 
         health = calculate_overall_health(snapshot)
@@ -529,5 +525,5 @@ class TestEdgeCases:
         assert health == 85.0
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

@@ -8,41 +8,43 @@ Uses a base class to eliminate repetition across detector types.
 """
 
 import re
-from typing import Any
 
-from models import (
-    PatternDetection, RetryIssue, TimeoutIssue, 
-    CircuitBreakerIssue, ExceptionIssue
-)
-from patterns import (
-    RETRY_PATTERNS, RETRY_TRIGGERS, RETRY_QUALITY,
-    TIMEOUT_PATTERNS, TIMEOUT_ISSUES,
-    CIRCUIT_BREAKER_PATTERNS, CB_TRIGGERS, CB_QUALITY,
-    EXCEPTION_PATTERNS, EXCEPTION_ANTI_PATTERNS,
-    LIBRARY_PATTERNS,
-)
 from fp_filter import filter_matches
+from models import CircuitBreakerIssue, ExceptionIssue, PatternDetection, RetryIssue, TimeoutIssue
+from patterns import (
+    CB_QUALITY,
+    CB_TRIGGERS,
+    CIRCUIT_BREAKER_PATTERNS,
+    EXCEPTION_ANTI_PATTERNS,
+    EXCEPTION_PATTERNS,
+    LIBRARY_PATTERNS,
+    RETRY_PATTERNS,
+    RETRY_QUALITY,
+    RETRY_TRIGGERS,
+    TIMEOUT_ISSUES,
+    TIMEOUT_PATTERNS,
+)
 
 
 class BaseDetector:
     """Base class for all pattern detectors."""
-    
+
     PATTERNS: dict = {}
     TRIGGERS: set = set()
     QUALITY_INDICATORS: set = set()
     PATTERN_TYPE: str = ""
-    
+
     def get_patterns(self, language: str) -> dict:
         """Get patterns for a language, with fallback to python."""
         return self.PATTERNS.get(language, self.PATTERNS.get("python", {}))
-    
+
     def get_context(self, content: str, line_num: int, before: int = 5, after: int = 15) -> str:
         """Get surrounding context for a match."""
         lines = content.splitlines()
         start = max(0, line_num - before)
         end = min(len(lines), line_num + after)
         return "\n".join(lines[start:end])
-    
+
     def get_line_number(self, content: str, position: int) -> int:
         """Get line number for a position in content."""
         return content[:position].count("\n") + 1
@@ -50,54 +52,63 @@ class BaseDetector:
 
 class RetryDetector(BaseDetector):
     """Detect retry patterns and evaluate their quality."""
-    
+
     PATTERNS = RETRY_PATTERNS
     TRIGGERS = RETRY_TRIGGERS
     QUALITY_INDICATORS = RETRY_QUALITY
     PATTERN_TYPE = "retry"
-    
+
     def detect(self, content: str, filepath: str, language: str) -> tuple[list, list]:
         """Detect retry patterns and issues."""
         patterns = []
         issues = []
-        
+
         lang_patterns = self.get_patterns(language)
-        
+
         for pattern_name, pattern in lang_patterns.items():
             # Only check trigger patterns, not quality indicators
             if pattern_name not in self.TRIGGERS:
                 continue
-                
+
             for match in filter_matches(pattern, content, filepath):
                 line_num = self.get_line_number(content, match.start())
                 context = self.get_context(content, line_num)
                 quality = self._evaluate_quality(context, lang_patterns)
-                
-                patterns.append(PatternDetection(
-                    pattern_type=self.PATTERN_TYPE,
-                    file=filepath,
-                    line=line_num,
-                    quality=quality,
-                    details={"pattern": pattern_name, "library": "decorator" in pattern_name or "lib" in pattern_name},
-                ))
-                
+
+                patterns.append(
+                    PatternDetection(
+                        pattern_type=self.PATTERN_TYPE,
+                        file=filepath,
+                        line=line_num,
+                        quality=quality,
+                        details={
+                            "pattern": pattern_name,
+                            "library": "decorator" in pattern_name or "lib" in pattern_name,
+                        },
+                    )
+                )
+
                 if quality != "CORRECT":
                     issues.extend(self._generate_issues(filepath, line_num, context, lang_patterns))
-        
+
         return patterns, issues
-    
+
     def _evaluate_quality(self, context: str, lang_patterns: dict) -> str:
         """Evaluate retry implementation quality."""
-        has_backoff = bool(lang_patterns.get("exponential_backoff", re.compile(r"$^")).search(context))
+        has_backoff = bool(
+            lang_patterns.get("exponential_backoff", re.compile(r"$^")).search(context)
+        )
         has_jitter = bool(lang_patterns.get("jitter", re.compile(r"$^")).search(context))
         has_max = bool(lang_patterns.get("max_retries", re.compile(r"$^")).search(context))
         has_sleep = bool(lang_patterns.get("sleep_call", re.compile(r"sleep")).search(context))
-        
-        broad_exception = bool(re.search(
-            r"except\s*:|except\s+Exception\s*:|catch\s*\(\s*(?:Exception|Error|Throwable)\s*\)",
-            context
-        ))
-        
+
+        broad_exception = bool(
+            re.search(
+                r"except\s*:|except\s+Exception\s*:|catch\s*\(\s*(?:Exception|Error|Throwable)\s*\)",
+                context,
+            )
+        )
+
         if has_backoff and has_max and (has_jitter or not broad_exception):
             return "CORRECT"
         elif has_sleep and has_max:
@@ -106,39 +117,53 @@ class RetryDetector(BaseDetector):
             return "PARTIAL"
         else:
             return "CARGO_CULT"
-    
+
     def _generate_issues(self, filepath: str, line: int, context: str, lang_patterns: dict) -> list:
         """Generate specific issues for a retry pattern."""
         issues = []
-        
-        has_backoff = bool(lang_patterns.get("exponential_backoff", re.compile(r"$^")).search(context))
+
+        has_backoff = bool(
+            lang_patterns.get("exponential_backoff", re.compile(r"$^")).search(context)
+        )
         has_jitter = bool(lang_patterns.get("jitter", re.compile(r"$^")).search(context))
         has_max = bool(lang_patterns.get("max_retries", re.compile(r"$^")).search(context))
-        
+
         if not has_backoff:
-            issues.append(RetryIssue(
-                file=filepath, line=line,
-                issue_type="no_backoff", severity="HIGH",
-                description="Retry without exponential backoff - can cause thundering herd",
-                fix_suggestion="Add exponential backoff: delay = base_delay * (2 ** attempt)",
-            ))
-        
+            issues.append(
+                RetryIssue(
+                    file=filepath,
+                    line=line,
+                    issue_type="no_backoff",
+                    severity="HIGH",
+                    description="Retry without exponential backoff - can cause thundering herd",
+                    fix_suggestion="Add exponential backoff: delay = base_delay * (2 ** attempt)",
+                )
+            )
+
         if not has_max:
-            issues.append(RetryIssue(
-                file=filepath, line=line,
-                issue_type="no_max", severity="HIGH",
-                description="Retry without maximum attempts - may retry forever",
-                fix_suggestion="Add max_retries limit (typically 3-5 attempts)",
-            ))
-        
+            issues.append(
+                RetryIssue(
+                    file=filepath,
+                    line=line,
+                    issue_type="no_max",
+                    severity="HIGH",
+                    description="Retry without maximum attempts - may retry forever",
+                    fix_suggestion="Add max_retries limit (typically 3-5 attempts)",
+                )
+            )
+
         if has_backoff and not has_jitter:
-            issues.append(RetryIssue(
-                file=filepath, line=line,
-                issue_type="no_jitter", severity="MEDIUM",
-                description="Backoff without jitter - synchronized retries can still overwhelm",
-                fix_suggestion="Add random jitter: delay * (1 + random.uniform(-0.1, 0.1))",
-            ))
-        
+            issues.append(
+                RetryIssue(
+                    file=filepath,
+                    line=line,
+                    issue_type="no_jitter",
+                    severity="MEDIUM",
+                    description="Backoff without jitter - synchronized retries can still overwhelm",
+                    fix_suggestion="Add random jitter: delay * (1 + random.uniform(-0.1, 0.1))",
+                )
+            )
+
         return issues
 
 
@@ -177,29 +202,39 @@ class TimeoutDetector(BaseDetector):
 
                 quality = "CARGO_CULT"
 
-                patterns.append(PatternDetection(
-                    pattern_type=self.PATTERN_TYPE,
-                    file=filepath,
-                    line=line_num,
-                    quality=quality,
-                    details={"issue": pattern_name},
-                ))
+                patterns.append(
+                    PatternDetection(
+                        pattern_type=self.PATTERN_TYPE,
+                        file=filepath,
+                        line=line_num,
+                        quality=quality,
+                        details={"issue": pattern_name},
+                    )
+                )
 
                 if pattern_name == "timeout_none":
                     # Lower severity if it looks like configuration/setup
                     severity = "MEDIUM" if self._is_config_context(context) else "HIGH"
-                    issues.append(TimeoutIssue(
-                        file=filepath, line=line_num,
-                        issue_type="explicit_none", severity=severity,
-                        description="Explicit timeout=None disables timeout - can hang indefinitely",
-                    ))
+                    issues.append(
+                        TimeoutIssue(
+                            file=filepath,
+                            line=line_num,
+                            issue_type="explicit_none",
+                            severity=severity,
+                            description="Explicit timeout=None disables timeout - can hang indefinitely",
+                        )
+                    )
                 else:
-                    issues.append(TimeoutIssue(
-                        file=filepath, line=line_num,
-                        issue_type="missing", severity="HIGH",
-                        description="Network call without timeout - can hang indefinitely",
-                        context=match.group(0)[:100],
-                    ))
+                    issues.append(
+                        TimeoutIssue(
+                            file=filepath,
+                            line=line_num,
+                            issue_type="missing",
+                            severity="HIGH",
+                            description="Network call without timeout - can hang indefinitely",
+                            context=match.group(0)[:100],
+                        )
+                    )
 
         # Check for configured timeouts (these are good)
         for pattern_name, pattern in lang_patterns.items():
@@ -209,73 +244,84 @@ class TimeoutDetector(BaseDetector):
             for match in filter_matches(pattern, content, filepath):
                 line_num = self.get_line_number(content, match.start())
 
-                patterns.append(PatternDetection(
-                    pattern_type=self.PATTERN_TYPE,
-                    file=filepath,
-                    line=line_num,
-                    quality="CORRECT",
-                    details={"pattern": pattern_name},
-                ))
+                patterns.append(
+                    PatternDetection(
+                        pattern_type=self.PATTERN_TYPE,
+                        file=filepath,
+                        line=line_num,
+                        quality="CORRECT",
+                        details={"pattern": pattern_name},
+                    )
+                )
 
         return patterns, issues
 
     def _is_default_parameter(self, context: str) -> bool:
         """Check if timeout=None is a default parameter in a function definition."""
         # Function/method definitions
-        if re.search(r'def\s+\w+\s*\([^)]*timeout\s*=\s*None', context):
+        if re.search(r"def\s+\w+\s*\([^)]*timeout\s*=\s*None", context):
             return True
         # Class __init__ with timeout parameter
-        if re.search(r'def\s+__init__\s*\([^)]*timeout\s*=\s*None', context):
+        if re.search(r"def\s+__init__\s*\([^)]*timeout\s*=\s*None", context):
             return True
         # Constructor or function signature patterns in other languages
-        if re.search(r'function\s+\w+\s*\([^)]*timeout\s*[=:]\s*null', context, re.IGNORECASE):
+        if re.search(r"function\s+\w+\s*\([^)]*timeout\s*[=:]\s*null", context, re.IGNORECASE):
             return True
         return False
 
     def _is_config_context(self, context: str) -> bool:
         """Check if timeout=None is in a configuration/setup context."""
         context_lower = context.lower()
-        config_indicators = ['config', 'settings', 'options', 'defaults', 'self.timeout', 'this.timeout']
+        config_indicators = [
+            "config",
+            "settings",
+            "options",
+            "defaults",
+            "self.timeout",
+            "this.timeout",
+        ]
         return any(ind in context_lower for ind in config_indicators)
 
 
 class CircuitBreakerDetector(BaseDetector):
     """Detect circuit breaker patterns and issues."""
-    
+
     PATTERNS = CIRCUIT_BREAKER_PATTERNS
     TRIGGERS = CB_TRIGGERS
     QUALITY_INDICATORS = CB_QUALITY
     PATTERN_TYPE = "circuit_breaker"
-    
+
     def detect(self, content: str, filepath: str, language: str) -> tuple[list, list]:
         """Detect circuit breaker patterns and issues."""
         patterns = []
         issues = []
-        
+
         lang_patterns = self.get_patterns(language)
-        
+
         for pattern_name, pattern in lang_patterns.items():
             if pattern_name in self.QUALITY_INDICATORS:
                 continue
-                
+
             for match in filter_matches(pattern, content, filepath):
                 line_num = self.get_line_number(content, match.start())
                 context = self.get_context(content, line_num, before=5, after=30)
                 quality = self._evaluate_quality(context, lang_patterns)
-                
-                patterns.append(PatternDetection(
-                    pattern_type=self.PATTERN_TYPE,
-                    file=filepath,
-                    line=line_num,
-                    quality=quality,
-                    details={"library": pattern_name},
-                ))
-                
+
+                patterns.append(
+                    PatternDetection(
+                        pattern_type=self.PATTERN_TYPE,
+                        file=filepath,
+                        line=line_num,
+                        quality=quality,
+                        details={"library": pattern_name},
+                    )
+                )
+
                 if quality != "CORRECT":
                     issues.extend(self._generate_issues(filepath, line_num, context, lang_patterns))
-        
+
         return patterns, issues
-    
+
     def _evaluate_quality(self, context: str, lang_patterns: dict) -> str:
         """Evaluate circuit breaker implementation quality."""
         has_fallback = any(
@@ -286,18 +332,18 @@ class CircuitBreakerDetector(BaseDetector):
             lang_patterns.get(p, re.compile(r"$^")).search(context)
             for p in ["cb_metrics", "cb_listener", "cb_events", "cb_on_state", "cb_logging"]
         )
-        
+
         if has_fallback and has_metrics:
             return "CORRECT"
         elif has_fallback or has_metrics:
             return "PARTIAL"
         else:
             return "CARGO_CULT"
-    
+
     def _generate_issues(self, filepath: str, line: int, context: str, lang_patterns: dict) -> list:
         """Generate circuit breaker issues."""
         issues = []
-        
+
         has_metrics = any(
             lang_patterns.get(p, re.compile(r"$^")).search(context)
             for p in ["cb_metrics", "cb_listener", "cb_events", "cb_on_state", "cb_logging"]
@@ -306,21 +352,29 @@ class CircuitBreakerDetector(BaseDetector):
             lang_patterns.get(p, re.compile(r"$^")).search(context)
             for p in ["cb_fallback", "fallback"]
         )
-        
+
         if not has_metrics:
-            issues.append(CircuitBreakerIssue(
-                file=filepath, line=line,
-                issue_type="invisible", severity="HIGH",
-                description="Circuit breaker without metrics/logging - state changes invisible to operators",
-            ))
-        
+            issues.append(
+                CircuitBreakerIssue(
+                    file=filepath,
+                    line=line,
+                    issue_type="invisible",
+                    severity="HIGH",
+                    description="Circuit breaker without metrics/logging - state changes invisible to operators",
+                )
+            )
+
         if not has_fallback:
-            issues.append(CircuitBreakerIssue(
-                file=filepath, line=line,
-                issue_type="no_fallback", severity="MEDIUM",
-                description="Circuit breaker without fallback - open circuit will just throw exceptions",
-            ))
-        
+            issues.append(
+                CircuitBreakerIssue(
+                    file=filepath,
+                    line=line,
+                    issue_type="no_fallback",
+                    severity="MEDIUM",
+                    description="Circuit breaker without fallback - open circuit will just throw exceptions",
+                )
+            )
+
         return issues
 
 
@@ -333,16 +387,16 @@ class ExceptionDetector(BaseDetector):
     # CALIBRATED: Severity based on actual impact, not theoretical purity
     SEVERITY_MAP = {
         "bare_except": "MEDIUM",  # Bad but common, often intentional for cleanup
-        "broad_except": "LOW",    # Lowered - often intentional at boundaries
+        "broad_except": "LOW",  # Lowered - often intentional at boundaries
         "except_pass": "MEDIUM",  # Context matters - check for logging
         "except_continue": "MEDIUM",
         "empty_catch": "MEDIUM",
-        "catch_all": "LOW",       # Lowered - often intentional
-        "catch_throwable": "LOW", # Lowered - often intentional in Java
+        "catch_all": "LOW",  # Lowered - often intentional
+        "catch_throwable": "LOW",  # Lowered - often intentional in Java
         "swallow_exception": "LOW",  # Has comment, somewhat intentional
-        "ignore_error": "LOW",    # Go idiom - sometimes intentional
+        "ignore_error": "LOW",  # Go idiom - sometimes intentional
         "empty_if_err": "MEDIUM",
-        "ignore_return": "LOW",   # Very common, often fine
+        "ignore_return": "LOW",  # Very common, often fine
         "empty_error_check": "LOW",
     }
 
@@ -366,21 +420,27 @@ class ExceptionDetector(BaseDetector):
 
                 quality = "CARGO_CULT" if is_anti_pattern else "CORRECT"
 
-                patterns.append(PatternDetection(
-                    pattern_type=self.PATTERN_TYPE,
-                    file=filepath,
-                    line=line_num,
-                    quality=quality,
-                    details={"pattern": pattern_name},
-                ))
+                patterns.append(
+                    PatternDetection(
+                        pattern_type=self.PATTERN_TYPE,
+                        file=filepath,
+                        line=line_num,
+                        quality=quality,
+                        details={"pattern": pattern_name},
+                    )
+                )
 
                 if is_anti_pattern:
                     severity = self.SEVERITY_MAP.get(pattern_name, "LOW")
-                    issues.append(ExceptionIssue(
-                        file=filepath, line=line_num,
-                        issue_type=pattern_name, severity=severity,
-                        description=self._get_issue_description(pattern_name),
-                    ))
+                    issues.append(
+                        ExceptionIssue(
+                            file=filepath,
+                            line=line_num,
+                            issue_type=pattern_name,
+                            severity=severity,
+                            description=self._get_issue_description(pattern_name),
+                        )
+                    )
 
         return patterns, issues
 
@@ -389,19 +449,24 @@ class ExceptionDetector(BaseDetector):
         context_lower = context.lower()
 
         # Logging nearby suggests the exception is being recorded
-        if any(log in context_lower for log in ['log.', 'logger.', 'logging.', 'print(', 'console.']):
+        if any(
+            log in context_lower for log in ["log.", "logger.", "logging.", "print(", "console."]
+        ):
             return True
 
         # Comments suggesting intentional ignoring
-        if any(comment in context_lower for comment in ['# ignore', '# skip', '# optional', '// ignore', '/* ignore']):
+        if any(
+            comment in context_lower
+            for comment in ["# ignore", "# skip", "# optional", "// ignore", "/* ignore"]
+        ):
             return True
 
         # Cleanup/finally context - often intentional
-        if 'finally' in context_lower or 'cleanup' in context_lower or '__del__' in context_lower:
+        if "finally" in context_lower or "cleanup" in context_lower or "__del__" in context_lower:
             return True
 
         # Top-level handlers (main, run, start) - often intentional
-        if any(fn in context_lower for fn in ['def main', 'def run', 'def start', 'if __name__']):
+        if any(fn in context_lower for fn in ["def main", "def run", "def start", "if __name__"]):
             return True
 
         return False
@@ -427,16 +492,16 @@ class ExceptionDetector(BaseDetector):
 
 class LibraryDetector(BaseDetector):
     """Detect which resilience libraries are in use."""
-    
+
     PATTERNS = LIBRARY_PATTERNS
-    
+
     def detect(self, content: str, language: str) -> list[str]:
         """Detect which resilience libraries are in use."""
         found = []
         lang_libs = self.get_patterns(language)
-        
+
         for lib_name, pattern in lang_libs.items():
             if pattern.search(content):
                 found.append(lib_name)
-        
+
         return found
