@@ -1,129 +1,182 @@
-# Hubris Refactoring Summary
+# Complexity Fitness Analyzer
 
-## Before vs After
+A pragmatic tool for measuring whether a codebase is too complex for its task.
 
-| Metric | Original | Refactored | Change |
-|--------|----------|------------|--------|
-| **Lines of code** | 2,957 | 1,592 | -46% |
-| **Files** | 1 monolith | 6 modules | Modular |
-| **Self-analysis verdict** | CARGO_CULT (Critical) | SIMPLE (Low risk) | Fixed |
-| **False positives** | 74 | 0 | Eliminated |
+## Quick Start
 
-## Self-Analysis Results
+```bash
+pip install radon lizard
 
-**Original hubris.py analyzing itself:**
-```
-Patterns detected: 76
-Correctly implemented: 18
-Theater ratio: 4.22
-Verdict: CARGO_CULT (CRITICAL RISK)
-Issues: 49 HIGH, 16 MEDIUM
-```
+# Analyze a GitHub repo directly
+python prometheus.py https://github.com/pallets/flask
 
-**Refactored hubris analyzing the original codebase:**
-```
-Patterns detected: 63
-Correctly implemented: 56
-Theater ratio: 1.12
-Verdict: BATTLE_HARDENED (LOW RISK)
-Issues: 0 HIGH, 7 MEDIUM
+# Or use short form
+python prometheus.py pallets/flask
+
+# Analyze local codebase
+python prometheus.py /path/to/your/code
+
+# Outputs: prometheus_pallets_flask.html, prometheus_pallets_flask.json
 ```
 
-## New Architecture
+## The Tools
 
+| Tool | Named After | Purpose |
+|------|-------------|---------|
+| **prometheus.py** | Titan who gave fire to humanity | Combined orchestrator — 2D fitness quadrant |
+| **shield_analyzer.py** (Aegis) | Shield of Zeus/Athena | Resilience pattern detector |
+| **entropy_analyzer.py** | Shannon | Complexity metrics |
+
+## Theoretical Basis
+
+This tool implements a **pragmatic proof** that simpler systems are more reliable:
+
+### Shannon's Information Theory
+- Channel capacity limits how much information can be transmitted error-free
+- Code is an information channel between intent and execution
+- Higher complexity → more bits → higher error probability
+
+### Thermodynamics (Landauer's Principle)  
+- Maintaining information requires energy: `E = kT ln(2)` per bit
+- Complex systems require more energy to maintain
+- Complex systems have more failure modes and decay faster
+
+### Reliability Engineering
+- System reliability: `R = r₁ × r₂ × ... × rₙ`
+- Each component with reliability `r < 1` reduces total reliability
+- More components = exponentially lower reliability
+
+### Kolmogorov Complexity
+- The complexity of an object is the length of its shortest description
+- Simpler descriptions are more compressible
+- High compression ratio → redundancy → potential simplification
+
+## Metrics Collected
+
+### Per-File Metrics
+- **Cyclomatic Complexity**: Number of independent paths through code
+- **Cognitive Complexity**: Weighted by nesting depth (SonarQube-style)
+- **Halstead Metrics**: Volume, difficulty, effort, estimated bugs
+- **Maintainability Index**: Composite score (0-100)
+- **Token Entropy**: Shannon entropy of token distribution
+- **Compression Ratio**: `original_size / gzip_size`
+- **Nesting Depth**: Maximum control flow nesting
+- **Coupling**: Import count and dependencies
+
+### Task Metrics (Estimated)
+- Test file count and test case count
+- Assertion density
+- API endpoint count
+- Function point estimate
+
+### Fitness Ratios (The Key Outputs)
+- **Complexity per Feature**: Is the code over-engineered?
+- **LOC per Function Point**: Industry standard ~50
+- **Bits per Feature**: Information-theoretic complexity density
+- **Redundancy Ratio**: How much could be DRY'd out?
+
+## Installation
+
+```bash
+pip install radon lizard
 ```
-hubris_refactored/
-├── hubris.py      (324 lines)  # Main orchestrator
-├── models.py      (145 lines)  # Data classes
-├── patterns.py    (301 lines)  # All regex patterns
-├── detectors.py   (371 lines)  # Detection logic
-├── fp_filter.py   (199 lines)  # False positive filtering
-└── report.py      (252 lines)  # HTML report generation
-```
-
-## Key Changes
-
-### 1. False Positive Filtering (`fp_filter.py`)
-The core fix - prevents the analyzer from detecting its own pattern definitions:
-- Detects regex compilation context (`re.compile(r'@retry')`)
-- Detects pattern dictionary context (`PATTERNS = {...}`)
-- Skips comments and docstrings
-- Extra conservative for analyzer files
-
-### 2. Modular Patterns (`patterns.py`)
-All regex patterns consolidated in one place:
-- `RETRY_PATTERNS` - Retry detection patterns by language
-- `TIMEOUT_PATTERNS` - Timeout detection patterns
-- `CIRCUIT_BREAKER_PATTERNS` - CB detection patterns
-- `EXCEPTION_PATTERNS` - Exception handling patterns
-- `LIBRARY_PATTERNS` - Library detection patterns
-
-Each has clear separation of:
-- **Triggers**: Patterns that start detection
-- **Quality indicators**: Patterns that indicate good implementation
-
-### 3. Base Detector Class (`detectors.py`)
-Eliminated repetition with a common base class:
-```python
-class BaseDetector:
-    PATTERNS = {}
-    TRIGGERS = set()
-    QUALITY_INDICATORS = set()
-    
-    def get_patterns(self, language): ...
-    def get_context(self, content, line_num): ...
-    def get_line_number(self, content, position): ...
-```
-
-Specific detectors just define their patterns and quality logic.
-
-### 4. Clean Report Generation (`report.py`)
-HTML template separated from logic. Still inline (not Jinja2), but:
-- One responsibility
-- Easy to modify styling
-- ~250 lines vs ~375 embedded lines
-
-## What's Still There
-
-The refactored version preserves all original functionality:
-- ✅ Multi-language support (Python, JS, Go, Java, C, C++)
-- ✅ Retry pattern detection with quality evaluation
-- ✅ Timeout detection (missing, explicit None, configured)
-- ✅ Circuit breaker detection with metrics/fallback checking
-- ✅ Exception handling anti-patterns
-- ✅ Library soup detection
-- ✅ Quadrant classification (Simple, Battle-Hardened, Overengineered, Cargo Cult)
-- ✅ HTML report generation
-- ✅ JSON export
-- ✅ CLI interface
-
-## What's Improved
-
-- ❌ No more self-detection false positives
-- ❌ No more inflated "CARGO CULT" verdicts
-- ❌ No more 49 phantom high-severity issues
-- ✅ Accurate theater ratios
-- ✅ Maintainable codebase
-- ✅ Easy to add new patterns
-- ✅ Clear separation of concerns
 
 ## Usage
 
+### Analyze GitHub Repos
+
 ```bash
-# Analyze a codebase
-python hubris.py /path/to/code
+# Full URL
+python prometheus.py https://github.com/django/django
 
-# Generate HTML report
-python hubris.py /path/to/code --html report.html
+# Short form (owner/repo)
+python prometheus.py fastapi/fastapi
 
-# Export JSON
-python hubris.py /path/to/code -o report.json
+# Keep the cloned repo after analysis
+python prometheus.py pallets/flask --keep
 ```
 
-## Future Improvements
+### Analyze Local Code
 
-Still possible to do:
-1. **External YAML patterns**: Move patterns.py to YAML files
-2. **Jinja2 templates**: Replace inline HTML with proper templates
-3. **Design pattern detection**: Re-add the DesignPatternDetector (omitted for brevity)
-4. **Plugin architecture**: Allow custom detectors
+```bash
+# Full analysis with HTML quadrant chart
+python prometheus.py /your/codebase
+
+# Just resilience (Aegis)
+python shield_analyzer.py /your/codebase
+
+# Just complexity (Shannon metrics)
+python entropy_analyzer.py /your/codebase
+```
+
+### Output Files
+
+Files are automatically named after the repo:
+- `prometheus_<owner>_<repo>.html` — Visual quadrant report
+- `prometheus_<owner>_<repo>.json` — Machine-readable data
+
+Override with:
+```bash
+python prometheus.py owner/repo --html custom.html -o custom.json
+```
+
+## Thresholds
+
+| Metric | Good | Medium | Poor |
+|--------|------|--------|------|
+| Cyclomatic Complexity (avg) | < 5 | 5-10 | > 10 |
+| Maintainability Index | > 65 | 40-65 | < 40 |
+| LOC per Function Point | < 50 | 50-150 | > 150 |
+| Token Entropy | 4-6 | 6-8 | < 4 or > 8 |
+
+## Interpreting Results
+
+### Risk Levels
+
+- **LOW**: Complexity well-matched to task. Reliable.
+- **MEDIUM**: Trending toward excess. Monitor.
+- **HIGH**: Over-complex. Elevated error rates expected.
+- **CRITICAL**: Significantly over-engineered. Refactor before adding features.
+
+### The Pragmatic Verdict
+
+This tool doesn't claim to measure "truth" — it measures **fitness**.
+
+Per the pragmatist framework:
+- We don't ask "is this codebase correct?"
+- We ask "will this codebase reliably do its job?"
+
+Physics and information theory tell us: **simpler systems win**.
+
+## Limitations
+
+- Task complexity estimation is heuristic (based on tests, endpoints, imports)
+- Some metrics only available for Python (uses `radon`)
+- Doesn't measure semantic complexity (bad names, confusing logic)
+- Can't detect "essential" vs "accidental" complexity
+
+## Extending
+
+To add new languages or metrics:
+
+1. Add extension mapping in `Extractor.LANGUAGE_EXTENSIONS`
+2. Implement `_analyze_<language>()` method
+3. Integrate additional static analysis tools
+
+## Philosophy
+
+> "Complexity is the enemy of reliability."
+
+This tool exists because:
+1. Simpler systems have fewer failure modes (physics)
+2. Simpler systems are easier to understand (cognition)
+3. Simpler systems are cheaper to maintain (economics)
+4. We can *measure* simplicity (information theory)
+
+Therefore: we can *measure* expected reliability.
+
+That's the pragmatic proof.
+
+---
+
+*Built to answer: "Can you provide something I can measure?"*
