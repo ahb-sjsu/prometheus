@@ -1,0 +1,109 @@
+# Python Frameworks & Libraries to Analyze
+# For Prometheus Resilience/Complexity Analysis
+
+# =============================================================================
+# WEB FRAMEWORKS (High visibility, people have strong opinions)
+# =============================================================================
+pallets/flask              # Already tested - FORTRESS
+django/django              # The big one - expect BUNKER or FORTRESS
+encode/starlette           # Async foundation for FastAPI
+tiangolo/fastapi           # Hugely popular, built on Starlette
+bottlepy/bottle            # Single-file micro framework
+tornadoweb/tornado         # Async networking library
+sanic-org/sanic            # Fast async framework
+falconry/falcon            # REST APIs, minimal
+
+# =============================================================================
+# HTTP CLIENTS (Interesting resilience story)
+# =============================================================================
+psf/requests               # Already tested - DEATHTRAP (no default timeouts!)
+aio-libs/aiohttp           # Async HTTP - better defaults?
+encode/httpx               # Modern requests alternative
+urllib3/urllib3            # Underlying requests - more defensive?
+
+# =============================================================================
+# DATABASE / ORM (Complex, interesting patterns)
+# =============================================================================
+sqlalchemy/sqlalchemy      # The ORM - expect complex, hopefully defended
+coleifer/peewee            # Lightweight ORM
+django/django              # Has ORM built-in
+mongodb/mongo-python-driver # MongoDB driver
+redis/redis-py             # Redis client
+
+# =============================================================================
+# ASYNC / CONCURRENCY (Should have resilience patterns)
+# =============================================================================
+python-trio/trio           # Structured concurrency - should score well
+aio-libs/aiojobs           # Job scheduler
+celery/celery              # Task queue - complex, needs resilience
+rq/rq                      # Simple job queue
+
+# =============================================================================
+# DATA SCIENCE (Large, complex codebases)
+# =============================================================================
+pandas-dev/pandas          # Data analysis (WARNING: huge)
+numpy/numpy                # Numerical computing (WARNING: huge, mostly C)
+scikit-learn/scikit-learn  # ML library
+
+# =============================================================================
+# CLI / UTILITIES (Should be simple)
+# =============================================================================
+pallets/click              # CLI framework (same org as Flask)
+tiangolo/typer             # Modern CLI (built on click)
+tqdm/tqdm                  # Progress bars
+python-poetry/poetry       # Package manager
+
+# =============================================================================
+# TESTING (Meta: test the testing frameworks)
+# =============================================================================
+pytest-dev/pytest          # The testing framework
+HypothesisWorks/hypothesis # Property-based testing
+
+# =============================================================================
+# SECURITY / AUTH (Should be defensive)
+# =============================================================================
+pyca/cryptography          # Crypto library - should be FORTRESS
+jpadilla/pyjwt             # JWT handling
+oauthlib/oauthlib          # OAuth implementation
+
+# =============================================================================
+# API / SERIALIZATION
+# =============================================================================
+marshmallow-code/marshmallow  # Object serialization
+pydantic/pydantic          # Data validation (FastAPI uses this)
+ijl/orjson                 # Fast JSON
+
+# =============================================================================
+# QUICK TEST SET (Good variety, reasonable size)
+# =============================================================================
+# django/django
+# encode/httpx  
+# sqlalchemy/sqlalchemy
+# celery/celery
+# pallets/click
+# pytest-dev/pytest
+# pydantic/pydantic
+
+# =============================================================================
+# PREDICTION: Most Interesting Results
+# =============================================================================
+# 
+# EXPECTED FORTRESS (complex but defended):
+#   - django/django (mature, security-conscious)
+#   - sqlalchemy/sqlalchemy (handles many edge cases)
+#   - pyca/cryptography (security-critical)
+#
+# EXPECTED GLASS HOUSE (simple, minimal resilience):
+#   - pallets/click (CLI utility)
+#   - tqdm/tqdm (simple utility)
+#   - ijl/orjson (performance-focused)
+#
+# EXPECTED DEATHTRAP (complex, questionable resilience):
+#   - celery/celery (distributed = complex failure modes)
+#
+# COULD GO EITHER WAY:
+#   - encode/httpx (modern, but is it defensive?)
+#   - tiangolo/fastapi (popular, but young)
+#   - pydantic/pydantic (validation = some defense)
+#
+ahb-sjsu/prometheus

@@ -1,0 +1,333 @@
+{
+  "experiment": "Quantum Contextuality Test",
+  "timestamp": "2026-01-04T18:45:13.958983",
+  "chsh_results": [
+    {
+      "scenario_id": "shared_secret",
+      "S": -2.0,
+      "expectations": {
+        "E00": -1.0,
+        "E01": -1.0,
+        "E10": -1.0,
+        "E11": -1.0
+      },
+      "ci_95": [
+        -2.0,
+        -2.0
+      ],
+      "classical_bound": 2.0,
+      "quantum_bound": 2.8284271247461903,
+      "violates_classical": "False",
+      "consistent_with_quantum": "True",
+      "trials_per_setting": 30,
+      "total_measurements": 120
+    },
+    {
+      "scenario_id": "joint_promise",
+      "S": 1.9333333333333336,
+      "expectations": {
+        "E00": 1.0,
+        "E01": 1.0,
+        "E10": -0.6666666666666666,
+        "E11": -0.6
+      },
+      "ci_95": [
+        1.550589636039994,
+        2.3218652037617553
+      ],
+      "classical_bound": 2.0,
+      "quantum_bound": 2.8284271247461903,
+      "violates_classical": "False",
+      "consistent_with_quantum": "True",
+      "trials_per_setting": 30,
+      "total_measurements": 120
+    },
+    {
+      "scenario_id": "collaborative_harm",
+      "S": -1.7333333333333334,
+      "expectations": {
+        "E00": -0.9333333333333333,
+        "E01": 1.0,
+        "E10": -0.8,
+        "E11": 1.0
+      },
+      "ci_95": [
+        -1.9428571428571428,
+        -1.4284090909090912
+      ],
+      "classical_bound": 2.0,
+      "quantum_bound": 2.8284271247461903,
+      "violates_classical": "False",
+      "consistent_with_quantum": "True",
+      "trials_per_setting": 30,
+      "total_measurements": 120
+    },
+    {
+      "scenario_id": "entangled_beneficiary",
+      "S": 0.4666666666666667,
+      "expectations": {
+        "E00": 0.13333333333333333,
+        "E01": -0.6,
+        "E10": -0.06666666666666667,
+        "E11": -1.0
+      },
+      "ci_95": [
+        -0.10112502515669014,
+        1.0793012725103936
+      ],
+      "classical_bound": 2.0,
+      "quantum_bound": 2.8284271247461903,
+      "violates_classical": "False",
+      "consistent_with_quantum": "True",
+      "trials_per_setting": 30,
+      "total_measurements": 120
+    }
+  ],
+  "hardy_results": {
+    "test": "Hardy's Paradox",
+    "probabilities": {
+      "P_A0+_B0+": 1.0,
+      "P_A0+_B1-": 0.1,
+      "P_A1-_B0+": 0.03333333333333333,
+      "P_A1-_B1-": 0.0
+    },
+    "violation_check": {
+      "P1_positive": true,
+      "P2_near_zero": false,
+      "P3_near_zero": true,
+      "P4_near_zero": true,
+      "hardy_violation": false,
+      "classical_impossible": false,
+      "interpretation": "No Hardy violation - pattern is classically explainable"
+    },
+    "trials_per_setting": 30,
+    "total_measurements": 120
+  },
+  "signaling_tests": [
+    {
+      "scenario_id": "shared_secret",
+      "alice_context_0": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_B0": [
+          30,
+          0
+        ],
+        "counts_B1": [
+          30,
+          0
+        ]
+      },
+      "alice_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_B0": [
+          30,
+          0
+        ],
+        "counts_B1": [
+          30,
+          0
+        ]
+      },
+      "bob_context_0": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_A0": [
+          0,
+          30
+        ],
+        "counts_A1": [
+          0,
+          30
+        ]
+      },
+      "bob_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_A0": [
+          0,
+          30
+        ],
+        "counts_A1": [
+          0,
+          30
+        ]
+      },
+      "no_signaling_alice": true,
+      "no_signaling_bob": true,
+      "no_signaling_satisfied": true,
+      "interpretation": "No-signaling conditions satisfied (p > 0.05 for all tests) - test is valid"
+    },
+    {
+      "scenario_id": "joint_promise",
+      "alice_context_0": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_B0": [
+          30,
+          0
+        ],
+        "counts_B1": [
+          30,
+          0
+        ]
+      },
+      "alice_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.033333333333333354,
+        "counts_B0": [
+          5,
+          25
+        ],
+        "counts_B1": [
+          6,
+          24
+        ]
+      },
+      "bob_context_0": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_A0": [
+          30,
+          0
+        ],
+        "counts_A1": [
+          30,
+          0
+        ]
+      },
+      "bob_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_A0": [
+          30,
+          0
+        ],
+        "counts_A1": [
+          30,
+          0
+        ]
+      },
+      "no_signaling_alice": "True",
+      "no_signaling_bob": true,
+      "no_signaling_satisfied": true,
+      "interpretation": "No-signaling conditions satisfied (p > 0.05 for all tests) - test is valid"
+    },
+    {
+      "scenario_id": "collaborative_harm",
+      "alice_context_0": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_B0": [
+          30,
+          0
+        ],
+        "counts_B1": [
+          30,
+          0
+        ]
+      },
+      "alice_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_B0": [
+          30,
+          0
+        ],
+        "counts_B1": [
+          30,
+          0
+        ]
+      },
+      "bob_context_0": {
+        "p_value": 0.6119536128456737,
+        "marginal_diff": 0.06666666666666668,
+        "counts_A0": [
+          1,
+          29
+        ],
+        "counts_A1": [
+          3,
+          27
+        ]
+      },
+      "bob_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_A0": [
+          30,
+          0
+        ],
+        "counts_A1": [
+          30,
+          0
+        ]
+      },
+      "no_signaling_alice": true,
+      "no_signaling_bob": true,
+      "no_signaling_satisfied": true,
+      "interpretation": "No-signaling conditions satisfied (p > 0.05 for all tests) - test is valid"
+    },
+    {
+      "scenario_id": "entangled_beneficiary",
+      "alice_context_0": {
+        "p_value": 0.2542143363175797,
+        "marginal_diff": 0.1333333333333333,
+        "counts_B0": [
+          28,
+          2
+        ],
+        "counts_B1": [
+          24,
+          6
+        ]
+      },
+      "alice_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_B0": [
+          30,
+          0
+        ],
+        "counts_B1": [
+          30,
+          0
+        ]
+      },
+      "bob_context_0": {
+        "p_value": 0.605376134104734,
+        "marginal_diff": 0.09999999999999998,
+        "counts_A0": [
+          17,
+          13
+        ],
+        "counts_A1": [
+          14,
+          16
+        ]
+      },
+      "bob_context_1": {
+        "p_value": 1.0,
+        "marginal_diff": 0.0,
+        "counts_A0": [
+          0,
+          30
+        ],
+        "counts_A1": [
+          0,
+          30
+        ]
+      },
+      "no_signaling_alice": true,
+      "no_signaling_bob": true,
+      "no_signaling_satisfied": true,
+      "interpretation": "No-signaling conditions satisfied (p > 0.05 for all tests) - test is valid"
+    }
+  ],
+  "metadata": {
+    "total_requests": 1200,
+    "total_tokens": 327624,
+    "trials_per_setting": 30
+  }
+}

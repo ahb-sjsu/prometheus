@@ -1,0 +1,14 @@
+# Prometheus Ignore Patterns
+# Files and directories to exclude from fitness analysis
+
+# Research and documentation (not part of the tool itself)
+SQND-docs/
+docs/
+
+# Old versions and temporary files
+temp/
+*.1.py
+
+# Test outputs and cached data
+*.html
+*.csv

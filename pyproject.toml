@@ -20,6 +20,20 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+version = "1.0.0"
+description = "Complexity fitness analyzer for codebases"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "you@example.com"}
+]
+keywords = ["code-analysis", "complexity", "resilience", "metrics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -41,6 +55,16 @@ full = [
     "radon>=5.1.0",
     "lizard>=1.17.0",
     "bandit>=1.7.0",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "ruff",
+    "black",
 ]
 
 [project.scripts]
@@ -77,3 +101,39 @@ py-modules = [
 ]
 packages = ["prometheus_analyzer"]
 
+hubris = "hubris:main"
+olympus = "olympus:main"
+
+[tool.setuptools]
+py-modules = [
+    "prometheus",
+    "prometheus_ui",
+    "hubris",
+    "olympus",
+    "oracle",
+    "shield_analyzer",
+    "entropy_analyzer",
+    "scent_analyzer",
+    "lang_analyzers",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = ["E501"]  # Line too long - handled by formatter
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]

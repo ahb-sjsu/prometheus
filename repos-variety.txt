@@ -1,0 +1,14 @@
+octocat/Hello-World
+sindresorhus/is
+pallets/itsdangerous
+jd/tenacity
+litl/backoff
+cenkalti/backoff
+urllib3/urllib3
+psf/requests
+axios/axios
+failsafe-lib/failsafe
+resilience4j/resilience4j-spring-boot2-demo
+pallets/click
+tiangolo/typer
+ahb-sjsu/prometheus

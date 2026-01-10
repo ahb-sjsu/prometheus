@@ -100,13 +100,13 @@ def clone_github_repo(url: str, target_dir: str = None) -> tuple[str, str]:
             error_msg = result.stderr.strip()
             if 'unable to access' in error_msg or 'CONNECT tunnel' in error_msg:
                 raise RuntimeError(
-                    f"Cannot access GitHub. Network may be restricted.\n"
-                    f"Try cloning the repo locally first, then run:\n"
-                    f"  python prometheus.py /path/to/local/clone"
+                    "Cannot access GitHub. Network may be restricted.\n"
+                    "Try cloning the repo locally first, then run:\n"
+                    "  python prometheus.py /path/to/local/clone"
                 )
             raise RuntimeError(f"Git clone failed: {error_msg}")
         
-        print(f"        Done!")
+        print("        Done!")
         return str(clone_path), repo_name
         
     except subprocess.TimeoutExpired:
@@ -648,7 +648,7 @@ reduces the probability that a failure becomes an outage.
     else:
         md += "_No critical vulnerabilities detected._\n"
     
-    md += f"""
+    md += """
 
 ---
 
@@ -834,7 +834,7 @@ You're in the ideal state. Maintain it:
 3. Network calls without timeouts
 """
     
-    md += f"""
+    md += """
 
 ---
 
@@ -1583,7 +1583,7 @@ Examples:
                 
                 # Fetch GitHub metadata
                 if is_github_url(path):
-                    safe_print(f"[META] Fetching GitHub metadata...")
+                    safe_print("[META] Fetching GitHub metadata...")
                     report.github = fetch_github_metadata(path)
                     if report.github.stars:
                         safe_print(f"       ⭐ {report.github.stars:,} | {report.github.language}")

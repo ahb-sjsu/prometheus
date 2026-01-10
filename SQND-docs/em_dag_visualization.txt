@@ -1,0 +1,98 @@
+
+═══════════════════════════════════════════════════════════════════════════════
+                    DEAR ABBY EM-DAG: EMPIRICAL ETHICAL MODULES
+                    Extracted from 20,034 letters (1985-2017)
+═══════════════════════════════════════════════════════════════════════════════
+
+                         ┌─────────────────────────┐
+                         │   STRUCTURAL LAYER      │
+                         │   (D₄ × U(1)_H)         │
+                         └───────────┬─────────────┘
+                                     │
+                    ┌────────────────┼────────────────┐
+                    │                │                │
+           ┌────────▼────────┐ ┌─────▼─────┐ ┌───────▼───────┐
+           │ CORRELATIVE LOCK │ │ NEGATION  │ │  NULLIFIERS   │
+           │    O ↔ C         │ │  O ↔ L    │ │ (override)    │
+           │    L ↔ N         │ │  C ↔ N    │ │               │
+           │  [EXACT: 100%]   │ │ [mutual]  │ │ abuse: 582    │
+           └─────────────────┘ └───────────┘ │ danger: 218   │
+                                             │ impossible:144│
+                                             └───────────────┘
+                                     │
+                         ┌───────────▼───────────┐
+                         │    DOMAIN ROUTER      │
+                         └───────────┬───────────┘
+                                     │
+    ┌────────┬────────┬──────┬───────┼───────┬──────┬────────┬────────┐
+    │        │        │      │       │       │      │        │        │
+┌───▼───┐┌───▼───┐┌───▼──┐┌──▼──┐┌───▼───┐┌──▼──┐┌──▼───┐┌───▼───┐┌───▼──┐
+│FAMILY ││WEDDING││FRIEND││WORK ││ MONEY ││ROMAN││PROMISE││SECRET ││ GIFT │
+│71.4%  ││29.8%  ││24.9% ││21.5%││ 36.6% ││28.3%││ 7.2%  ││ 8.3%  ││15.5% │
+│O:.185 ││O:.215 ││O:.213││O:.199││O:.174 ││O:.259││O:.322 ││O:.236 ││O:.159│
+│L:.090 ││L:.097 ││L:.114││L:.092││L:.083 ││L:.122││L:.096 ││L:.098 ││L:.081│
+└───┬───┘└───────┘└──────┘└─────┘└───────┘└─────┘└───┬───┘└───────┘└──────┘
+    │                                                │
+    │ FAMILY SUBDOMAINS                              │ PROMISE: HIGHEST O RATE
+    ├─► Parent→Child: O(strong)                      │
+    ├─► Child→Parent: O(moderate)                    │ "Only if convenient" = GATE
+    ├─► Sibling: L(default)                          │ "No pressure" = GATE  
+    ├─► In-law: L(default)                           │ "I promise" → O
+    └─► Extended: L(default)                         │ "I agree" → O
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                           SEMANTIC GATES (D₄ ELEMENTS)
+═══════════════════════════════════════════════════════════════════════════════
+
+  O → L TRIGGERS (r rotation)              L → O TRIGGERS (r⁻¹ rotation)
+  ─────────────────────────────            ─────────────────────────────
+  "only if convenient"     ●────┐          "I promise"           ●────┐
+  "no pressure"            ●────┤          "I agree"             ●────┤
+  "feel free"              ●────┤ DISCRETE "committed"           ●────┤ DISCRETE
+  "don't have to"          ●────┤ FLIP     "gave my word"        ●────┤ FLIP
+  "no obligation"          ●────┤          "signed contract"     ●────┤
+  "if you want"            ●────┘          "vowed"               ●────┘
+
+  NULLIFIERS (absorbing states - override all)
+  ─────────────────────────────────────────────
+  abuse (n=582)       ──► O NULLIFIED regardless of domain
+  danger (n=218)      ──► O NULLIFIED regardless of domain
+  impossible (n=144)  ──► O NULLIFIED (ought implies can)
+  illegal (n=57)      ──► C NULLIFIED (no claim to illegal acts)
+  estranged (n=32)    ──► family O WEAKENED/NULLIFIED
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                              KEY EMPIRICAL FINDINGS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. PROMISE is the primary O-generator
+   - Base O rate: 32.2% (vs 17.7% overall)
+   - Explicit promise language nearly DOUBLES obligation perception
+
+2. FRIENDSHIP defaults to LIBERTY
+   - Highest L question rate: 11.4%
+   - "Can I refuse my friend?" is the paradigm case
+   - O requires explicit acceptance
+
+3. FAMILY creates PRESSURE not automatic OBLIGATION
+   - High letter volume (71%) but moderate O rate (18.5%)
+   - Blood relation alone insufficient for O
+   - Abuse/estrangement are powerful nullifiers
+
+4. MONEY obligations are TIME-INVARIANT
+   - "I forgot" doesn't release debt O
+   - Only forgiveness or legal discharge nullifies
+   - Contrast with social O which decays
+
+5. DISCRETE GATES confirmed
+   - "Only if convenient" produces BINARY flip, not gradual shift
+   - Consistent with D₄ discrete structure, not SU(2) continuous
+
+6. NULLIFIERS have cross-domain priority
+   - Abuse overrides ALL domain-specific O
+   - 582 letters mention abuse as nullifying factor
+   - Safety concerns universally trump social obligation
+
+═══════════════════════════════════════════════════════════════════════════════

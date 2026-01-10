@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olympus - Repository Comparison</title>
+    <style>
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        h1, h2, h3 {
+            color: #f8fafc;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+    
+        
+        /* Quadrant wrapper and labels */
+        .quadrant-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .top-labels {
+            display: flex;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 0.25rem;
+        }
+
+        .top-label {
+            flex: 1;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .top-label.left { color: #d88888; }   /* DEATHTRAP - red */
+        .top-label.right { color: #888888; } /* FORTRESS - grey */
+
+        .chart-with-sides {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .side-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 0.65rem;
+            color: #64748b;
+            padding: 0.5rem 0;
+        }
+
+        .side-label.left {
+            transform: rotate(180deg);
+        }
+
+        /* Quadrant chart container */
+        .quadrant-chart {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            border: 2px solid #334155;
+            border-radius: 0.25rem;
+            overflow: visible;
+        }
+
+        /* 16x16 Bivariate gradient - dithered, correct corners */
+        .bivariate-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            grid-template-rows: repeat(16, 1fr);
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /*
+         * Corners (dithered):
+         * - DEATHTRAP (top-left, cell 1): #e8b0b0 pastel red
+         * - FORTRESS (top-right, cell 16): #a8a8b8 steel blue-grey
+         * - GLASS HOUSE (bottom-left, cell 241): #b0c8e8 pastel blue
+         * - BUNKER (bottom-right, cell 256): #e8c8a0 tan
+         */
+
+        .cell-1 { background: #e7b0b0; }
+        .cell-2 { background: #e8b0b0; }
+        .cell-3 { background: #e4b4b4; }
+        .cell-4 { background: #e0b9b9; }
+        .cell-5 { background: #d9c2c2; }
+        .cell-6 { background: #d5c8c8; }
+        .cell-7 { background: #d1cece; }
+        .cell-8 { background: #d1cdcd; }
+        .cell-9 { background: #cfcfcf; }
+        .cell-10 { background: #c9c9cb; }
+        .cell-11 { background: #c3c3c8; }
+        .cell-12 { background: #bebec5; }
+        .cell-13 { background: #b3b3be; }
+        .cell-14 { background: #adadbb; }
+        .cell-15 { background: #aaaab9; }
+        .cell-16 { background: #a8a8b8; }
+        .cell-17 { background: #e7b0b0; }
+        .cell-18 { background: #e6b1b1; }
+        .cell-19 { background: #e2b7b7; }
+        .cell-20 { background: #e1b8b8; }
+        .cell-21 { background: #d9c3c3; }
+        .cell-22 { background: #d5c8c8; }
+        .cell-23 { background: #d3cbcb; }
+        .cell-24 { background: #d1cdcd; }
+        .cell-25 { background: #d0d0d0; }
+        .cell-26 { background: #cacacc; }
+        .cell-27 { background: #c3c3c8; }
+        .cell-28 { background: #bbbbc3; }
+        .cell-29 { background: #b8b8c1; }
+        .cell-30 { background: #afafbc; }
+        .cell-31 { background: #ababba; }
+        .cell-32 { background: #ababb9; }
+        .cell-33 { background: #e3b5b5; }
+        .cell-34 { background: #e2b7b7; }
+        .cell-35 { background: #e4b5b5; }
+        .cell-36 { background: #dfbbbb; }
+        .cell-37 { background: #d9c3c3; }
+        .cell-38 { background: #d5c8c8; }
+        .cell-39 { background: #d1cece; }
+        .cell-40 { background: #d0cfcf; }
+        .cell-41 { background: #d0d0d0; }
+        .cell-42 { background: #c9c9cb; }
+        .cell-43 { background: #c3c3c8; }
+        .cell-44 { background: #bcbcc4; }
+        .cell-45 { background: #b3b3be; }
+        .cell-46 { background: #adadbb; }
+        .cell-47 { background: #acacba; }
+        .cell-48 { background: #adadbb; }
+        .cell-49 { background: #dfbbbb; }
+        .cell-50 { background: #e0baba; }
+        .cell-51 { background: #e0baba; }
+        .cell-52 { background: #e0b9b9; }
+        .cell-53 { background: #dbc0c0; }
+        .cell-54 { background: #d4c9c9; }
+        .cell-55 { background: #d1cdcd; }
+        .cell-56 { background: #d0d0d0; }
+        .cell-57 { background: #cdcdce; }
+        .cell-58 { background: #cdcdce; }
+        .cell-59 { background: #c3c3c8; }
+        .cell-60 { background: #bdbdc4; }
+        .cell-61 { background: #b9b9c2; }
+        .cell-62 { background: #b6b6c0; }
+        .cell-63 { background: #b6b6c0; }
+        .cell-64 { background: #b7b7c1; }
+        .cell-65 { background: #d9c3c3; }
+        .cell-66 { background: #d9c2c2; }
+        .cell-67 { background: #dbc0c0; }
+        .cell-68 { background: #dcbfbf; }
+        .cell-69 { background: #dbc0c0; }
+        .cell-70 { background: #d7c6c6; }
+        .cell-71 { background: #d3cbcb; }
+        .cell-72 { background: #d0d0d0; }
+        .cell-73 { background: #d0d0d0; }
+        .cell-74 { background: #cacacc; }
+        .cell-75 { background: #c6c6ca; }
+        .cell-76 { background: #bdbdc4; }
+        .cell-77 { background: #c0c0c6; }
+        .cell-78 { background: #bdbdc5; }
+        .cell-79 { background: #bcbcc4; }
+        .cell-80 { background: #bcbcc4; }
+        .cell-81 { background: #d6c7c7; }
+        .cell-82 { background: #d7c6c6; }
+        .cell-83 { background: #d5c8c8; }
+        .cell-84 { background: #d4c9c9; }
+        .cell-85 { background: #d6c7c7; }
+        .cell-86 { background: #d7c6c6; }
+        .cell-87 { background: #d0cfcf; }
+        .cell-88 { background: #d0cfcf; }
+        .cell-89 { background: #cdcdce; }
+        .cell-90 { background: #c9c9cb; }
+        .cell-91 { background: #c3c3c8; }
+        .cell-92 { background: #c6c6ca; }
+        .cell-93 { background: #c7c7ca; }
+        .cell-94 { background: #c5c5c9; }
+        .cell-95 { background: #c3c3c8; }
+        .cell-96 { background: #c4c4c9; }
+        .cell-97 { background: #d0cfcf; }
+        .cell-98 { background: #d2cccc; }
+        .cell-99 { background: #d0cece; }
+        .cell-100 { background: #d1cece; }
+        .cell-101 { background: #d4caca; }
+        .cell-102 { background: #d1cdcd; }
+        .cell-103 { background: #d1cdcd; }
+        .cell-104 { background: #d0cfcf; }
+        .cell-105 { background: #cecece; }
+        .cell-106 { background: #ccccce; }
+        .cell-107 { background: #c9c9cc; }
+        .cell-108 { background: #cbcbcd; }
+        .cell-109 { background: #cbcbcd; }
+        .cell-110 { background: #cececf; }
+        .cell-111 { background: #cecece; }
+        .cell-112 { background: #cacacc; }
+        .cell-113 { background: #d0cfcf; }
+        .cell-114 { background: #d1cece; }
+        .cell-115 { background: #d0d0d0; }
+        .cell-116 { background: #d0d0d0; }
+        .cell-117 { background: #d1cece; }
+        .cell-118 { background: #d0d0d0; }
+        .cell-119 { background: #d0d0d0; }
+        .cell-120 { background: #d1cdcd; }
+        .cell-121 { background: #d0d0d0; }
+        .cell-122 { background: #cfcfcf; }
+        .cell-123 { background: #d0d0d0; }
+        .cell-124 { background: #cfcfcf; }
+        .cell-125 { background: #cccccd; }
+        .cell-126 { background: #cececf; }
+        .cell-127 { background: #cccccd; }
+        .cell-128 { background: #d0d0d0; }
+        .cell-129 { background: #d0d0d0; }
+        .cell-130 { background: #d0d0d0; }
+        .cell-131 { background: #cecfd0; }
+        .cell-132 { background: #cdcfd1; }
+        .cell-133 { background: #d0d0d0; }
+        .cell-134 { background: #d0d0d0; }
+        .cell-135 { background: #cdcfd1; }
+        .cell-136 { background: #cfcfd0; }
+        .cell-137 { background: #d1cfcc; }
+        .cell-138 { background: #d0d0d0; }
+        .cell-139 { background: #d0d0d0; }
+        .cell-140 { background: #d1cfcc; }
+        .cell-141 { background: #d0cfcf; }
+        .cell-142 { background: #d0cfcf; }
+        .cell-143 { background: #d1cfcd; }
+        .cell-144 { background: #d0d0d0; }
+        .cell-145 { background: #cccfd2; }
+        .cell-146 { background: #cbced3; }
+        .cell-147 { background: #cccfd2; }
+        .cell-148 { background: #cdcfd1; }
+        .cell-149 { background: #cbced3; }
+        .cell-150 { background: #cbced3; }
+        .cell-151 { background: #cfcfd0; }
+        .cell-152 { background: #d0d0d0; }
+        .cell-153 { background: #d0cfce; }
+        .cell-154 { background: #d2cfcb; }
+        .cell-155 { background: #d3cec8; }
+        .cell-156 { background: #d3cec9; }
+        .cell-157 { background: #d3cec9; }
+        .cell-158 { background: #d2cfcb; }
+        .cell-159 { background: #d3cec9; }
+        .cell-160 { background: #d3cec8; }
+        .cell-161 { background: #c5cdd7; }
+        .cell-162 { background: #c8ced5; }
+        .cell-163 { background: #c6cdd7; }
+        .cell-164 { background: #c9ced4; }
+        .cell-165 { background: #c9ced4; }
+        .cell-166 { background: #c5cdd7; }
+        .cell-167 { background: #cbced3; }
+        .cell-168 { background: #d0d0d0; }
+        .cell-169 { background: #d1cfcd; }
+        .cell-170 { background: #d3cec8; }
+        .cell-171 { background: #d4cec6; }
+        .cell-172 { background: #d5cec4; }
+        .cell-173 { background: #d6cdc3; }
+        .cell-174 { background: #d5cec5; }
+        .cell-175 { background: #d5cec5; }
+        .cell-176 { background: #d7cdc1; }
+        .cell-177 { background: #bfcbdc; }
+        .cell-178 { background: #c1ccdb; }
+        .cell-179 { background: #c1ccdb; }
+        .cell-180 { background: #c1ccda; }
+        .cell-181 { background: #c2ccd9; }
+        .cell-182 { background: #c8ced5; }
+        .cell-183 { background: #cecfd0; }
+        .cell-184 { background: #cdcfd1; }
+        .cell-185 { background: #d0cfce; }
+        .cell-186 { background: #d3cec9; }
+        .cell-187 { background: #d4cec6; }
+        .cell-188 { background: #dbccb8; }
+        .cell-189 { background: #dbccb8; }
+        .cell-190 { background: #daccba; }
+        .cell-191 { background: #dbccb9; }
+        .cell-192 { background: #dbccb8; }
+        .cell-193 { background: #bacae0; }
+        .cell-194 { background: #bdcbde; }
+        .cell-195 { background: #bacadf; }
+        .cell-196 { background: #bccbde; }
+        .cell-197 { background: #c1ccda; }
+        .cell-198 { background: #c5cdd7; }
+        .cell-199 { background: #cfcfd0; }
+        .cell-200 { background: #d0d0d0; }
+        .cell-201 { background: #d0d0d0; }
+        .cell-202 { background: #d0cfce; }
+        .cell-203 { background: #d4cec6; }
+        .cell-204 { background: #dccbb7; }
+        .cell-205 { background: #dfcab0; }
+        .cell-206 { background: #e0caae; }
+        .cell-207 { background: #dfcab0; }
+        .cell-208 { background: #e1caad; }
+        .cell-209 { background: #b5c9e4; }
+        .cell-210 { background: #b7c9e2; }
+        .cell-211 { background: #b4c9e4; }
+        .cell-212 { background: #bccbde; }
+        .cell-213 { background: #c1ccda; }
+        .cell-214 { background: #c7cdd6; }
+        .cell-215 { background: #cecfd0; }
+        .cell-216 { background: #d0d0d0; }
+        .cell-217 { background: #d0cfcf; }
+        .cell-218 { background: #d1cfcc; }
+        .cell-219 { background: #d7cdc1; }
+        .cell-220 { background: #dbccb8; }
+        .cell-221 { background: #ddcbb4; }
+        .cell-222 { background: #e3c9a8; }
+        .cell-223 { background: #e3c9a8; }
+        .cell-224 { background: #e2c9aa; }
+        .cell-225 { background: #b0c8e8; }
+        .cell-226 { background: #b1c8e6; }
+        .cell-227 { background: #b5c9e3; }
+        .cell-228 { background: #bccbde; }
+        .cell-229 { background: #bfcbdc; }
+        .cell-230 { background: #c9ced4; }
+        .cell-231 { background: #caced4; }
+        .cell-232 { background: #cecfd1; }
+        .cell-233 { background: #d0d0d0; }
+        .cell-234 { background: #d1cfcc; }
+        .cell-235 { background: #d7cdc1; }
+        .cell-236 { background: #dccbb7; }
+        .cell-237 { background: #decbb3; }
+        .cell-238 { background: #e4c9a6; }
+        .cell-239 { background: #e6c8a3; }
+        .cell-240 { background: #e6c8a3; }
+        .cell-241 { background: #b0c8e8; }
+        .cell-242 { background: #b1c8e6; }
+        .cell-243 { background: #b5c9e3; }
+        .cell-244 { background: #bdcbdd; }
+        .cell-245 { background: #c0ccdb; }
+        .cell-246 { background: #c8ced5; }
+        .cell-247 { background: #cbced3; }
+        .cell-248 { background: #cfcfd0; }
+        .cell-249 { background: #d0d0d0; }
+        .cell-250 { background: #d3cec9; }
+        .cell-251 { background: #d6cdc2; }
+        .cell-252 { background: #d9ccbc; }
+        .cell-253 { background: #e1caad; }
+        .cell-254 { background: #e3c9a8; }
+        .cell-255 { background: #e5c8a5; }
+        .cell-256 { background: #e6c8a3; }
+
+        /* Axis lines - bold */
+        .axis-line {
+            position: absolute;
+            background: #475569;
+            z-index: 5;
+        }
+
+        .axis-h {
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        .axis-v {
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+
+        /* Repo dots with avatars */
+        .repo-dot {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            overflow: hidden;
+            background: #334155;
+        }
+
+        .repo-dot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .repo-dot:hover {
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 20;
+        }
+
+        .dot-label {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: #e2e8f0;
+            white-space: nowrap;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 2px 6px;
+            border-radius: 3px;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        /* Bottom labels */
+        .bottom-labels {
+            display: flex;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 0.25rem;
+        }
+
+        .bottom-label {
+            flex: 1;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .bottom-label.left { color: #88a8c8; }  /* GLASS HOUSE - blue */
+        .bottom-label.right { color: #c4a484; } /* BUNKER - brown */
+
+        .axis-title {
+            color: #64748b;
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 0.75rem;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #334155;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .legend-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .legend-dot-fallback {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            flex-shrink: 0;
+        }
+
+        .legend-name {
+            color: #e2e8f0;
+        }
+
+        .legend-quadrant {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+    
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.75rem;
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #334155;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            color: #cbd5e1;
+        }
+
+        tr:hover {
+            background: rgba(148, 163, 184, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+    
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        header .subtitle {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+        
+        /* Glossary tooltip styles */
+        .glossary {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+        
+        .glossary-toggle {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .glossary-toggle:hover {
+            background: #3f4f63;
+            color: #e2e8f0;
+        }
+        
+        .glossary-content {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        /* Show on click (mobile-friendly) */
+        .glossary-content.show {
+            display: block;
+        }
+        
+        /* Also show on hover for desktop */
+        @media (hover: hover) {
+            .glossary:hover .glossary-content {
+                display: block;
+            }
+        }
+        
+        .glossary-item {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .glossary-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .glossary-term {
+            font-weight: 600;
+            color: #f59e0b;
+            font-size: 0.85rem;
+        }
+        
+        .glossary-def {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.8rem;
+            cursor: help;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ OLYMPUS</h1>
+            <p class="subtitle">Multi-Repository Fitness Comparison</p>
+            <p class="subtitle" style="font-size: 0.8rem; margin-top: 0.25rem;">
+                36 repositories • 2026-01-05
+            </p>
+        </header>
+        
+        <div class="stats-row">
+            <div class="stat">
+                <div class="stat-value">36</div>
+                <div class="stat-label">Repositories</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">10</div>
+                <div class="stat-label" title="Low complexity, high resilience. The ideal state - simple, maintainable code with strong error handling. Goal quadrant.">BUNKER</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">16</div>
+                <div class="stat-label" title="Low complexity, low resilience. Simple but fragile - clean code that lacks defensive patterns. Add error handling.">GLASS HOUSE</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">4</div>
+                <div class="stat-label" title="High complexity, high resilience. Over-engineered but defended - complex code with good error handling. Consider simplifying.">FORTRESS</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">6</div>
+                <div class="stat-label" title="High complexity, low resilience. The worst state - complex code with poor error handling. High risk of cascading failures.">DEATHTRAP</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Fitness Quadrant</h2>
+            
+        <div class="quadrant-wrapper">
+            <!-- Top labels -->
+            <div class="top-labels">
+                <div class="top-label left">☠️ DEATHTRAP</div>
+                <div class="top-label right">🏯 FORTRESS</div>
+            </div>
+
+            <div class="chart-with-sides">
+                <div class="side-label left">← Low Resilience</div>
+
+                <div class="quadrant-chart">
+                    <div class="bivariate-grid">
+<div class="cell-1"></div><div class="cell-2"></div><div class="cell-3"></div><div class="cell-4"></div><div class="cell-5"></div><div class="cell-6"></div><div class="cell-7"></div><div class="cell-8"></div><div class="cell-9"></div><div class="cell-10"></div><div class="cell-11"></div><div class="cell-12"></div><div class="cell-13"></div><div class="cell-14"></div><div class="cell-15"></div><div class="cell-16"></div><div class="cell-17"></div><div class="cell-18"></div><div class="cell-19"></div><div class="cell-20"></div><div class="cell-21"></div><div class="cell-22"></div><div class="cell-23"></div><div class="cell-24"></div><div class="cell-25"></div><div class="cell-26"></div><div class="cell-27"></div><div class="cell-28"></div><div class="cell-29"></div><div class="cell-30"></div><div class="cell-31"></div><div class="cell-32"></div><div class="cell-33"></div><div class="cell-34"></div><div class="cell-35"></div><div class="cell-36"></div><div class="cell-37"></div><div class="cell-38"></div><div class="cell-39"></div><div class="cell-40"></div><div class="cell-41"></div><div class="cell-42"></div><div class="cell-43"></div><div class="cell-44"></div><div class="cell-45"></div><div class="cell-46"></div><div class="cell-47"></div><div class="cell-48"></div><div class="cell-49"></div><div class="cell-50"></div><div class="cell-51"></div><div class="cell-52"></div><div class="cell-53"></div><div class="cell-54"></div><div class="cell-55"></div><div class="cell-56"></div><div class="cell-57"></div><div class="cell-58"></div><div class="cell-59"></div><div class="cell-60"></div><div class="cell-61"></div><div class="cell-62"></div><div class="cell-63"></div><div class="cell-64"></div><div class="cell-65"></div><div class="cell-66"></div><div class="cell-67"></div><div class="cell-68"></div><div class="cell-69"></div><div class="cell-70"></div><div class="cell-71"></div><div class="cell-72"></div><div class="cell-73"></div><div class="cell-74"></div><div class="cell-75"></div><div class="cell-76"></div><div class="cell-77"></div><div class="cell-78"></div><div class="cell-79"></div><div class="cell-80"></div><div class="cell-81"></div><div class="cell-82"></div><div class="cell-83"></div><div class="cell-84"></div><div class="cell-85"></div><div class="cell-86"></div><div class="cell-87"></div><div class="cell-88"></div><div class="cell-89"></div><div class="cell-90"></div><div class="cell-91"></div><div class="cell-92"></div><div class="cell-93"></div><div class="cell-94"></div><div class="cell-95"></div><div class="cell-96"></div><div class="cell-97"></div><div class="cell-98"></div><div class="cell-99"></div><div class="cell-100"></div><div class="cell-101"></div><div class="cell-102"></div><div class="cell-103"></div><div class="cell-104"></div><div class="cell-105"></div><div class="cell-106"></div><div class="cell-107"></div><div class="cell-108"></div><div class="cell-109"></div><div class="cell-110"></div><div class="cell-111"></div><div class="cell-112"></div><div class="cell-113"></div><div class="cell-114"></div><div class="cell-115"></div><div class="cell-116"></div><div class="cell-117"></div><div class="cell-118"></div><div class="cell-119"></div><div class="cell-120"></div><div class="cell-121"></div><div class="cell-122"></div><div class="cell-123"></div><div class="cell-124"></div><div class="cell-125"></div><div class="cell-126"></div><div class="cell-127"></div><div class="cell-128"></div><div class="cell-129"></div><div class="cell-130"></div><div class="cell-131"></div><div class="cell-132"></div><div class="cell-133"></div><div class="cell-134"></div><div class="cell-135"></div><div class="cell-136"></div><div class="cell-137"></div><div class="cell-138"></div><div class="cell-139"></div><div class="cell-140"></div><div class="cell-141"></div><div class="cell-142"></div><div class="cell-143"></div><div class="cell-144"></div><div class="cell-145"></div><div class="cell-146"></div><div class="cell-147"></div><div class="cell-148"></div><div class="cell-149"></div><div class="cell-150"></div><div class="cell-151"></div><div class="cell-152"></div><div class="cell-153"></div><div class="cell-154"></div><div class="cell-155"></div><div class="cell-156"></div><div class="cell-157"></div><div class="cell-158"></div><div class="cell-159"></div><div class="cell-160"></div><div class="cell-161"></div><div class="cell-162"></div><div class="cell-163"></div><div class="cell-164"></div><div class="cell-165"></div><div class="cell-166"></div><div class="cell-167"></div><div class="cell-168"></div><div class="cell-169"></div><div class="cell-170"></div><div class="cell-171"></div><div class="cell-172"></div><div class="cell-173"></div><div class="cell-174"></div><div class="cell-175"></div><div class="cell-176"></div><div class="cell-177"></div><div class="cell-178"></div><div class="cell-179"></div><div class="cell-180"></div><div class="cell-181"></div><div class="cell-182"></div><div class="cell-183"></div><div class="cell-184"></div><div class="cell-185"></div><div class="cell-186"></div><div class="cell-187"></div><div class="cell-188"></div><div class="cell-189"></div><div class="cell-190"></div><div class="cell-191"></div><div class="cell-192"></div><div class="cell-193"></div><div class="cell-194"></div><div class="cell-195"></div><div class="cell-196"></div><div class="cell-197"></div><div class="cell-198"></div><div class="cell-199"></div><div class="cell-200"></div><div class="cell-201"></div><div class="cell-202"></div><div class="cell-203"></div><div class="cell-204"></div><div class="cell-205"></div><div class="cell-206"></div><div class="cell-207"></div><div class="cell-208"></div><div class="cell-209"></div><div class="cell-210"></div><div class="cell-211"></div><div class="cell-212"></div><div class="cell-213"></div><div class="cell-214"></div><div class="cell-215"></div><div class="cell-216"></div><div class="cell-217"></div><div class="cell-218"></div><div class="cell-219"></div><div class="cell-220"></div><div class="cell-221"></div><div class="cell-222"></div><div class="cell-223"></div><div class="cell-224"></div><div class="cell-225"></div><div class="cell-226"></div><div class="cell-227"></div><div class="cell-228"></div><div class="cell-229"></div><div class="cell-230"></div><div class="cell-231"></div><div class="cell-232"></div><div class="cell-233"></div><div class="cell-234"></div><div class="cell-235"></div><div class="cell-236"></div><div class="cell-237"></div><div class="cell-238"></div><div class="cell-239"></div><div class="cell-240"></div><div class="cell-241"></div><div class="cell-242"></div><div class="cell-243"></div><div class="cell-244"></div><div class="cell-245"></div><div class="cell-246"></div><div class="cell-247"></div><div class="cell-248"></div><div class="cell-249"></div><div class="cell-250"></div><div class="cell-251"></div><div class="cell-252"></div><div class="cell-253"></div><div class="cell-254"></div><div class="cell-255"></div><div class="cell-256"></div>
+</div>
+
+                    <div class="axis-line axis-h"></div>
+                    <div class="axis-line axis-v"></div>
+
+                    
+        <div class="repo-dot" style="left: 53.74970537389369%; bottom: 49.58737559963564%;" data-repo="pallets_flask" title="pallets_flask
+Quadrant: BUNKER
+Complexity: 50
+Resilience: 41
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/16748505.png" alt="pallets_flask" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#4e79a7';">
+            <span class="dot-label">pallets_fl</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 23.96357954580183%; bottom: 34.57227219919956%;" data-repo="django_django" title="django_django
+Quadrant: GLASS HOUSE
+Complexity: 68
+Resilience: 13
+Theater: 30.55">
+            <img src="Python-Framework-Test_2026_files/27804.png" alt="django_django" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f28e2b';">
+            <span class="dot-label">django_dja</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 22.206436862992057%; bottom: 57.4611049222821%;" data-repo="encode_starlette" title="encode_starlette
+Quadrant: DEATHTRAP
+Complexity: 41
+Resilience: 12
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/19159390.png" alt="encode_starlette" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#e15759';">
+            <span class="dot-label">encode_sta</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 22.802822777508894%; bottom: 30.767966523062938%;" data-repo="tiangolo_fastapi" title="tiangolo_fastapi
+Quadrant: GLASS HOUSE
+Complexity: 73
+Resilience: 12
+Theater: 4.50">
+            <img src="Python-Framework-Test_2026_files/1326112.jpg" alt="tiangolo_fastapi" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#76b7b2';">
+            <span class="dot-label">tiangolo_f</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 50.681141198324646%; bottom: 39.6205939199828%;" data-repo="bottlepy_bottle" title="bottlepy_bottle
+Quadrant: BUNKER
+Complexity: 62
+Resilience: 36
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/1019799.png" alt="bottlepy_bottle" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#59a14f';">
+            <span class="dot-label">bottlepy_b</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 26.370741629559955%; bottom: 48.09326782071328%;" data-repo="tornadoweb_tornado" title="tornadoweb_tornado
+Quadrant: GLASS HOUSE
+Complexity: 52
+Resilience: 15
+Theater: 8.73">
+            <img src="Python-Framework-Test_2026_files/7468980.png" alt="tornadoweb_tornado" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#edc948';">
+            <span class="dot-label">tornadoweb</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 53.88772210806289%; bottom: 45.31800716053206%;" data-repo="sanic_org_sanic" title="sanic-org_sanic
+Quadrant: BUNKER
+Complexity: 56
+Resilience: 41
+Theater: 25.00">
+            <img src="Python-Framework-Test_2026_files/25215992.png" alt="sanic-org_sanic" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#b07aa1';">
+            <span class="dot-label">sanic-org_</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 23.146167121149727%; bottom: 44.24166695581479%;" data-repo="falconry_falcon" title="falconry_falcon
+Quadrant: GLASS HOUSE
+Complexity: 57
+Resilience: 13
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/11353642.png" alt="falconry_falcon" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#ff9da7';">
+            <span class="dot-label">falconry_f</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 24.32262594566744%; bottom: 51.45916563660317%;" data-repo="psf_requests" title="psf_requests
+Quadrant: DEATHTRAP
+Complexity: 48
+Resilience: 14
+Theater: 4.50">
+            <img src="Python-Framework-Test_2026_files/50630501.png" alt="psf_requests" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#4e79a7';">
+            <span class="dot-label">psf_reques</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 31.49185275437417%; bottom: 49.54390114913294%;" data-repo="aio_libs_aiohttp" title="aio-libs_aiohttp
+Quadrant: GLASS HOUSE
+Complexity: 51
+Resilience: 20
+Theater: 19.20">
+            <img src="Python-Framework-Test_2026_files/7049303.png" alt="aio-libs_aiohttp" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f28e2b';">
+            <span class="dot-label">aio-libs_a</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 22.398238819071764%; bottom: 56.70005316727927%;" data-repo="encode_httpx" title="encode_httpx
+Quadrant: DEATHTRAP
+Complexity: 42
+Resilience: 12
+Theater: 23.50">
+            <img src="Python-Framework-Test_2026_files/19159390.png" alt="encode_httpx" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#e15759';">
+            <span class="dot-label">encode_htt</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 37.6169877527844%; bottom: 59.40711890655955%;" data-repo="urllib3_urllib3" title="urllib3_urllib3
+Quadrant: DEATHTRAP
+Complexity: 39
+Resilience: 25
+Theater: 7.78">
+            <img src="Python-Framework-Test_2026_files/26825299.png" alt="urllib3_urllib3" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#76b7b2';">
+            <span class="dot-label">urllib3_ur</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 50.083205929063745%; bottom: 44.96476266477179%;" data-repo="sqlalchemy_sqlalchemy" title="sqlalchemy_sqlalchemy
+Quadrant: BUNKER
+Complexity: 56
+Resilience: 35
+Theater: 28.86">
+            <img src="Python-Framework-Test_2026_files/6043126.png" alt="sqlalchemy_sqlalchemy" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#59a14f';">
+            <span class="dot-label">sqlalchemy</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 52.86478958486394%; bottom: 51.700322923265944%;" data-repo="coleifer_peewee" title="coleifer_peewee
+Quadrant: FORTRESS
+Complexity: 48
+Resilience: 39
+Theater: 11.00">
+            <img src="Python-Framework-Test_2026_files/119974.png" alt="coleifer_peewee" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#edc948';">
+            <span class="dot-label">coleifer_p</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 52.83581789754779%; bottom: 46.79407284634603%;" data-repo="mongodb_mongo_python_driver" title="mongodb_mongo-python-driver
+Quadrant: BUNKER
+Complexity: 54
+Resilience: 39
+Theater: 13.94">
+            <img src="Python-Framework-Test_2026_files/45120.jpg" alt="mongodb_mongo-python-driver" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#b07aa1';">
+            <span class="dot-label">mongodb_mo</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 56.276302931942475%; bottom: 47.92340086870798%;" data-repo="redis_redis_py" title="redis_redis-py
+Quadrant: BUNKER
+Complexity: 52
+Resilience: 45
+Theater: 6.34">
+            <img src="Python-Framework-Test_2026_files/1529926.png" alt="redis_redis-py" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#ff9da7';">
+            <span class="dot-label">redis_redi</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 57.011044572554624%; bottom: 53.782995152384366%;" data-repo="python_trio_trio" title="python-trio_trio
+Quadrant: FORTRESS
+Complexity: 45
+Resilience: 46
+Theater: 40.00">
+            <img src="Python-Framework-Test_2026_files/26335827.png" alt="python-trio_trio" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#4e79a7';">
+            <span class="dot-label">python-tri</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 50%; bottom: 50.182868840699015%;" data-repo="aio_libs_aiojobs" title="aio-libs_aiojobs
+Quadrant: GLASS HOUSE
+Complexity: 50
+Resilience: N/A
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/7049303.png" alt="aio-libs_aiojobs" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f28e2b';">
+            <span class="dot-label">aio-libs_a</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 33.40056434083981%; bottom: 40.74206337421558%;" data-repo="celery_celery" title="celery_celery
+Quadrant: GLASS HOUSE
+Complexity: 61
+Resilience: 21
+Theater: 4.78">
+            <img src="Python-Framework-Test_2026_files/319983.png" alt="celery_celery" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#e15759';">
+            <span class="dot-label">celery_cel</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 53.25093317489492%; bottom: 48.972538364620064%;" data-repo="rq_rq" title="rq_rq
+Quadrant: BUNKER
+Complexity: 51
+Resilience: 40
+Theater: 15.00">
+            <img src="Python-Framework-Test_2026_files/35203774.png" alt="rq_rq" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#76b7b2';">
+            <span class="dot-label">rq_rq</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 29.48841903242247%; bottom: 47.47491701759309%;" data-repo="pandas_dev_pandas" title="pandas-dev_pandas
+Quadrant: GLASS HOUSE
+Complexity: 53
+Resilience: 18
+Theater: 9.25">
+            <img src="Python-Framework-Test_2026_files/21206976.png" alt="pandas-dev_pandas" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#59a14f';">
+            <span class="dot-label">pandas-dev</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 53.60312948355819%; bottom: 48.62492051494645%;" data-repo="numpy_numpy" title="numpy_numpy
+Quadrant: BUNKER
+Complexity: 52
+Resilience: 41
+Theater: 7.32">
+            <img src="Python-Framework-Test_2026_files/288276.png" alt="numpy_numpy" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#edc948';">
+            <span class="dot-label">numpy_nump</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 31.163317666663836%; bottom: 49.92825929381094%;" data-repo="scikit_learn_scikit_learn" title="scikit-learn_scikit-learn
+Quadrant: GLASS HOUSE
+Complexity: 50
+Resilience: 19
+Theater: 38.50">
+            <img src="Python-Framework-Test_2026_files/365630.png" alt="scikit-learn_scikit-learn" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#b07aa1';">
+            <span class="dot-label">scikit-lea</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 52.28878088238991%; bottom: 53.35821645758389%;" data-repo="pallets_click" title="pallets_click
+Quadrant: FORTRESS
+Complexity: 46
+Resilience: 39
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/16748505.png" alt="pallets_click" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#ff9da7';">
+            <span class="dot-label">pallets_cl</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 54.07085900369653%; bottom: 40.00897622817423%;" data-repo="tiangolo_typer" title="tiangolo_typer
+Quadrant: BUNKER
+Complexity: 62
+Resilience: 41
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/1326112.jpg" alt="tiangolo_typer" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#4e79a7';">
+            <span class="dot-label">tiangolo_t</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 30.53574819301785%; bottom: 55.75737439037516%;" data-repo="tqdm_tqdm" title="tqdm_tqdm
+Quadrant: DEATHTRAP
+Complexity: 43
+Resilience: 19
+Theater: 22.50">
+            <img src="Python-Framework-Test_2026_files/12731565.png" alt="tqdm_tqdm" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f28e2b';">
+            <span class="dot-label">tqdm_tqdm</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 47.11872872744876%; bottom: 45.525223163181906%;" data-repo="python_poetry_poetry" title="python-poetry_poetry
+Quadrant: GLASS HOUSE
+Complexity: 55
+Resilience: 33
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/48722593.png" alt="python-poetry_poetry" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#e15759';">
+            <span class="dot-label">python-poe</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 23.607976770625065%; bottom: 38.9296121238207%;" data-repo="pytest_dev_pytest" title="pytest-dev_pytest
+Quadrant: GLASS HOUSE
+Complexity: 63
+Resilience: 13
+Theater: 1.00">
+            <img src="Python-Framework-Test_2026_files/8897583.png" alt="pytest-dev_pytest" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#76b7b2';">
+            <span class="dot-label">pytest-dev</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 30.475512437266804%; bottom: 42.92697612379949%;" data-repo="HypothesisWorks_hypothesis" title="HypothesisWorks_hypothesis
+Quadrant: GLASS HOUSE
+Complexity: 58
+Resilience: 19
+Theater: 85.00">
+            <img src="Python-Framework-Test_2026_files/18481919.png" alt="HypothesisWorks_hypothesis" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#59a14f';">
+            <span class="dot-label">Hypothesis</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 9.573262026335566%; bottom: 37.881836744711805%;" data-repo="pyca_cryptography" title="pyca_cryptography
+Quadrant: GLASS HOUSE
+Complexity: 64
+Resilience: 1
+Theater: 40.00">
+            <img src="Python-Framework-Test_2026_files/5615737.png" alt="pyca_cryptography" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#edc948';">
+            <span class="dot-label">pyca_crypt</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 22.8402646710164%; bottom: 46.7836340142344%;" data-repo="jpadilla_pyjwt" title="jpadilla_pyjwt
+Quadrant: GLASS HOUSE
+Complexity: 54
+Resilience: 12
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/83319.jpg" alt="jpadilla_pyjwt" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#b07aa1';">
+            <span class="dot-label">jpadilla_p</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 52.329330357137366%; bottom: 44.2845181579047%;" data-repo="oauthlib_oauthlib" title="oauthlib_oauthlib
+Quadrant: BUNKER
+Complexity: 57
+Resilience: 39
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/33832354.png" alt="oauthlib_oauthlib" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#ff9da7';">
+            <span class="dot-label">oauthlib_o</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 53.23133802266979%; bottom: 52.09426511545885%;" data-repo="marshmallow_code_marshmallow" title="marshmallow-code_marshmallow
+Quadrant: FORTRESS
+Complexity: 48
+Resilience: 40
+Theater: ∞">
+            <img src="Python-Framework-Test_2026_files/10334301.png" alt="marshmallow-code_marshmallow" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#4e79a7';">
+            <span class="dot-label">marshmallo</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 20.446079869159675%; bottom: 43.36315452246205%;" data-repo="pydantic_pydantic" title="pydantic_pydantic
+Quadrant: GLASS HOUSE
+Complexity: 58
+Resilience: 10
+Theater: 7.43">
+            <img src="Python-Framework-Test_2026_files/110818415.png" alt="pydantic_pydantic" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f28e2b';">
+            <span class="dot-label">pydantic_p</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 11.544237110821761%; bottom: 30.045107651812543%;" data-repo="ijl_orjson" title="ijl_orjson
+Quadrant: GLASS HOUSE
+Complexity: 74
+Resilience: 3
+Theater: 1.00">
+            <img src="Python-Framework-Test_2026_files/1977222.png" alt="ijl_orjson" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#e15759';">
+            <span class="dot-label">ijl_orjson</span>
+        </div>
+    
+        <div class="repo-dot" style="left: 48.56627103168219%; bottom: 74.10058708429915%;" data-repo="ahb_sjsu_prometheus" title="ahb-sjsu_prometheus
+Quadrant: DEATHTRAP
+Complexity: 21
+Resilience: 34
+Theater: 3.81">
+            <img src="Python-Framework-Test_2026_files/14135501.png" alt="ahb-sjsu_prometheus" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#76b7b2';">
+            <span class="dot-label">ahb-sjsu_p</span>
+        </div>
+    
+                </div>
+
+                <div class="side-label right">High Resilience →</div>
+            </div>
+
+            <!-- Bottom labels -->
+            <div class="bottom-labels">
+                <div class="bottom-label left">🏠 GLASS HOUSE</div>
+                <div class="bottom-label right">🏰 BUNKER</div>
+            </div>
+
+            <div class="axis-title">
+                X: Resilience Score (left=low, right=high) • Y: Complexity (top=complex, bottom=simple)
+            </div>
+        </div>
+
+        <div class="legend">
+            
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/16748505.png" alt="pallets_flask" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #4e79a7; display: none;"></span>
+            <span class="legend-name">pallets_flask</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/27804.png" alt="django_django" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #f28e2b; display: none;"></span>
+            <span class="legend-name">django_django</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/19159390.png" alt="encode_starlette" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #e15759; display: none;"></span>
+            <span class="legend-name">encode_starlette</span>
+            <span class="legend-quadrant" style="color: #d88888;">DEATHTRAP</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/1326112.jpg" alt="tiangolo_fastapi" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #76b7b2; display: none;"></span>
+            <span class="legend-name">tiangolo_fastapi</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/1019799.png" alt="bottlepy_bottle" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #59a14f; display: none;"></span>
+            <span class="legend-name">bottlepy_bottle</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/7468980.png" alt="tornadoweb_tornado" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #edc948; display: none;"></span>
+            <span class="legend-name">tornadoweb_tornado</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/25215992.png" alt="sanic-org_sanic" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #b07aa1; display: none;"></span>
+            <span class="legend-name">sanic-org_sanic</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/11353642.png" alt="falconry_falcon" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #ff9da7; display: none;"></span>
+            <span class="legend-name">falconry_falcon</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/50630501.png" alt="psf_requests" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #4e79a7; display: none;"></span>
+            <span class="legend-name">psf_requests</span>
+            <span class="legend-quadrant" style="color: #d88888;">DEATHTRAP</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/7049303.png" alt="aio-libs_aiohttp" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #f28e2b; display: none;"></span>
+            <span class="legend-name">aio-libs_aiohttp</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/19159390.png" alt="encode_httpx" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #e15759; display: none;"></span>
+            <span class="legend-name">encode_httpx</span>
+            <span class="legend-quadrant" style="color: #d88888;">DEATHTRAP</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/26825299.png" alt="urllib3_urllib3" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #76b7b2; display: none;"></span>
+            <span class="legend-name">urllib3_urllib3</span>
+            <span class="legend-quadrant" style="color: #d88888;">DEATHTRAP</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/6043126.png" alt="sqlalchemy_sqlalchemy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #59a14f; display: none;"></span>
+            <span class="legend-name">sqlalchemy_sqlalchemy</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/119974.png" alt="coleifer_peewee" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #edc948; display: none;"></span>
+            <span class="legend-name">coleifer_peewee</span>
+            <span class="legend-quadrant" style="color: #888888;">FORTRESS</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/45120.jpg" alt="mongodb_mongo-python-driver" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #b07aa1; display: none;"></span>
+            <span class="legend-name">mongodb_mongo-python-driver</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/1529926.png" alt="redis_redis-py" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #ff9da7; display: none;"></span>
+            <span class="legend-name">redis_redis-py</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/26335827.png" alt="python-trio_trio" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #4e79a7; display: none;"></span>
+            <span class="legend-name">python-trio_trio</span>
+            <span class="legend-quadrant" style="color: #888888;">FORTRESS</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/7049303.png" alt="aio-libs_aiojobs" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #f28e2b; display: none;"></span>
+            <span class="legend-name">aio-libs_aiojobs</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/319983.png" alt="celery_celery" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #e15759; display: none;"></span>
+            <span class="legend-name">celery_celery</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/35203774.png" alt="rq_rq" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #76b7b2; display: none;"></span>
+            <span class="legend-name">rq_rq</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/21206976.png" alt="pandas-dev_pandas" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #59a14f; display: none;"></span>
+            <span class="legend-name">pandas-dev_pandas</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/288276.png" alt="numpy_numpy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #edc948; display: none;"></span>
+            <span class="legend-name">numpy_numpy</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/365630.png" alt="scikit-learn_scikit-learn" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #b07aa1; display: none;"></span>
+            <span class="legend-name">scikit-learn_scikit-learn</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/16748505.png" alt="pallets_click" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #ff9da7; display: none;"></span>
+            <span class="legend-name">pallets_click</span>
+            <span class="legend-quadrant" style="color: #888888;">FORTRESS</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/1326112.jpg" alt="tiangolo_typer" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #4e79a7; display: none;"></span>
+            <span class="legend-name">tiangolo_typer</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/12731565.png" alt="tqdm_tqdm" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #f28e2b; display: none;"></span>
+            <span class="legend-name">tqdm_tqdm</span>
+            <span class="legend-quadrant" style="color: #d88888;">DEATHTRAP</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/48722593.png" alt="python-poetry_poetry" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #e15759; display: none;"></span>
+            <span class="legend-name">python-poetry_poetry</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/8897583.png" alt="pytest-dev_pytest" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #76b7b2; display: none;"></span>
+            <span class="legend-name">pytest-dev_pytest</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/18481919.png" alt="HypothesisWorks_hypothesis" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #59a14f; display: none;"></span>
+            <span class="legend-name">HypothesisWorks_hypothesis</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/5615737.png" alt="pyca_cryptography" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #edc948; display: none;"></span>
+            <span class="legend-name">pyca_cryptography</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/83319.jpg" alt="jpadilla_pyjwt" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #b07aa1; display: none;"></span>
+            <span class="legend-name">jpadilla_pyjwt</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/33832354.png" alt="oauthlib_oauthlib" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #ff9da7; display: none;"></span>
+            <span class="legend-name">oauthlib_oauthlib</span>
+            <span class="legend-quadrant" style="color: #c4a484;">BUNKER</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/10334301.png" alt="marshmallow-code_marshmallow" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #4e79a7; display: none;"></span>
+            <span class="legend-name">marshmallow-code_marshmallow</span>
+            <span class="legend-quadrant" style="color: #888888;">FORTRESS</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/110818415.png" alt="pydantic_pydantic" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #f28e2b; display: none;"></span>
+            <span class="legend-name">pydantic_pydantic</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/1977222.png" alt="ijl_orjson" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #e15759; display: none;"></span>
+            <span class="legend-name">ijl_orjson</span>
+            <span class="legend-quadrant" style="color: #88a8c8;">GLASS HOUSE</span>
+        </div>
+    
+        <div class="legend-item">
+            <img class="legend-avatar" src="Python-Framework-Test_2026_files/14135501.png" alt="ahb-sjsu_prometheus" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span class="legend-dot-fallback" style="background-color: #76b7b2; display: none;"></span>
+            <span class="legend-name">ahb-sjsu_prometheus</span>
+            <span class="legend-quadrant" style="color: #d88888;">DEATHTRAP</span>
+        </div>
+    
+        </div>
+    
+        </div>
+        
+        <div class="card">
+            <h2>Rankings (by Overall Health)</h2>
+            
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Repository</th>
+                    <th>Health</th>
+                    <th>Quadrant</th>
+                    <th>Complexity</th>
+                    <th>Resilience</th>
+                    <th>Theater</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr data-repo="ijl_orjson">
+            <td>1</td>
+            <td style="font-weight: 500; color: #e2e8f0;">ijl_orjson</td>
+            <td><span class="badge" style="background: #ef4444">42</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>74</td>
+            <td>3</td>
+            <td>1.00</td>
+        </tr>
+        
+        <tr data-repo="pytest_dev_pytest">
+            <td>2</td>
+            <td style="font-weight: 500; color: #e2e8f0;">pytest-dev_pytest</td>
+            <td><span class="badge" style="background: #ef4444">42</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>63</td>
+            <td>13</td>
+            <td>1.00</td>
+        </tr>
+        
+        <tr data-repo="redis_redis_py">
+            <td>3</td>
+            <td style="font-weight: 500; color: #e2e8f0;">redis_redis-py</td>
+            <td><span class="badge" style="background: #ef4444">38</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>52</td>
+            <td>45</td>
+            <td>6.34</td>
+        </tr>
+        
+        <tr data-repo="tiangolo_typer">
+            <td>4</td>
+            <td style="font-weight: 500; color: #e2e8f0;">tiangolo_typer</td>
+            <td><span class="badge" style="background: #ef4444">36</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>62</td>
+            <td>41</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="numpy_numpy">
+            <td>5</td>
+            <td style="font-weight: 500; color: #e2e8f0;">numpy_numpy</td>
+            <td><span class="badge" style="background: #ef4444">36</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>52</td>
+            <td>41</td>
+            <td>7.32</td>
+        </tr>
+        
+        <tr data-repo="tiangolo_fastapi">
+            <td>6</td>
+            <td style="font-weight: 500; color: #e2e8f0;">tiangolo_fastapi</td>
+            <td><span class="badge" style="background: #ef4444">35</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>73</td>
+            <td>12</td>
+            <td>4.50</td>
+        </tr>
+        
+        <tr data-repo="sanic_org_sanic">
+            <td>7</td>
+            <td style="font-weight: 500; color: #e2e8f0;">sanic-org_sanic</td>
+            <td><span class="badge" style="background: #ef4444">35</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>56</td>
+            <td>41</td>
+            <td>25.00</td>
+        </tr>
+        
+        <tr data-repo="aio_libs_aiojobs">
+            <td>8</td>
+            <td style="font-weight: 500; color: #e2e8f0;">aio-libs_aiojobs</td>
+            <td><span class="badge" style="background: #ef4444">35</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>50</td>
+            <td>N/A</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="mongodb_mongo_python_driver">
+            <td>9</td>
+            <td style="font-weight: 500; color: #e2e8f0;">mongodb_mongo-python-driver</td>
+            <td><span class="badge" style="background: #ef4444">35</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>54</td>
+            <td>39</td>
+            <td>13.94</td>
+        </tr>
+        
+        <tr data-repo="bottlepy_bottle">
+            <td>10</td>
+            <td style="font-weight: 500; color: #e2e8f0;">bottlepy_bottle</td>
+            <td><span class="badge" style="background: #ef4444">34</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>62</td>
+            <td>36</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="celery_celery">
+            <td>11</td>
+            <td style="font-weight: 500; color: #e2e8f0;">celery_celery</td>
+            <td><span class="badge" style="background: #ef4444">34</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>61</td>
+            <td>21</td>
+            <td>4.78</td>
+        </tr>
+        
+        <tr data-repo="rq_rq">
+            <td>12</td>
+            <td style="font-weight: 500; color: #e2e8f0;">rq_rq</td>
+            <td><span class="badge" style="background: #ef4444">34</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>51</td>
+            <td>40</td>
+            <td>15.00</td>
+        </tr>
+        
+        <tr data-repo="oauthlib_oauthlib">
+            <td>13</td>
+            <td style="font-weight: 500; color: #e2e8f0;">oauthlib_oauthlib</td>
+            <td><span class="badge" style="background: #ef4444">33</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>57</td>
+            <td>39</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="coleifer_peewee">
+            <td>14</td>
+            <td style="font-weight: 500; color: #e2e8f0;">coleifer_peewee</td>
+            <td><span class="badge" style="background: #ef4444">33</span></td>
+            <td style="color: #888888; font-weight: 600;">FORTRESS</td>
+            <td>48</td>
+            <td>39</td>
+            <td>11.00</td>
+        </tr>
+        
+        <tr data-repo="sqlalchemy_sqlalchemy">
+            <td>15</td>
+            <td style="font-weight: 500; color: #e2e8f0;">sqlalchemy_sqlalchemy</td>
+            <td><span class="badge" style="background: #ef4444">33</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>56</td>
+            <td>35</td>
+            <td>28.86</td>
+        </tr>
+        
+        <tr data-repo="python_trio_trio">
+            <td>16</td>
+            <td style="font-weight: 500; color: #e2e8f0;">python-trio_trio</td>
+            <td><span class="badge" style="background: #ef4444">33</span></td>
+            <td style="color: #888888; font-weight: 600;">FORTRESS</td>
+            <td>45</td>
+            <td>46</td>
+            <td>40.00</td>
+        </tr>
+        
+        <tr data-repo="pallets_flask">
+            <td>17</td>
+            <td style="font-weight: 500; color: #e2e8f0;">pallets_flask</td>
+            <td><span class="badge" style="background: #ef4444">32</span></td>
+            <td style="color: #c4a484; font-weight: 600;">BUNKER</td>
+            <td>50</td>
+            <td>41</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="python_poetry_poetry">
+            <td>18</td>
+            <td style="font-weight: 500; color: #e2e8f0;">python-poetry_poetry</td>
+            <td><span class="badge" style="background: #ef4444">31</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>55</td>
+            <td>33</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="marshmallow_code_marshmallow">
+            <td>19</td>
+            <td style="font-weight: 500; color: #e2e8f0;">marshmallow-code_marshmallow</td>
+            <td><span class="badge" style="background: #ef4444">31</span></td>
+            <td style="color: #888888; font-weight: 600;">FORTRESS</td>
+            <td>48</td>
+            <td>40</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="pallets_click">
+            <td>20</td>
+            <td style="font-weight: 500; color: #e2e8f0;">pallets_click</td>
+            <td><span class="badge" style="background: #ef4444">30</span></td>
+            <td style="color: #888888; font-weight: 600;">FORTRESS</td>
+            <td>46</td>
+            <td>39</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="django_django">
+            <td>21</td>
+            <td style="font-weight: 500; color: #e2e8f0;">django_django</td>
+            <td><span class="badge" style="background: #ef4444">30</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>68</td>
+            <td>13</td>
+            <td>30.55</td>
+        </tr>
+        
+        <tr data-repo="pandas_dev_pandas">
+            <td>22</td>
+            <td style="font-weight: 500; color: #e2e8f0;">pandas-dev_pandas</td>
+            <td><span class="badge" style="background: #ef4444">28</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>53</td>
+            <td>18</td>
+            <td>9.25</td>
+        </tr>
+        
+        <tr data-repo="pydantic_pydantic">
+            <td>23</td>
+            <td style="font-weight: 500; color: #e2e8f0;">pydantic_pydantic</td>
+            <td><span class="badge" style="background: #ef4444">27</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>58</td>
+            <td>10</td>
+            <td>7.43</td>
+        </tr>
+        
+        <tr data-repo="HypothesisWorks_hypothesis">
+            <td>24</td>
+            <td style="font-weight: 500; color: #e2e8f0;">HypothesisWorks_hypothesis</td>
+            <td><span class="badge" style="background: #ef4444">27</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>58</td>
+            <td>19</td>
+            <td>85.00</td>
+        </tr>
+        
+        <tr data-repo="psf_requests">
+            <td>25</td>
+            <td style="font-weight: 500; color: #e2e8f0;">psf_requests</td>
+            <td><span class="badge" style="background: #ef4444">27</span></td>
+            <td style="color: #d88888; font-weight: 600;">DEATHTRAP</td>
+            <td>48</td>
+            <td>14</td>
+            <td>4.50</td>
+        </tr>
+        
+        <tr data-repo="tornadoweb_tornado">
+            <td>26</td>
+            <td style="font-weight: 500; color: #e2e8f0;">tornadoweb_tornado</td>
+            <td><span class="badge" style="background: #ef4444">27</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>52</td>
+            <td>15</td>
+            <td>8.73</td>
+        </tr>
+        
+        <tr data-repo="aio_libs_aiohttp">
+            <td>27</td>
+            <td style="font-weight: 500; color: #e2e8f0;">aio-libs_aiohttp</td>
+            <td><span class="badge" style="background: #ef4444">26</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>51</td>
+            <td>20</td>
+            <td>19.20</td>
+        </tr>
+        
+        <tr data-repo="urllib3_urllib3">
+            <td>28</td>
+            <td style="font-weight: 500; color: #e2e8f0;">urllib3_urllib3</td>
+            <td><span class="badge" style="background: #ef4444">26</span></td>
+            <td style="color: #d88888; font-weight: 600;">DEATHTRAP</td>
+            <td>39</td>
+            <td>25</td>
+            <td>7.78</td>
+        </tr>
+        
+        <tr data-repo="ahb_sjsu_prometheus" class="">
+            <td>29</td>
+            <td style="font-weight: 500; color: #e2e8f0;">ahb-sjsu_prometheus</td>
+            <td><span class="badge" style="background: #ef4444">26</span></td>
+            <td style="color: #d88888; font-weight: 600;">DEATHTRAP</td>
+            <td>21</td>
+            <td>34</td>
+            <td>3.81</td>
+        </tr>
+        
+        <tr data-repo="scikit_learn_scikit_learn">
+            <td>30</td>
+            <td style="font-weight: 500; color: #e2e8f0;">scikit-learn_scikit-learn</td>
+            <td><span class="badge" style="background: #ef4444">25</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>50</td>
+            <td>19</td>
+            <td>38.50</td>
+        </tr>
+        
+        <tr data-repo="falconry_falcon">
+            <td>31</td>
+            <td style="font-weight: 500; color: #e2e8f0;">falconry_falcon</td>
+            <td><span class="badge" style="background: #ef4444">24</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>57</td>
+            <td>13</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="pyca_cryptography">
+            <td>32</td>
+            <td style="font-weight: 500; color: #e2e8f0;">pyca_cryptography</td>
+            <td><span class="badge" style="background: #ef4444">24</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>64</td>
+            <td>1</td>
+            <td>40.00</td>
+        </tr>
+        
+        <tr data-repo="jpadilla_pyjwt">
+            <td>33</td>
+            <td style="font-weight: 500; color: #e2e8f0;">jpadilla_pyjwt</td>
+            <td><span class="badge" style="background: #ef4444">23</span></td>
+            <td style="color: #88a8c8; font-weight: 600;">GLASS HOUSE</td>
+            <td>54</td>
+            <td>12</td>
+            <td>∞</td>
+        </tr>
+        
+        <tr data-repo="tqdm_tqdm">
+            <td>34</td>
+            <td style="font-weight: 500; color: #e2e8f0;">tqdm_tqdm</td>
+            <td><span class="badge" style="background: #ef4444">23</span></td>
+            <td style="color: #d88888; font-weight: 600;">DEATHTRAP</td>
+            <td>43</td>
+            <td>19</td>
+            <td>22.50</td>
+        </tr>
+        
+        <tr data-repo="encode_httpx">
+            <td>35</td>
+            <td style="font-weight: 500; color: #e2e8f0;">encode_httpx</td>
+            <td><span class="badge" style="background: #ef4444">20</span></td>
+            <td style="color: #d88888; font-weight: 600;">DEATHTRAP</td>
+            <td>42</td>
+            <td>12</td>
+            <td>23.50</td>
+        </tr>
+        
+        <tr data-repo="encode_starlette">
+            <td>36</td>
+            <td style="font-weight: 500; color: #e2e8f0;">encode_starlette</td>
+            <td><span class="badge" style="background: #ef4444">19</span></td>
+            <td style="color: #d88888; font-weight: 600;">DEATHTRAP</td>
+            <td>41</td>
+            <td>12</td>
+            <td>∞</td>
+        </tr>
+        
+            </tbody>
+        </table>
+    
+        </div>
+        
+        <footer>
+            <p>Olympus • "Complexity is the enemy of reliability"</p>
+            <p style="margin-top: 0.5rem;">Copyright © 2025 Andrew H. Bond &lt;andrew.bond@sjsu.edu&gt; • All rights reserved</p>
+        </footer>
+    </div>
+    
+    <div class="glossary">
+        <div class="glossary-content">
+            <div class="glossary-item">
+                <div class="glossary-term">🏰 BUNKER</div>
+                <div class="glossary-def">Low complexity, high resilience. The ideal state - simple, maintainable code with strong error handling. Goal quadrant.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🏯 FORTRESS</div>
+                <div class="glossary-def">High complexity, high resilience. Over-engineered but defended - complex code with good error handling. Consider simplifying.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🏠 GLASS HOUSE</div>
+                <div class="glossary-def">Low complexity, low resilience. Simple but fragile - clean code that lacks defensive patterns. Add error handling.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">💀 DEATHTRAP</div>
+                <div class="glossary-def">High complexity, low resilience. The worst state - complex code with poor error handling. High risk of cascading failures.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🎭 Theater Ratio</div>
+                <div class="glossary-def">Ratio of "resilience theater" 
+(patterns that look protective but aren't) to genuine resilience. Lower 
+is better. ∞ = theater detected but no genuine resilience patterns 
+found. N/A = metric not applicable (e.g., language not supported).</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">📊 Complexity Score</div>
+                <div class="glossary-def">0-100 scale where HIGHER = 
+SIMPLER code (inverted semantics). Factors: code size, cyclomatic 
+complexity, maintainability index, hotspot density. Score ≥50 = "low 
+complexity" (simpler, healthier code).</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">🛡️ Resilience Score</div>
+                <div class="glossary-def">0-100 scale where HIGHER = 
+MORE RESILIENT. Factors: error handling, timeouts, retries, circuit 
+breakers, observability. Score ≥35 = "high resilience". N/A (-1) = 
+codebase too small to analyze.</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term">❤️ Overall Health</div>
+                <div class="glossary-def">Weighted composite: Simplicity
+ (35%) + Resilience (35%) + Theater bonus (30%). Formula: health = 
+complexity×0.35 + resilience×0.35 + 30/(1+theater). Range 0-100, higher 
+is better. Note: "complexity" score uses inverted semantics (higher = 
+simpler).</div>
+            </div>
+        </div>
+        <button class="glossary-toggle" onclick="toggleGlossary()" aria-expanded="false" aria-controls="glossary-content">📖 Glossary</button>
+    </div>
+    
+    <script>
+    // Mobile-friendly glossary toggle
+    function toggleGlossary() {
+        const content = document.querySelector('.glossary-content');
+        const button = document.querySelector('.glossary-toggle');
+        const isOpen = content.classList.contains('show');
+        
+        if (isOpen) {
+            content.classList.remove('show');
+            button.setAttribute('aria-expanded', 'false');
+        } else {
+            content.classList.add('show');
+            button.setAttribute('aria-expanded', 'true');
+        }
+    }
+    
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const content = document.querySelector('.glossary-content');
+            const button = document.querySelector('.glossary-toggle');
+            content.classList.remove('show');
+            button.setAttribute('aria-expanded', 'false');
+        }
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        const glossary = document.querySelector('.glossary');
+        if (!glossary.contains(e.target)) {
+            const content = document.querySelector('.glossary-content');
+            const button = document.querySelector('.glossary-toggle');
+            content.classList.remove('show');
+            button.setAttribute('aria-expanded', 'false');
+        }
+    });
+    
+    // Interactive highlighting between table and chart
+    function highlightRepo(repoId, shouldScroll = false) {
+        // Remove existing highlights
+        document.querySelectorAll('.repo-dot.highlighted, tr.highlighted').forEach(el => {
+            el.classList.remove('highlighted');
+        });
+        
+        // Add highlight to matching elements
+        const dot = document.querySelector(`.repo-dot[data-repo="${repoId}"]`);
+        const row = document.querySelector(`tr[data-repo="${repoId}"]`);
+        
+        if (dot) {
+            dot.classList.add('highlighted');
+            if (shouldScroll) {
+                dot.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        if (row) {
+            row.classList.add('highlighted');
+            if (shouldScroll) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    }
+    
+    function clearHighlight() {
+        document.querySelectorAll('.repo-dot.highlighted, tr.highlighted').forEach(el => {
+            el.classList.remove('highlighted');
+        });
+    }
+    
+    // Add event listeners to table rows
+    document.querySelectorAll('tr[data-repo]').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            highlightRepo(this.dataset.repo, false);  // No scroll on hover
+        });
+        row.addEventListener('mouseleave', clearHighlight);
+        row.addEventListener('click', function() {
+            highlightRepo(this.dataset.repo, true);  // Scroll on click
+        });
+    });
+    
+    // Add event listeners to chart dots
+    document.querySelectorAll('.repo-dot[data-repo]').forEach(dot => {
+        dot.addEventListener('mouseenter', function() {
+            highlightRepo(this.dataset.repo, false);  // No scroll on hover
+        });
+        dot.addEventListener('mouseleave', clearHighlight);
+        dot.addEventListener('click', function() {
+            highlightRepo(this.dataset.repo, true);  // Scroll on click
+        });
+    });
+    </script>
+    
+    <style>
+    /* Highlight styles */
+    .repo-dot.highlighted {
+        transform: translate(-50%, -50%) scale(1.5);
+        z-index: 1000;
+        box-shadow: 0 0 20px rgba(255, 255, 0, 0.8), 0 0 40px rgba(255, 255, 0, 0.4);
+        border: 3px solid #ffd700 !important;
+    }
+    
+    tr.highlighted {
+        background: rgba(255, 215, 0, 0.2) !important;
+        box-shadow: inset 0 0 0 2px #ffd700;
+    }
+    
+    tr[data-repo] {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    tr[data-repo]:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .repo-dot {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    </style>
+
+</body></html>

@@ -31,7 +31,6 @@ import logging
 from pathlib import Path
 from dataclasses import dataclass, field, asdict
 from typing import Optional
-from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +38,7 @@ logger = logging.getLogger(__name__)
 from lang_analyzers import (
     ANALYZER_REGISTRY, 
     LanguageResilienceMetrics,
-    get_analyzer,
-    analyze_file
+    get_analyzer
 )
 
 
