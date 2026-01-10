@@ -142,6 +142,45 @@ python prometheus.py owner/repo --html custom.html -o custom.json
 
 ### The Pragmatic Verdict
 
+### From PyPI (Recommended)
+
+```bash
+# Basic installation
+pip install prometheus-analyzer
+
+# With security scanning (bandit)
+pip install prometheus-analyzer[security]
+
+# Full suite with all optional dependencies
+pip install prometheus-analyzer[full]
+```
+
+After installation, use the commands:
+```bash
+prometheus pallets/flask
+olympus -f repos.txt -o comparison.html
+hubris pallets/flask --html hubris_report.html
+```
+
+### From Source
+
+```bash
+git clone https://github.com/yourusername/prometheus.git
+cd prometheus
+pip install -e .
+```
+
+### Manual Installation (Legacy)
+
+If installing manually without the package:
+
+```bash
+# Minimal (Prometheus only)
+pip install radon lizard
+
+# Full Suite
+pip install radon lizard bandit
+```
 This tool doesn't claim to measure "truth" — it measures **fitness**.
 
 Per the pragmatist framework:

@@ -4,6 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prometheus-analyzer"
+version = "0.1.0"
+description = "Complexity Fitness Analyzer for Codebases - Measures whether your codebase is more complex than it needs to be"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Andrew H. Bond", email = "andrew.bond@sjsu.edu"}
+]
+keywords = ["complexity", "code-quality", "resilience", "fitness", "analyzer", "metrics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
 version = "1.0.0"
 description = "Complexity fitness analyzer for codebases"
 readme = "README.md"
@@ -22,6 +38,23 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "radon>=5.1.0",
+    "lizard>=1.17.0",
+]
+
+[project.optional-dependencies]
+security = [
+    "bandit>=1.7.0",
+]
+full = [
+    "radon>=5.1.0",
+    "lizard>=1.17.0",
+    "bandit>=1.7.0",
 ]
 
 dependencies = []
@@ -36,6 +69,38 @@ dev = [
 
 [project.scripts]
 prometheus = "prometheus:main"
+olympus = "olympus:main"
+hubris = "hubris:main"
+sentinel = "sentinel:main"
+oracle = "oracle:main"
+scent = "scent_analyzer:main"
+entropy = "entropy_analyzer:main"
+shield = "shield_analyzer:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/prometheus"
+Documentation = "https://github.com/yourusername/prometheus#readme"
+Repository = "https://github.com/yourusername/prometheus"
+Issues = "https://github.com/yourusername/prometheus/issues"
+
+[tool.setuptools]
+# Include root-level Python modules
+py-modules = [
+    "prometheus",
+    "olympus",
+    "hubris",
+    "hubris_fp_filter",
+    "entropy_analyzer",
+    "shield_analyzer",
+    "scent_analyzer",
+    "sentinel",
+    "oracle",
+    "lang_analyzers",
+    "prometheus_ui",
+    "benchmark",
+]
+packages = ["prometheus_analyzer"]
+
 hubris = "hubris:main"
 olympus = "olympus:main"
 

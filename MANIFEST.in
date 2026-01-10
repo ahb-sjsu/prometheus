@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+include repos.txt
+recursive-include prometheus_analyzer *.py
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .git*
+
