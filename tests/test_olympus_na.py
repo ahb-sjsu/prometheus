@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from olympus import (
+from prometheus.olympus import (
     OlympusReport,
     RepoSnapshot,
     calculate_overall_health,

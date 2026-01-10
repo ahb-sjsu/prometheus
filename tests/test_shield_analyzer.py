@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from shield_analyzer import (
+from prometheus.shield_analyzer import (
     Aegis,
     AegisReport,
     ErrorHandlingMetrics,

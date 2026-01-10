@@ -4,60 +4,29 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prometheus-analyzer"
-version = "0.1.0"
-description = "Complexity Fitness Analyzer for Codebases - Measures whether your codebase is more complex than it needs to be"
+version = "0.2.0"
+description = "Codebase fitness analyzer - complexity, resilience, and theater detection"
 readme = "README.md"
-requires-python = ">=3.8"
-license = "MIT"
-license-files = ["LICENSE"]
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
 authors = [
     {name = "Andrew H. Bond", email = "andrew.bond@sjsu.edu"}
 ]
-keywords = ["complexity", "code-quality", "resilience", "fitness", "analyzer", "metrics"]
+keywords = ["code-analysis", "complexity", "resilience", "metrics", "fitness"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-version = "1.0.0"
-description = "Complexity fitness analyzer for codebases"
-readme = "README.md"
-requires-python = ">=3.10"
-license = {text = "MIT"}
-authors = [
-    {name = "Your Name", email = "you@example.com"}
-]
-keywords = ["code-analysis", "complexity", "resilience", "metrics"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Quality Assurance",
-    "Topic :: Software Development :: Testing",
-    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
-    "radon>=5.1.0",
-    "lizard>=1.17.0",
+    "radon>=5.1",
+    "pathspec>=0.11",
 ]
-
-[project.optional-dependencies]
-security = [
-    "bandit>=1.7.0",
-]
-full = [
-    "radon>=5.1.0",
-    "lizard>=1.17.0",
-    "bandit>=1.7.0",
-]
-
-dependencies = []
 
 [project.optional-dependencies]
 dev = [
@@ -68,57 +37,12 @@ dev = [
 ]
 
 [project.scripts]
-prometheus = "prometheus:main"
-olympus = "olympus:main"
-hubris = "hubris:main"
-sentinel = "sentinel:main"
-oracle = "oracle:main"
-scent = "scent_analyzer:main"
-entropy = "entropy_analyzer:main"
-shield = "shield_analyzer:main"
-
-[project.urls]
-Homepage = "https://github.com/yourusername/prometheus"
-Documentation = "https://github.com/yourusername/prometheus#readme"
-Repository = "https://github.com/yourusername/prometheus"
-Issues = "https://github.com/yourusername/prometheus/issues"
-
-[tool.setuptools]
-# Include root-level Python modules
-py-modules = [
-    "prometheus",
-    "olympus",
-    "hubris",
-    "hubris_fp_filter",
-    "entropy_analyzer",
-    "shield_analyzer",
-    "scent_analyzer",
-    "sentinel",
-    "oracle",
-    "lang_analyzers",
-    "prometheus_ui",
-    "benchmark",
-]
-packages = ["prometheus_analyzer"]
-
-hubris = "hubris:main"
-olympus = "olympus:main"
-
-[tool.setuptools]
-py-modules = [
-    "prometheus",
-    "prometheus_ui",
-    "hubris",
-    "olympus",
-    "oracle",
-    "shield_analyzer",
-    "entropy_analyzer",
-    "scent_analyzer",
-    "lang_analyzers",
-]
+prometheus = "prometheus.prometheus:main"
+hubris = "prometheus.hubris:main"
+olympus = "prometheus.olympus:main"
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -132,8 +56,9 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
-ignore = ["E501"]  # Line too long - handled by formatter
+ignore = ["E501"]
 
 [tool.black]
 line-length = 100
 target-version = ["py310", "py311", "py312"]
+

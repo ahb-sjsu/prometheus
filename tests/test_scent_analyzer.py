@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scent_analyzer import (
+from prometheus.scent_analyzer import (
     CodeSmells,
     FileSmellMetrics,
     NIHPatterns,

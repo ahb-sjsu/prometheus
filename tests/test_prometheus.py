@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from prometheus import (
+from prometheus.prometheus import (
     GitHubMetadata,
     Prometheus,
     PrometheusReport,

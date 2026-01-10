@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from entropy_analyzer import (
+from prometheus.entropy_analyzer import (
     Analyzer,
     CodebaseMetrics,
     ComplexityFitnessPipeline,

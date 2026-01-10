@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from oracle import (
+from prometheus.oracle import (
     DeploymentArtifacts,
     ObservabilityInstrumentation,
     Oracle,

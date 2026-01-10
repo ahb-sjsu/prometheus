@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from lang_analyzers import (
+from prometheus.lang_analyzers import (
     AnalyzerRegistry,
     CAnalyzer,
     GoAnalyzer,

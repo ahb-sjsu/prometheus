@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from hubris import (
+from prometheus.hubris import (
     ExceptionDetector,
     Hubris,
     HubrisReport,
