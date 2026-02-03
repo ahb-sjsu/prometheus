@@ -694,19 +694,19 @@ def generate_repo_dot_html(
     import math
 
     short_name = name.split("/")[-1][:10]
-    
+
     # Convert theater to float if it's a string
     if isinstance(theater, str):
-        if theater.lower() in ('inf', '∞', 'infinity'):
-            theater = float('inf')
-        elif theater.lower() in ('n/a', 'na', 'none', ''):
+        if theater.lower() in ("inf", "∞", "infinity"):
+            theater = float("inf")
+        elif theater.lower() in ("n/a", "na", "none", ""):
             theater = None
         else:
             try:
                 theater = float(theater)
             except (ValueError, TypeError):
                 theater = None
-    
+
     # Format theater for display - always show it
     if theater is None:
         theater_str = "&#10;Theater: N/A"
@@ -714,16 +714,16 @@ def generate_repo_dot_html(
         theater_str = "&#10;Theater: ∞"
     else:
         theater_str = f"&#10;Theater: {theater:.2f}"
-    
+
     # Format resilience for display (N/A for negative/unknown values)
     if resilience < 0:
         resilience_str = "N/A"
     else:
         resilience_str = f"{resilience:.0f}"
-    
+
     # Create a safe ID from the repo name
     repo_id = name.replace("/", "_").replace("-", "_").replace(".", "_")
-    
+
     # Use bottom positioning: 0% = bottom of chart, 100% = top
     # y_pct represents complexity where low values = high complexity = should be at TOP
     # So we need to invert: bottom = 100 - y_pct
@@ -814,16 +814,16 @@ def generate_comparison_table_html(repos: list) -> str:
         # Format theater for display - handle string values
         theater_val = repo.get("theater", 1.0)
         if isinstance(theater_val, str):
-            if theater_val.lower() in ('inf', '∞', 'infinity'):
-                theater_val = float('inf')
-            elif theater_val.lower() in ('n/a', 'na', 'none', ''):
+            if theater_val.lower() in ("inf", "∞", "infinity"):
+                theater_val = float("inf")
+            elif theater_val.lower() in ("n/a", "na", "none", ""):
                 theater_val = None
             else:
                 try:
                     theater_val = float(theater_val)
                 except (ValueError, TypeError):
                     theater_val = None
-        
+
         if theater_val is None:
             theater_str = "N/A"
         elif isinstance(theater_val, float) and math.isinf(theater_val):
@@ -832,23 +832,23 @@ def generate_comparison_table_html(repos: list) -> str:
             theater_str = f"{theater_val:.2f}"
 
         # Handle negative resilience (TOO_SMALL codebases) - also handle strings
-        resilience_val = repo.get('resilience', 0)
+        resilience_val = repo.get("resilience", 0)
         if isinstance(resilience_val, str):
-            if resilience_val.lower() in ('n/a', 'na', 'none', ''):
+            if resilience_val.lower() in ("n/a", "na", "none", ""):
                 resilience_val = -1
             else:
                 try:
                     resilience_val = float(resilience_val)
                 except (ValueError, TypeError):
                     resilience_val = -1
-        
+
         if resilience_val < 0:
             resilience_str = "N/A"
         else:
             resilience_str = f"{resilience_val:.0f}"
 
         # Create a safe ID from the repo name
-        repo_name = repo.get('name', '')
+        repo_name = repo.get("name", "")
         repo_id = repo_name.replace("/", "_").replace("-", "_").replace(".", "_")
 
         rows += f"""

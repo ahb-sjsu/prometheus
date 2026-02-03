@@ -24,19 +24,29 @@ RETRY_PATTERNS: dict[str, dict[str, Pattern]] = {
         "retrying_decorator": re.compile(r"@retrying\b"),
         "backoff_decorator": re.compile(r"@backoff\.(on_exception|on_predicate)"),
         # Manual retry loops
-        "for_retry": re.compile(r"for\s+\w+\s+in\s+range\s*\(\s*\d+\s*\).*?(?:try|except)", re.DOTALL),
-        "while_retry": re.compile(r"while\s+(?:True|retry|attempt|tries).*?(?:try|except)", re.DOTALL),
+        "for_retry": re.compile(
+            r"for\s+\w+\s+in\s+range\s*\(\s*\d+\s*\).*?(?:try|except)", re.DOTALL
+        ),
+        "while_retry": re.compile(
+            r"while\s+(?:True|retry|attempt|tries).*?(?:try|except)", re.DOTALL
+        ),
         # Quality indicators
-        "exponential_backoff": re.compile(r"wait_exponential|exponential_backoff|backoff\.expo|\*\*\s*attempt|\*\*\s*retry|\*\s*2\s*\*\*"),
+        "exponential_backoff": re.compile(
+            r"wait_exponential|exponential_backoff|backoff\.expo|\*\*\s*attempt|\*\*\s*retry|\*\s*2\s*\*\*"
+        ),
         "jitter": re.compile(r"jitter|wait_random|random\.uniform|random\.random"),
-        "max_retries": re.compile(r"max_retries|stop_after_attempt|max_tries|retry_limit|MAX_RETRIES"),
+        "max_retries": re.compile(
+            r"max_retries|stop_after_attempt|max_tries|retry_limit|MAX_RETRIES"
+        ),
         "sleep_call": re.compile(r"time\.sleep|asyncio\.sleep|await\s+sleep"),
     },
     "javascript": {
         "async_retry": re.compile(r"async-retry|p-retry|retry\s*\("),
         "for_retry": re.compile(r"for\s*\([^)]*(?:retry|attempt|tries)[^)]*\)"),
         "while_retry": re.compile(r"while\s*\([^)]*(?:retry|attempt|tries)[^)]*\)"),
-        "exponential_backoff": re.compile(r"exponentialBackoff|Math\.pow\s*\(\s*2|backoff\s*\*\s*2"),
+        "exponential_backoff": re.compile(
+            r"exponentialBackoff|Math\.pow\s*\(\s*2|backoff\s*\*\s*2"
+        ),
         "jitter": re.compile(r"jitter|Math\.random"),
         "max_retries": re.compile(r"maxRetries|maxAttempts|MAX_RETRIES"),
     },
@@ -54,30 +64,62 @@ RETRY_PATTERNS: dict[str, dict[str, Pattern]] = {
         "jitter": re.compile(r"jitter|randomDelay|Random\(\)"),
     },
     "c": {
-        "for_retry": re.compile(r"for\s*\([^;]*;\s*\w+\s*<\s*(?:max_retries|MAX_RETRIES|retry_count|retries|MAX_ATTEMPTS|attempts)\s*;"),
-        "while_retry": re.compile(r"while\s*\(\s*(?:retries|retry_count|attempts|tries)\s*(?:<|<=|>|--|\+\+)"),
+        "for_retry": re.compile(
+            r"for\s*\([^;]*;\s*\w+\s*<\s*(?:max_retries|MAX_RETRIES|retry_count|retries|MAX_ATTEMPTS|attempts)\s*;"
+        ),
+        "while_retry": re.compile(
+            r"while\s*\(\s*(?:retries|retry_count|attempts|tries)\s*(?:<|<=|>|--|\+\+)"
+        ),
         "retry_label": re.compile(r"\bretry\s*:|again\s*:"),
         "goto_retry": re.compile(r"goto\s+(?:retry|again|repeat)\s*;"),
-        "exponential_backoff": re.compile(r"<<\s*(?:retry|attempt|tries)|(?:delay|sleep|wait)\s*\*=?\s*2|pow\s*\(\s*2"),
+        "exponential_backoff": re.compile(
+            r"<<\s*(?:retry|attempt|tries)|(?:delay|sleep|wait)\s*\*=?\s*2|pow\s*\(\s*2"
+        ),
         "jitter": re.compile(r"rand\s*\(\s*\)|random\s*\(\s*\)|drand48|arc4random"),
-        "max_retries": re.compile(r"(?:max_retries|MAX_RETRIES|retry_count|MAX_ATTEMPTS|max_attempts)\s*[=<>]|#define\s+MAX_RETRIES"),
+        "max_retries": re.compile(
+            r"(?:max_retries|MAX_RETRIES|retry_count|MAX_ATTEMPTS|max_attempts)\s*[=<>]|#define\s+MAX_RETRIES"
+        ),
         "sleep_call": re.compile(r"\b(?:sleep|usleep|nanosleep|Sleep)\s*\("),
     },
     "cpp": {
-        "for_retry": re.compile(r"for\s*\([^;]*;\s*\w+\s*<\s*(?:max_retries|kMaxRetries|maxRetries|retry_count)\s*;"),
-        "while_retry": re.compile(r"while\s*\(\s*(?:retries|retry_count|attempts)\s*(?:<|<=|>|--|\+\+)"),
+        "for_retry": re.compile(
+            r"for\s*\([^;]*;\s*\w+\s*<\s*(?:max_retries|kMaxRetries|maxRetries|retry_count)\s*;"
+        ),
+        "while_retry": re.compile(
+            r"while\s*\(\s*(?:retries|retry_count|attempts)\s*(?:<|<=|>|--|\+\+)"
+        ),
         "catch_retry": re.compile(r"catch\s*\([^)]*\)\s*\{[^}]*(?:retry|continue|goto)"),
-        "exponential_backoff": re.compile(r"std::chrono|std::this_thread::sleep_for|backoff\s*\*=?\s*2"),
-        "jitter": re.compile(r"std::uniform_int_distribution|std::uniform_real_distribution|std::random_device|std::mt19937"),
-        "max_retries": re.compile(r"(?:max_retries|kMaxRetries|maxRetries)\s*[=<>]|constexpr.*max.*retry", re.IGNORECASE),
-        "sleep_call": re.compile(r"std::this_thread::sleep_for|std::this_thread::sleep_until|Sleep\s*\("),
+        "exponential_backoff": re.compile(
+            r"std::chrono|std::this_thread::sleep_for|backoff\s*\*=?\s*2"
+        ),
+        "jitter": re.compile(
+            r"std::uniform_int_distribution|std::uniform_real_distribution|std::random_device|std::mt19937"
+        ),
+        "max_retries": re.compile(
+            r"(?:max_retries|kMaxRetries|maxRetries)\s*[=<>]|constexpr.*max.*retry", re.IGNORECASE
+        ),
+        "sleep_call": re.compile(
+            r"std::this_thread::sleep_for|std::this_thread::sleep_until|Sleep\s*\("
+        ),
     },
 }
 
 # Patterns that trigger detection (vs quality indicators)
-RETRY_TRIGGERS = {"tenacity_decorator", "retrying_decorator", "backoff_decorator", "async_retry", 
-                  "retry_lib", "resilience4j_retry", "spring_retry", "failsafe", 
-                  "for_retry", "while_retry", "retry_label", "goto_retry", "catch_retry"}
+RETRY_TRIGGERS = {
+    "tenacity_decorator",
+    "retrying_decorator",
+    "backoff_decorator",
+    "async_retry",
+    "retry_lib",
+    "resilience4j_retry",
+    "spring_retry",
+    "failsafe",
+    "for_retry",
+    "while_retry",
+    "retry_label",
+    "goto_retry",
+    "catch_retry",
+}
 
 # Patterns that indicate quality
 RETRY_QUALITY = {"exponential_backoff", "jitter", "max_retries", "sleep_call"}
@@ -89,8 +131,12 @@ RETRY_QUALITY = {"exponential_backoff", "jitter", "max_retries", "sleep_call"}
 
 TIMEOUT_PATTERNS: dict[str, dict[str, Pattern]] = {
     "python": {
-        "requests_timeout": re.compile(r"requests\.(get|post|put|delete|patch)\s*\([^)]*timeout\s*=\s*(\d+(?:\.\d+)?|None)"),
-        "requests_no_timeout": re.compile(r"requests\.(get|post|put|delete|patch)\s*\([^)]*\)(?![^)]*timeout)"),
+        "requests_timeout": re.compile(
+            r"requests\.(get|post|put|delete|patch)\s*\([^)]*timeout\s*=\s*(\d+(?:\.\d+)?|None)"
+        ),
+        "requests_no_timeout": re.compile(
+            r"requests\.(get|post|put|delete|patch)\s*\([^)]*\)(?![^)]*timeout)"
+        ),
         "httpx_timeout": re.compile(r"httpx\.\w+\s*\([^)]*timeout\s*="),
         "aiohttp_timeout": re.compile(r"aiohttp\.ClientTimeout|timeout\s*=\s*aiohttp"),
         "socket_timeout": re.compile(r"socket\.setdefaulttimeout|\.settimeout\s*\("),
@@ -113,19 +159,29 @@ TIMEOUT_PATTERNS: dict[str, dict[str, Pattern]] = {
         "socket_timeout": re.compile(r"setSoTimeout|setConnectTimeout"),
     },
     "c": {
-        "socket_timeout": re.compile(r"setsockopt\s*\([^)]*SO_RCVTIMEO|setsockopt\s*\([^)]*SO_SNDTIMEO"),
-        "select_timeout": re.compile(r"\bselect\s*\([^)]*&\s*\w*timeout|poll\s*\([^)]*,\s*\d+\s*\)"),
+        "socket_timeout": re.compile(
+            r"setsockopt\s*\([^)]*SO_RCVTIMEO|setsockopt\s*\([^)]*SO_SNDTIMEO"
+        ),
+        "select_timeout": re.compile(
+            r"\bselect\s*\([^)]*&\s*\w*timeout|poll\s*\([^)]*,\s*\d+\s*\)"
+        ),
         "alarm_timeout": re.compile(r"\balarm\s*\(\s*\d+\s*\)|signal\s*\(\s*SIGALRM"),
         "generic_timeout": re.compile(r"(?:timeout|TIMEOUT)\s*[=:]\s*\d+|#define\s+\w*TIMEOUT"),
-        "curl_timeout": re.compile(r"CURLOPT_TIMEOUT|CURLOPT_CONNECTTIMEOUT|curl_easy_setopt\s*\([^)]*TIMEOUT"),
+        "curl_timeout": re.compile(
+            r"CURLOPT_TIMEOUT|CURLOPT_CONNECTTIMEOUT|curl_easy_setopt\s*\([^)]*TIMEOUT"
+        ),
         "no_timeout": re.compile(r"connect\s*\([^)]*\)\s*;(?![^;]*timeout)", re.IGNORECASE),
     },
     "cpp": {
         "chrono_timeout": re.compile(r"std::chrono::(?:seconds|milliseconds|microseconds)"),
         "future_timeout": re.compile(r"std::future.*wait_for|std::future.*wait_until"),
-        "condition_timeout": re.compile(r"std::condition_variable.*wait_for|std::condition_variable.*wait_until"),
+        "condition_timeout": re.compile(
+            r"std::condition_variable.*wait_for|std::condition_variable.*wait_until"
+        ),
         "mutex_timeout": re.compile(r"std::timed_mutex|try_lock_for|try_lock_until"),
-        "asio_timeout": re.compile(r"boost::asio::deadline_timer|asio::steady_timer|expires_after|expires_at"),
+        "asio_timeout": re.compile(
+            r"boost::asio::deadline_timer|asio::steady_timer|expires_after|expires_at"
+        ),
         "socket_timeout": re.compile(r"setsockopt\s*\([^)]*SO_RCVTIMEO|socket_base::timeout"),
     },
 }
@@ -151,7 +207,9 @@ CIRCUIT_BREAKER_PATTERNS: dict[str, dict[str, Pattern]] = {
         "cb_events": re.compile(r"\.on\s*\(['\"](?:open|close|halfOpen)"),
     },
     "java": {
-        "resilience4j_cb": re.compile(r"@CircuitBreaker|CircuitBreakerConfig|CircuitBreakerRegistry"),
+        "resilience4j_cb": re.compile(
+            r"@CircuitBreaker|CircuitBreakerConfig|CircuitBreakerRegistry"
+        ),
         "hystrix": re.compile(r"@HystrixCommand|HystrixCircuitBreaker"),
         "cb_fallback": re.compile(r"fallbackMethod|@Fallback"),
         "cb_metrics": re.compile(r"CircuitBreakerMetrics|HealthIndicator"),
@@ -162,25 +220,57 @@ CIRCUIT_BREAKER_PATTERNS: dict[str, dict[str, Pattern]] = {
         "cb_on_state": re.compile(r"OnStateChange|ReadyToTrip"),
     },
     "c": {
-        "custom_cb": re.compile(r"(?:circuit|cb)_state\s*==?\s*(?:OPEN|CLOSED|HALF_OPEN)|enum\s+\w*circuit\w*state", re.IGNORECASE),
-        "state_machine": re.compile(r"(?:CIRCUIT|CB)_(?:OPEN|CLOSED|HALF_OPEN)|failure_count\s*>=?\s*threshold"),
-        "cb_threshold": re.compile(r"(?:failure|error)_(?:threshold|limit|max)\s*[=:]|#define\s+\w*(?:FAILURE|ERROR)_(?:THRESHOLD|LIMIT)"),
-        "cb_logging": re.compile(r"(?:syslog|fprintf\s*\(\s*stderr|printf).*(?:circuit|state|open|closed)", re.IGNORECASE),
+        "custom_cb": re.compile(
+            r"(?:circuit|cb)_state\s*==?\s*(?:OPEN|CLOSED|HALF_OPEN)|enum\s+\w*circuit\w*state",
+            re.IGNORECASE,
+        ),
+        "state_machine": re.compile(
+            r"(?:CIRCUIT|CB)_(?:OPEN|CLOSED|HALF_OPEN)|failure_count\s*>=?\s*threshold"
+        ),
+        "cb_threshold": re.compile(
+            r"(?:failure|error)_(?:threshold|limit|max)\s*[=:]|#define\s+\w*(?:FAILURE|ERROR)_(?:THRESHOLD|LIMIT)"
+        ),
+        "cb_logging": re.compile(
+            r"(?:syslog|fprintf\s*\(\s*stderr|printf).*(?:circuit|state|open|closed)", re.IGNORECASE
+        ),
     },
     "cpp": {
-        "custom_cb": re.compile(r"class\s+\w*CircuitBreaker|CircuitBreaker\s*<|circuit_breaker", re.IGNORECASE),
-        "state_enum": re.compile(r"enum\s+(?:class\s+)?(?:State|CircuitState)\s*\{[^}]*OPEN[^}]*CLOSED"),
+        "custom_cb": re.compile(
+            r"class\s+\w*CircuitBreaker|CircuitBreaker\s*<|circuit_breaker", re.IGNORECASE
+        ),
+        "state_enum": re.compile(
+            r"enum\s+(?:class\s+)?(?:State|CircuitState)\s*\{[^}]*OPEN[^}]*CLOSED"
+        ),
         "cb_metrics": re.compile(r"prometheus|statsd|metrics::|counter\+\+|gauge"),
         "cb_logging": re.compile(r"LOG\(|SPDLOG|spdlog::|std::cerr|std::clog"),
         "cb_atomic": re.compile(r"std::atomic|atomic_|compare_exchange"),
     },
 }
 
-CB_TRIGGERS = {"pybreaker", "circuitbreaker", "opossum", "brakes", "resilience4j_cb", 
-               "hystrix", "gobreaker", "hystrix_go", "custom_cb", "state_machine", "state_enum"}
+CB_TRIGGERS = {
+    "pybreaker",
+    "circuitbreaker",
+    "opossum",
+    "brakes",
+    "resilience4j_cb",
+    "hystrix",
+    "gobreaker",
+    "hystrix_go",
+    "custom_cb",
+    "state_machine",
+    "state_enum",
+}
 
-CB_QUALITY = {"cb_fallback", "cb_listener", "cb_events", "cb_metrics", "cb_on_state", 
-              "cb_threshold", "cb_logging", "cb_atomic"}
+CB_QUALITY = {
+    "cb_fallback",
+    "cb_listener",
+    "cb_events",
+    "cb_metrics",
+    "cb_on_state",
+    "cb_threshold",
+    "cb_logging",
+    "cb_atomic",
+}
 
 
 # =============================================================================
@@ -195,7 +285,9 @@ EXCEPTION_PATTERNS: dict[str, dict[str, Pattern]] = {
         "except_pass": re.compile(r"except[^:]*:\s*\n\s*pass\b"),
         "except_continue": re.compile(r"except[^:]*:\s*\n\s*continue\b"),
         # Good patterns
-        "specific_except": re.compile(r"except\s+(?!Exception|BaseException)\w+(?:Error|Exception)"),
+        "specific_except": re.compile(
+            r"except\s+(?!Exception|BaseException)\w+(?:Error|Exception)"
+        ),
         "except_log": re.compile(r"except[^:]*:\s*\n[^\n]*(?:log|logger|logging)"),
         "except_raise": re.compile(r"except[^:]*:\s*\n[^\n]*raise\b"),
     },
@@ -215,7 +307,9 @@ EXCEPTION_PATTERNS: dict[str, dict[str, Pattern]] = {
     },
     "c": {
         "ignore_return": re.compile(r"^\s*\w+\s*\([^)]*\)\s*;\s*$", re.MULTILINE),
-        "empty_error_check": re.compile(r"if\s*\([^)]*(?:err|error|ret|rc|status)\s*[!=<>]=?[^)]*\)\s*\{\s*\}"),
+        "empty_error_check": re.compile(
+            r"if\s*\([^)]*(?:err|error|ret|rc|status)\s*[!=<>]=?[^)]*\)\s*\{\s*\}"
+        ),
         "check_errno": re.compile(r"if\s*\(\s*errno\s*[!=]=|perror\s*\("),
         "error_logging": re.compile(r"(?:syslog|fprintf\s*\(\s*stderr|perror)\s*\("),
     },
@@ -226,9 +320,20 @@ EXCEPTION_PATTERNS: dict[str, dict[str, Pattern]] = {
     },
 }
 
-EXCEPTION_ANTI_PATTERNS = {"bare_except", "broad_except", "except_pass", "except_continue",
-                           "empty_catch", "catch_all", "catch_throwable", "swallow_exception",
-                           "ignore_error", "empty_if_err", "ignore_return", "empty_error_check"}
+EXCEPTION_ANTI_PATTERNS = {
+    "bare_except",
+    "broad_except",
+    "except_pass",
+    "except_continue",
+    "empty_catch",
+    "catch_all",
+    "catch_throwable",
+    "swallow_exception",
+    "ignore_error",
+    "empty_if_err",
+    "ignore_return",
+    "empty_error_check",
+}
 
 
 # =============================================================================

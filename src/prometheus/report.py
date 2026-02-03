@@ -10,7 +10,7 @@ from .models import HubrisReport
 
 def generate_html_report(report: HubrisReport, output_path: str, repo_name: str = "") -> str:
     """Generate an HTML report from analysis results."""
-    
+
     # Prepare theater ratio display
     if report.theater_ratio == "N/A":
         theater_display = "N/A"
@@ -31,55 +31,61 @@ def generate_html_report(report: HubrisReport, output_path: str, repo_name: str 
     else:
         theater_display = str(report.theater_ratio)
         theater_desc = ""
-    
+
     # Build issues HTML
     all_issues = (
-        report.retry_issues + 
-        report.timeout_issues + 
-        report.circuit_breaker_issues + 
-        report.exception_issues + 
-        report.fallback_issues
+        report.retry_issues
+        + report.timeout_issues
+        + report.circuit_breaker_issues
+        + report.exception_issues
+        + report.fallback_issues
     )
-    
+
     issues_html = ""
     for issue in all_issues[:20]:  # Limit to top 20
         severity_class = issue.severity.lower()
-        issues_html += f'''
+        issues_html += f"""
             <div class="issue issue-{severity_class}">
                 <span class="severity">{issue.severity}</span>
                 <span class="file">{issue.file}:{issue.line}</span>
                 <span class="desc">{issue.description}</span>
             </div>
-        '''
-    
+        """
+
     if len(all_issues) > 20:
         issues_html += f'<p class="more">... and {len(all_issues) - 20} more issues</p>'
-    
+
     # Build recommendations HTML
     recs_html = ""
     for rec in report.recommendations[:5]:
-        recs_html += f'''
+        recs_html += f"""
             <div class="recommendation">
                 <span class="priority">{rec["priority"]}</span>
                 <span class="category">{rec["category"]}</span>
                 <p>{rec["message"]}</p>
             </div>
-        '''
-    
+        """
+
     # Libraries section
     libraries_html = ""
     if report.resilience_libraries:
-        libs = "".join(f'<span class="library-tag">{lib}</span>' for lib in report.resilience_libraries)
-        warning = '<p class="warning">⚠️ Multiple libraries suggest inconsistent resilience strategy</p>' if report.library_count > 2 else ''
-        libraries_html = f'''
+        libs = "".join(
+            f'<span class="library-tag">{lib}</span>' for lib in report.resilience_libraries
+        )
+        warning = (
+            '<p class="warning">⚠️ Multiple libraries suggest inconsistent resilience strategy</p>'
+            if report.library_count > 2
+            else ""
+        )
+        libraries_html = f"""
             <div class="card">
                 <h2>Resilience Libraries ({report.library_count})</h2>
                 <div class="libraries">{libs}</div>
                 {warning}
             </div>
-        '''
-    
-    html = f'''<!DOCTYPE html>
+        """
+
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -244,9 +250,9 @@ def generate_html_report(report: HubrisReport, output_path: str, repo_name: str 
         </footer>
     </div>
 </body>
-</html>'''
+</html>"""
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html)
-    
+
     return output_path

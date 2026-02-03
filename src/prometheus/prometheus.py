@@ -430,7 +430,9 @@ class Prometheus:
                 "io_density": getattr(resilience_result, "io_density", 0),
                 "network_io_density": getattr(resilience_result, "network_io_density", 0),
                 "has_io_boundaries": getattr(resilience_result, "has_io_boundaries", True),
-                "has_network_boundaries": getattr(resilience_result, "has_network_boundaries", True),
+                "has_network_boundaries": getattr(
+                    resilience_result, "has_network_boundaries", True
+                ),
                 "resilience_applicable": getattr(resilience_result, "resilience_applicable", True),
                 "io_boundary_reason": getattr(resilience_result, "io_boundary_reason", ""),
             },
@@ -451,7 +453,7 @@ class Prometheus:
         - Complexity >= 50: Low complexity (well-structured, simpler code)
         - Complexity < 50: High complexity (needs work)
         - Resilience >= 35: Adequate resilience for frameworks
-        
+
         Note: Complexity score uses INVERTED semantics - higher = simpler
         """
         # Thresholds - calibrated to industry benchmarks
@@ -498,7 +500,7 @@ class Prometheus:
             # Classify based on complexity only, but mark as "MICRO" variant
             total_loc = getattr(resilience_result, "total_loc", 0)
             low_complexity = report.complexity_score >= complexity_threshold
-            
+
             # Use special micro-variants that don't imply resilience assessment
             if low_complexity:
                 # Small and simple - not a concern
@@ -1148,12 +1150,25 @@ def dump_raw_data(report: PrometheusReport, output_path: str) -> str:
 def _build_comparison_item(r):
     """Build HTML for a single comparison item in the quadrant report."""
     from pathlib import Path
-    color = '#22c55e' if r.quadrant == 'BUNKER' else '#3b82f6' if r.quadrant == 'FORTRESS' else '#eab308' if r.quadrant == 'GLASS HOUSE' else '#ef4444'
+
+    color = (
+        "#22c55e"
+        if r.quadrant == "BUNKER"
+        else (
+            "#3b82f6"
+            if r.quadrant == "FORTRESS"
+            else "#eab308" if r.quadrant == "GLASS HOUSE" else "#ef4444"
+        )
+    )
     name = r.github.full_name if r.github.full_name else Path(r.codebase_path).name
-    desc = r.github.description[:40] + '...' if r.github.description and len(r.github.description) > 40 else r.github.description or ''
+    desc = (
+        r.github.description[:40] + "..."
+        if r.github.description and len(r.github.description) > 40
+        else r.github.description or ""
+    )
     quadrant_short = r.quadrant.split()[0]
     resilience_display = "N/A" if r.resilience_score < 0 else f"{r.resilience_score:.0f}"
-    return f'''
+    return f"""
                     <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; border-left: 4px solid {color};">
                         <div style="flex: 1;">
                             <div style="font-weight: bold; color: #f8fafc;">{name}</div>
@@ -1167,7 +1182,7 @@ def _build_comparison_item(r):
                             <div style="font-size: 1.25rem; font-weight: bold; color: #f8fafc;">{resilience_display}</div>
                             <div style="font-size: 0.7rem; color: #64748b;">RESILIENCE</div>
                         </div>
-                    </div>'''
+                    </div>"""
 
 
 def generate_quadrant_html(
@@ -1330,7 +1345,9 @@ def generate_quadrant_html(
         </div>
         """
 
-    comparison_items_html = "".join(_build_comparison_item(r) for r in sorted(reports_data, key=lambda x: -x.resilience_score))
+    comparison_items_html = "".join(
+        _build_comparison_item(r) for r in sorted(reports_data, key=lambda x: -x.resilience_score)
+    )
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>

@@ -74,7 +74,7 @@ def is_in_comment_or_docstring(content: str, position: int) -> bool:
 
     # Check for single-line comment
     last_newline = before.rfind("\n")
-    current_line = before[last_newline + 1:]
+    current_line = before[last_newline + 1 :]
 
     # Python single-line comment
     if "#" in current_line:
@@ -102,18 +102,18 @@ def is_in_string_literal(content: str, position: int) -> bool:
     """
     before = content[:position]
     last_newline = before.rfind("\n")
-    current_line = before[last_newline + 1:]
-    
+    current_line = before[last_newline + 1 :]
+
     # Count quotes in current line before position
     pos_in_line = position - (last_newline + 1)
     line_before = current_line[:pos_in_line]
-    
+
     # Skip escaped quotes
     line_clean = re.sub(r"\\'", "", re.sub(r'\\"', "", line_before))
-    
+
     single_quotes = line_clean.count("'")
     double_quotes = line_clean.count('"')
-    
+
     # If odd number of quotes, we're inside a string
     return (single_quotes % 2 == 1) or (double_quotes % 2 == 1)
 
@@ -142,7 +142,11 @@ def is_analyzer_file(filepath: str) -> bool:
 def is_test_file(filepath: str) -> bool:
     """Check if file is a test file."""
     filename = Path(filepath).name.lower()
-    return filename.startswith("test_") or filename.endswith("_test.py") or "tests/" in filepath.lower()
+    return (
+        filename.startswith("test_")
+        or filename.endswith("_test.py")
+        or "tests/" in filepath.lower()
+    )
 
 
 def should_flag_match(content: str, match, filepath: str) -> bool:
@@ -176,7 +180,7 @@ def should_flag_match(content: str, match, filepath: str) -> bool:
     if is_analyzer_file(filepath):
         line_start = content.rfind("\n", 0, match_start) + 1
         line_end = content.find("\n", match_end)
-        line = content[line_start:line_end if line_end != -1 else len(content)]
+        line = content[line_start : line_end if line_end != -1 else len(content)]
 
         # Skip if line looks like it's defining patterns
         if any(x in line for x in ["Pattern", "pattern", "PATTERN", "compile", "regex", "re."]):
@@ -188,7 +192,7 @@ def should_flag_match(content: str, match, filepath: str) -> bool:
 def filter_matches(pattern, content: str, filepath: str):
     """
     Generator that yields only non-false-positive matches.
-    
+
     Usage:
         for match in filter_matches(pattern, content, filepath):
             # This match is a real detection, not a pattern definition
