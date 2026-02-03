@@ -416,15 +416,6 @@ class Extractor:
             import lizard
 
             # Map our language names to lizard's
-            lang_map = {
-                "javascript": "javascript",
-                "typescript": "typescript",
-                "java": "java",
-                "go": "go",
-                "rust": "rust",
-                "c": "c",
-                "cpp": "cpp",
-            }
 
             analysis = lizard.analyze_file.analyze_source_code(f"temp.{language[:2]}", content)
 

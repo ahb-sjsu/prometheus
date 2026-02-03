@@ -15,13 +15,13 @@ All rights reserved.
 __version__ = "0.2.0"
 
 # Core analysis classes
-from .shield_analyzer import Aegis, AegisReport
 from .entropy_analyzer import ComplexityFitnessPipeline
+from .hubris import Hubris
 from .ignore_patterns import load_ignore_patterns, should_exclude
 
 # Main entry points
 from .prometheus import Prometheus
-from .hubris import Hubris
+from .shield_analyzer import Aegis, AegisReport
 
 __all__ = [
     "Aegis",

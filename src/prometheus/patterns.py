@@ -11,7 +11,7 @@ Organized by:
 """
 
 import re
-from typing import Pattern
+from re import Pattern
 
 # =============================================================================
 # RETRY PATTERNS
