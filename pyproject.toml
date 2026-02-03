@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "Codebase fitness analyzer - complexity, resilience, and theater detection"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Proprietary"}
+license = {text = "MIT"}
 authors = [
     {name = "Andrew H. Bond", email = "andrew.bond@sjsu.edu"}
 ]

@@ -3,7 +3,7 @@
 [![CI](https://github.com/ahb-sjsu/prometheus/actions/workflows/ci.yml/badge.svg)](https://github.com/ahb-sjsu/prometheus/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/prometheus-analyzer.svg)](https://pypi.org/project/prometheus-analyzer/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A pragmatic tool for measuring whether a codebase is too complex for its task.
 
