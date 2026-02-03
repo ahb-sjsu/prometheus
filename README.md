@@ -1,5 +1,6 @@
 # Prometheus - Complexity Fitness Analyzer
 
+[![CI](https://github.com/ahb-sjsu/prometheus/actions/workflows/ci.yml/badge.svg)](https://github.com/ahb-sjsu/prometheus/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/prometheus-analyzer.svg)](https://pypi.org/project/prometheus-analyzer/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
