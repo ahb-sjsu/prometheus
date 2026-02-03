@@ -1,20 +1,24 @@
-# Complexity Fitness Analyzer
+# Prometheus - Complexity Fitness Analyzer
+
+[![PyPI version](https://badge.fury.io/py/prometheus-analyzer.svg)](https://pypi.org/project/prometheus-analyzer/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
 
 A pragmatic tool for measuring whether a codebase is too complex for its task.
 
 ## Quick Start
 
 ```bash
-pip install radon lizard
+pip install prometheus-analyzer
 
 # Analyze a GitHub repo directly
-python prometheus.py https://github.com/pallets/flask
+prometheus https://github.com/pallets/flask
 
 # Or use short form
-python prometheus.py pallets/flask
+prometheus pallets/flask
 
 # Analyze local codebase
-python prometheus.py /path/to/your/code
+prometheus /path/to/your/code
 
 # Outputs: prometheus_pallets_flask.html, prometheus_pallets_flask.json
 ```
