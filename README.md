@@ -34,6 +34,45 @@ prometheus /path/to/your/code
 | **hubris.py** | Greek for "excessive pride" | Resilience theater detector — finds cargo-cult patterns |
 | **olympus.py** | Home of the gods | Multi-repository comparison tool |
 
+```mermaid
+flowchart TB
+    IN["prometheus &lt;repo or path&gt;"]
+    FETCH{Local or URL?}
+    CLONE[git clone to tmp]
+
+    subgraph ANALYZE[Analyzer modules]
+      direction TB
+      ENT[entropy_analyzer<br/>Shannon + Halstead]
+      AEGIS[shield_analyzer Aegis<br/>resilience patterns]
+      HUB[hubris<br/>cargo-cult detector]
+      TASK[Task metrics<br/>tests, endpoints, FPs]
+    end
+
+    COMBINE["prometheus.py<br/>fitness quadrant"]
+    RATIOS[Fitness ratios<br/>complexity / feature]
+    OUT1[HTML report]
+    OUT2[JSON report]
+    OLY["olympus<br/>multi-repo compare"]
+
+    IN --> FETCH
+    FETCH -->|URL| CLONE --> ANALYZE
+    FETCH -->|Local| ANALYZE
+    ENT --> COMBINE
+    AEGIS --> COMBINE
+    HUB --> COMBINE
+    TASK --> COMBINE
+    COMBINE --> RATIOS --> OUT1
+    RATIOS --> OUT2
+    OUT2 --> OLY
+
+    classDef in fill:#e3f2fd,stroke:#1565c0;
+    classDef an fill:#fff3e0,stroke:#e65100;
+    classDef out fill:#c8e6c9,stroke:#1b5e20;
+    class IN,FETCH,CLONE in;
+    class ENT,AEGIS,HUB,TASK,COMBINE,RATIOS an;
+    class OUT1,OUT2,OLY out;
+```
+
 ## Theoretical Basis
 
 This tool implements a **pragmatic proof** that simpler systems are more reliable:
